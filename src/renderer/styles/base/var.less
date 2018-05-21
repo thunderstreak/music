@@ -1,0 +1,59 @@
+//定义
+.loop(@n, @i:1) when (@i <= @n) {
+    .hero-logo-circle:nth-child(@{i}) {
+        animation-duration: (@i * 10 + 20)s;
+    }
+    .loop(@n, (@i + 1));
+}
+
+/*
+*box-flex
+*/
+.lessBFX() {
+    // display: box;
+    // display: -webkit-box;
+    display: flex;
+    display: -webkit-flex;
+}
+
+.lessBoxFlex() {
+    .lessBFX();
+    justify-content: space-between;
+    -webkit-justify-content: space-between;
+}
+
+.lessBoxFlexC() {
+    .lessBFX();
+    justify-content: center;
+    -webkit-justify-content: center;
+}
+
+.lessBoxFlexSB() {
+    .lessBFX();
+    justify-content: space-between;
+    -webkit-justify-content: space-between;
+}
+
+.lessBoxFlexSA() {
+    .lessBFX();
+    justify-content: space-around;
+    -webkit-justify-content: space-around;
+}
+
+.lessBoxFlexChild() {
+    // box-flex: 1;
+    // -webkit-box-flex: 1;
+    flex: 1;
+    -webkit-flex: 1;
+}
+
+/*box center*/
+.lessTransformCenter() {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transform-origin: 50% 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -webkit-transform-origin: 50% 50%;
+}
