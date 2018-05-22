@@ -1,4 +1,4 @@
-import {app, BrowserWindow, globalShortcut,screen} from 'electron'
+import {app, BrowserWindow, globalShortcut,screen,ipcMain} from 'electron'
 
 /**
  * Set `__static` path to static files in production
@@ -62,7 +62,10 @@ app.on('activate', () => {
         createWindow()
     }
 })
-
+// 关闭窗口
+ipcMain.on('window-close', (e) => {
+    mainWindow.close();
+});
 /**
  * Auto Updater
  *
