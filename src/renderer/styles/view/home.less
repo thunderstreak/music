@@ -69,11 +69,7 @@
                 animation-duration: 120s;
             }
         }
-        @keyframes hero-logo-circle {
-            100% {
-                transform: rotate(1turn);
-            }
-        }
+
     }
 
     .hero-play-audio {
@@ -83,37 +79,139 @@
         right: 0;
         bottom: 0;
         margin: auto;
-        width: 116px;
-        height: 106px;
+        width: 120px;
+        height: 120px;
 
-        .hero-play-audios {}
+        .hero-play-audios {
+            overflow: hidden;
+            display: block;
+            padding:0;
+            border:0;
+            margin:0;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 0;
+        }
+        .audios-animation{
+            animation: hero-logo-circle 1s linear infinite;
+            will-change: transform;
+            animation-duration: 12s;
+        }
     }
 
-    .hero-play-progress {
+    // 控制台
+    .hero-play-panel{
         position: absolute;
         left: 0;
         bottom: 0;
         right: 0;
-        height: 3px;
-        background: #1e2833;
-        border-radius: 1px;
-        .hero-play-progress-bar{
-            width: 0;
-            height: 3px;
-            border-radius: 1px;
-            background: #dda032;
+        height: 65px;
+        // 播放时间
+        .hero-play-time{
+            padding: 2px 15px;
+            font-size: 12px;
+            color: #c7c7c7;
+            .lessBoxFlexSB();
         }
-        .transition-effect{
-            transition: .2s;
+        // 进度条
+        .hero-play-progress {
+            padding: 1px 0;
+            margin: 0 15px;
+            height: 3px;
+            background: #1e2833;
+            border-radius: 1px;
+            cursor: pointer;
+            .hero-play-progress-bar{
+                width: 0;
+                height: 3px;
+                border-radius: 1px;
+                background: #dda032;
+            }
+            .transition-effect{
+                transition: .2s;
+            }
+        }
+        // 仪表盘
+        .hero-play-controls{
+            height: 20px;
+            padding: 10px 15px;
+            .lessBFX();
+            >div{
+                height: 20px;
+                display: inline-block;
+                cursor: pointer;
+            }
+            .hero-play-controls-playpaused{
+                width: 12px;
+                margin-right: 18px;
+            }
+            .play{
+                background: url('../../assets/sprite_radio_play.png') no-repeat center;
+                background-position: 0 0;
+            }
+            .pused{
+                background: url('../../assets/sprite_radio_play.png') no-repeat center;
+                background-position: 0 -20px;
+            }
+
+            .hero-play-controls-playnext{
+                background: url('../../assets/sprite_radio_play.png') no-repeat center;
+                background-position: 0 -40px;
+                width: 15px;
+                margin-right: 18px;
+            }
+
+            .hero-play-controls-playvoice{
+                width: 19px;
+                margin-right: 5px;
+            }
+            .voice-off{
+                background: url('../../assets/sprite_radio_play.png') no-repeat center;
+                background-position: 0 -218px;
+            }
+            .voice-on{
+                background: url('../../assets/sprite_radio_play.png') no-repeat center;
+                background-position: 0 -60px;
+            }
+
+
+            .hero-play-controls-playtracks{
+                margin: 10px 0;
+                width: 100px;
+                height: 2px;
+                background: rgba(211,110,45,.1);
+                position: relative;
+                .playtracks-progress{
+                    width: 50%;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    height: 2px;
+                    filter: progid:DXImageTransform.Microsoft.gradient(enabled='true', startColorstr='#B2000000', endColorstr='#B2000000');
+                    background: rgba(211,110,45,.7);
+                    // background: red;
+                    .playtracks-flag{
+                        position: absolute;
+                        top: -4px;
+                        right: -4px;
+                        width: 10px;
+                        height: 10px;
+                        background: url('../../assets/sprite_radio_play.png') no-repeat center;
+                        background-position: 0 -200px;
+                        opacity: 1;
+                        filter: none;
+                    }
+                }
+            }
         }
     }
 
+
     // 手势
     .hero-gesture{
-        border: 1px solid blue;
 
         position: relative;
-
 
         .hero-gesture-box{
             width: 100%;
@@ -122,8 +220,8 @@
             display: flex;
             justify-content: space-between;
             &:hover{
-                >div{
-                    top: 5px;
+                .hero-gesture-search{
+                    // top: 5px;
                 }
             }
 
@@ -163,5 +261,11 @@
             }*/
             // align-self: flex-end;
         }
+    }
+}
+
+@keyframes hero-logo-circle {
+    100% {
+        transform: rotate(1turn);
     }
 }

@@ -22,6 +22,10 @@ const tool = {
             }
         }
         return false;
+    },
+    getTimestamp:()=>{
+        let timestamp = new Date().getTime();
+        return timestamp;
     }
 }
 

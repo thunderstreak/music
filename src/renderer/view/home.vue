@@ -23,14 +23,35 @@
             </div>
         </div>
         <div class="hero-play-audio">
-            {{playSonglist[currSongIndex].name}}
-            {{playSonglist[currSongIndex].songname}}
+            <img class="hero-play-audios" ref="albumImg" @click="playPaused" draggable="false" :src="currentPlaySong.albumisrc" alt="">
+            {{currentPlaySong.name}}
+            {{currentPlaySong.songname}}
+
             <!-- <img draggable="false" @click="playPaused" class="hero-play-audios" src="~@/assets/images/index-logo.svg" alt="Index portal blue"> -->
             <audio ref="audio"></audio>
         </div>
-        <div class="hero-play-progress">
-            <div ref="audioTracks" class="hero-play-progress-bar"></div>
+
+        <div class="hero-play-panel">
+            <div class="hero-play-time">
+                <div class="hero-play-time-current">{{transformTime(currPlayTime)}}</div>
+                <div class="hero-play-time-total">{{transformTime(songDuration)}}</div>
+            </div>
+            <div class="hero-play-progress">
+                <div ref="audioProgress" class="hero-play-progress-bar"></div>
+            </div>
+            <div class="hero-play-controls">
+                <div class="hero-play-controls-playpaused" :class="[isPlay ? 'pused' : 'play']" @click="playPaused" :title="[isPlay ? '暂停' : '播放']"></div>
+                <div class="hero-play-controls-playnext" title="下一首" @click="playNext"></div>
+                <div class="hero-play-controls-playvoice" :class="[isVoice ? 'voice-off' : 'voice-on']" title="禁音" @click="closedSound"></div>
+                <div class="hero-play-controls-playtracks">
+                    <div class="playtracks-progress">
+                        <div class="playtracks-flag"></div>
+                    </div>
+                </div>
+
+            </div>
         </div>
+
 
     </div>
 </template>
@@ -38,11 +59,17 @@
 <script>
 import ogg from '../assets/audios/horse.ogg';
 import mp3 from '../assets/audios/ConfessionBallon.mp3';
+import placeholderImg from '../assets/person_300.png'
 export default {
     name: 'index',
     data: () => ({
-        audioTracks     :'',//audio音轨
+        currentPlaySong :'',//当前播放音乐对象
+        isVoice         :false,//是否禁音
+        isPlay          :true,//是否播放
+        placeholderImg  :placeholderImg,//默认专辑图片
+        audioProgress   :'',//audio进度条
         audio           :'',//audio对象
+        albumImg        :'',//专辑图片对象
         searchVal       :'',//搜索字段
         playSonglist    :[],//播放列表
         currSongIndex   :0,//当前播放歌曲的下标
@@ -50,15 +77,28 @@ export default {
         songDuration    :0,//歌曲总时长
         currPlayTime    :0,//当前歌曲播放时间
         transitionTime  :0.2,//进度条过渡时长
-        interval        :'',//
+        albumRotateDeg  :0,//专辑图片旋转度
+        timeInterval    :'',//
+        albumInterval   :'',//
     }),
     created(){
-
+        window.requestAnimFrame = (function(){
+            return  window.requestAnimationFrame       ||
+                    window.webkitRequestAnimationFrame ||
+                    window.mozRequestAnimationFrame    ||
+                    window.oRequestAnimationFrame      ||
+                    window.msRequestAnimationFrame     ||
+                    function(/* function */ callback, /* DOMElement */ element){
+                        window.setTimeout(callback, 1000 / 60);
+                    };
+       })();
     },
     mounted(){
+        this.albumImg       = this.$refs.albumImg;
         this.audio          = this.$refs.audio;
-        this.audioTracks    = this.$refs.audioTracks;
-        this.audio.src      = ogg;
+        this.audioProgress  = this.$refs.audioProgress;
+
+        // this.audio.src      = ogg;
         // this.audio.loop = false;
         this.audio.play();
         // console.log();
@@ -66,10 +106,22 @@ export default {
         this.playEnd();//监听播放完成
         this.playTime();//获取当前播放时长
     },
+    computed:{
+
+    },
     methods: {
+        // 播放
         playPaused(){
-            // 暂停播放
-            this.audio.paused ? this.audio.play() : this.audio.pause();
+            // this.audio.paused ? this.audio.play() : this.audio.pause();
+            if(this.audio.paused){
+                this.isPlay = true;
+                this.audio.play();
+                this.albumStartRotate();//专辑旋转开始
+            }else{
+                this.isPlay = false;
+                this.audio.pause();
+                this.albumEndRotate();//专辑旋转暂停
+            }
         },
         // 搜索音乐
         searchMusics(){
@@ -119,7 +171,7 @@ export default {
                     tpl         :'3',
                     page        :'detail',
                     type        :'top',
-                    topid       :'36',
+                    topid       :'27',
                     _           :new Date().getTime()
                 }
             }).then((res)=>{
@@ -128,54 +180,126 @@ export default {
                 for (var i = 0; i < songlist.length; i++) {
                     let data = songlist[i].data;
                     if(data.songmid){
-                        let url = 'http://ws.stream.qqmusic.qq.com/C100' + data.songmid + '.m4a?fromtag=0&guid=126548448'
                         this.playSonglist.push({
-                            src     :url,
-                            name    :data.singer[0].name,
-                            songname:data.songname,
-                            songorig:data.songorig,
+                            src         :`http://ws.stream.qqmusic.qq.com/C100${data.songmid}.m4a?fromtag=0&guid=126548448`,
+                            name        :data.singer[0].name,
+                            songname    :data.songname,
+                            songorig    :data.songorig,
+                            songmid     :data.songmid,
+                            songid      :data.songid,
+
+                            albumisrc   :`http://imgcache.qq.com/music/photo/album_300/${data.albumid%100}/300_albumpic_${data.albumid}_0.jpg`,
+                            albumid     :data.albumid,
+                            albummid    :data.albummid,
+                            albumname   :data.albumname
                         });
                     }
                 }
-                this.playSonglist.splice(0,0,{src:ogg});
-                this.startPlay();
+                // this.playSonglist.splice(0,0,{src:ogg});
+                this.startPlay();//开始播放
+
             })
         },
-        // 开始播放
-        startPlay(){
+        // 获取歌词
+        getLyric(){
+
+            /*let id = this.playSonglist[this.currSongIndex].songid;
+            let txt="https://music.qq.com/miniportal/static/lyric/"+id%100+"/"+id+".xml";
+            let YqlUrl='https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20xml%20where%20url%3D"'+txt+'"&format=json&diagnostics=true&callback=?'
+            this.$.getJSON(YqlUrl,function(data) {
+                console.log(data);//获取的xml数据
+            });*/
+
+            let songId = this.playSonglist[this.currSongIndex].songid;
+            let url = "https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg?callback=MusicJsonCallback_lrc&pcachetime=1494070301711&songmid="+songId+"&g_tk=5381&jsonpCallback=MusicJsonCallback_lrc&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8¬ice=0&platform=yqq&needNewCode=0";
+            let options = {
+                url: url,
+                headers: {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.110 Safari/537.36",
+                    "Accept": "*/*",
+                    "Referer": "https://y.qq.com/portal/player.html",
+                    "Accept-Language": "zh-CN,zh;q=0.8",
+                    "Cookie": "pgv_pvid=8455821612; ts_uid=1596880404; pgv_pvi=9708980224; yq_index=0; pgv_si=s3191448576; pgv_info=ssid=s8059271672; ts_refer=ADTAGmyqq; yq_playdata=s; ts_last=y.qq.com/portal/player.html; yqq_stat=0; yq_playschange=0; player_exist=1; qqmusic_fromtag=66; yplayer_open=1",
+                    "Host": "c.y.qq.com",
+                }
+            };
+            this.$request(options,(error, response, body)=>{
+                if(!error && response.statusCode == 200){
+
+                    console.log(body);
+
+                }else{
+                    console.log("error");
+                }
+            });
+        },
+        // 开始播放 type:[order:'顺序播放',random:'随机播放',loop:'循环播放']
+        startPlay(type = 'order'){
+            // 旋转图片
+            this.albumStartRotate();
             // this.transitionTime = 0.5;
             // this.audioTracks.style.transition = `${this.transitionTime}s`;
             // this.$tool.addClass(this.audioTracks,'transition-effect');
-            // 设置随机播放第一首歌
-            this.currSongIndex = Math.floor(Math.random() * this.playSonglist.length);
-            this.audio.src = this.playSonglist[this.currSongIndex].src;
+            if(type == 'order'){
+                this.currSongIndex = 0;
+            }else if(type == 'random'){
+                // 设置随机播放第一首歌
+                this.currSongIndex  = Math.floor(Math.random() * this.playSonglist.length);
+            }
+            console.log(this.playSonglist[this.currSongIndex]);
+            this.currentPlaySong = this.playSonglist[this.currSongIndex];
+            this.audio.src      = this.playSonglist[this.currSongIndex].src;
+            // 播放开始
             this.audio.play();
+            //获取歌词
+            this.getLyric();
             // 获取歌曲长度(秒)
-            this.songDuration = this.audio.duration;
+            this.songDuration   = this.audio.duration;
             // 获取当前播放时间
-            this.interval = setInterval(() => {
+            this.timeInterval = setInterval(() => {
                 // 当前歌曲播放结束
                 if(this.currPlayTime >= this.songDuration){
                     // this.transitionTime = 0;
                     // this.audioTracks.style.transition = `${this.transitionTime}s`;
                     // this.$tool.removeClass(this.audioTracks,'transition-effect');
-                    clearInterval(this.interval);
+                    clearInterval(this.timeInterval);
                     return;
                 }
                 this.currPlayTime = parseInt(this.audio.currentTime);
-                this.audioTracks.style.width = `${parseFloat(this.currPlayTime / this.songDuration) * 100}%`
+                this.audioProgress.style.width = `${parseFloat(this.currPlayTime / this.songDuration) * 100}%`
                 // console.log(this.currPlayTime);
                 // console.log(parseFloat(this.currPlayTime / this.songDuration)* 100);
             }, 50);
+        },
+        // 下一首
+        playNext(){
+            console.log('next');
+            this.acceptSonglist.push(this.playSonglist[0]);
+            this.playSonglist.splice(0,1);
+            this.startPlay();//开始播放
+            this.albumEndRotate();//清除专辑图片动画
+        },
+        // 开启关闭声音
+        closedSound(){
+            if(this.isVoice){
+                this.audio.volume = 1;//开音
+                this.isVoice = false;
+            }else{
+                this.audio.volume = 0;//禁音
+                this.isVoice = true;
+            }
+            console.log(this.audio.muted);
         },
         // 监听播放完成
         playEnd(){
             // 监听播放完成
             this.audio.addEventListener('ended', () => {
                 console.log(1);
-                this.acceptSonglist.push(this.playSonglist[0]);
-                this.playSonglist.splice(0,1);
-                this.startPlay();
+                // this.acceptSonglist.push(this.playSonglist[0]);
+                // this.playSonglist.splice(0,1);
+                // this.startPlay();//开始播放
+                this.playNext();//播放下一首
+                // this.getLyric();//获取歌词
             }, false);
         },
         // 返回播放时长
@@ -184,6 +308,31 @@ export default {
                 this.songDuration = parseInt(this.audio.duration);
                 // console.log(this.songDuration);
             });
+        },
+        // 专辑图片开始旋转
+        albumStartRotate(){
+            this.albumInterval = requestAnimFrame( this.albumStartRotate );
+            this.albumImg.style.transform = `rotate(${this.albumRotateDeg}deg)`;
+            this.albumRotateDeg += .5;
+            if(this.albumRotateDeg > 360){
+                this.albumRotateDeg = 0;
+            }
+        },
+        // 专辑图片暂停旋转
+        albumEndRotate(){
+            cancelAnimationFrame(this.albumInterval);
+        },
+        // 转换分秒时间
+        transformTime(time){
+
+            let second = parseInt(isNaN(time) ? 0 : time);//秒数
+            let temp = second;
+            let minute = parseInt(temp / 60);
+            if(second % 60 < 10){
+                return `${minute}:0${second % 60}`;
+            }else{
+                return `${minute}:${second % 60}`;
+            }
         }
     }
 }
