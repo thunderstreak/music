@@ -22,10 +22,14 @@ function createWindow() {
         width           : 1000,
         // height          : height,
         // width           : width,
-        useContentSize  : true,
-        frame           : false,
+        opacity         : 1,//设置窗口初始的不透明度, 介于 0.0 (完全透明) 和 1.0 (完全不透明) 之间。
+        center          : true,//窗口在屏幕居中
+        useContentSize  : true,//width 和 height 将使用 web 页面的尺寸, 这意味着实际窗口的尺寸应该包括窗口框架的大小，稍微会大一点。
+        frame           : false,//设置为 false 时可以创建一个Frameless Window.
+        resizable       : false,//不允许改变窗口尺寸
         webPreferences  : {
             webSecurity : false//用于本地跨域访问
+            devTools    : false,
         },
     })
     mainWindow.setMenu(null)
@@ -63,8 +67,16 @@ app.on('activate', () => {
     }
 })
 // 关闭窗口
-ipcMain.on('window-close', (e) => {
-    mainWindow.close();
+ipcMain.on('window-close', (e) => {mainWindow.close();});
+// 最小化窗口
+ipcMain.on('min', e => mainWindow.minimize());
+// 最大化窗口
+ipcMain.on('max', e => {
+    if (mainWindow.isMaximized()) {
+        mainWindow.unmaximize()
+    } else {
+        mainWindow.maximize()
+    }
 });
 /**
  * Auto Updater
