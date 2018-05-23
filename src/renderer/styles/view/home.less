@@ -79,12 +79,12 @@
         right: 0;
         bottom: 0;
         margin: auto;
-        width: 120px;
-        height: 120px;
+        width: 140px;
+        height: 140px;
         .hero-play-album-name{
-            font-size: 12px;
+            font-size: 14px;
             color: #fff;
-            border: 1px red solid;
+            padding: 10px 0;
         }
         .hero-play-audios {
             overflow: hidden;
@@ -92,8 +92,8 @@
             padding:0;
             border:0;
             margin:0;
-            width: 120px;
-            height: 120px;
+            width: 140px;
+            height: 140px;
             border-radius: 50%;
             border: 0;
         }
@@ -179,35 +179,7 @@
                 background-position: 0 -60px;
             }
 
-            // div元素音轨
-            .hero-play-controls-playtracks{
-                margin: 10px 0;
-                width: 100px;
-                height: 2px;
-                background: rgba(211,110,45,.1);
-                position: relative;
-                .playtracks-progress{
-                    width: 50%;
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    height: 2px;
-                    filter: progid:DXImageTransform.Microsoft.gradient(enabled='true', startColorstr='#B2000000', endColorstr='#B2000000');
-                    background: rgba(211,110,45,.7);
-                    // background: red;
-                    .playtracks-flag{
-                        position: absolute;
-                        top: -4px;
-                        right: -4px;
-                        width: 10px;
-                        height: 10px;
-                        background: url('../../assets/sprite_radio_play.png') no-repeat center;
-                        background-position: 0 -200px;
-                        opacity: 1;
-                        filter: none;
-                    }
-                }
-            }
+
             // 拖动的音轨range
             .hero-play-controls-playrange{
                 background: rgba(211,110,45,.1);
@@ -284,6 +256,7 @@
             .hero-gesture-search{
                 transition: .25s;
                 margin: 0 auto;
+                -webkit-app-region: no-drag;
                 // position: absolute;
                 // top: -35px;
                 .hero-gesture-search-ipt{

@@ -51,12 +51,6 @@
                 <!-- 禁音 -->
                 <div class="hero-play-controls-playvoice" :class="[isVoice ? 'voice-off' : 'voice-on']" title="禁音" @click="closedSound"></div>
                 <!-- 音量大小 -->
-                <div class="hero-play-controls-playtracks" @click="playVolume($event)">
-                    <div class="playtracks-progress" ref="audiotracksEle">
-                        <div class="playtracks-flag"></div>
-                    </div>
-                </div>
-
                 <div class="hero-play-controls-playrange">
                     <input ref="audioRangeEle" class="playrange-input iptrange" type="range" name="" value="0" max="100" min="0" step="1" v-model="audioRangeVal" @input="playRange">
                 </div>
@@ -81,7 +75,6 @@ export default {
         placeholderImg  :placeholderImg,//默认专辑图片
         audioProgressEle:'',//音频进度条
         audioEle        :'',//音频元素对象
-        audiotracksEle  :'',//音轨元素对象
         audioRangeVal   :50,//音轨值
         audioRangeEle   :'',//input音轨元素对象
 
@@ -114,7 +107,6 @@ export default {
         this.audioEle          = this.$refs.audioEle;
         this.albumImgEle       = this.$refs.albumImgEle;
         this.audioProgressEle  = this.$refs.audioProgressEle;
-        this.audiotracksEle    = this.$refs.audiotracksEle;
         this.audioRangeEle     = this.$refs.audioRangeEle;
 
         // this.audioEle.src      = ogg;
@@ -309,17 +301,7 @@ export default {
             }
             console.log(this.audioEle.muted);
         },
-        // 设置音量大小
-        playVolume(e){
-            let {target,offsetX} = e;
-            let tracksTotal = this.$tool.getEelUnit(target,'width');
-            let percentage = parseFloat(offsetX / tracksTotal);
-            console.log(percentage);
-            // 设置音量进度指示条
-            this.audiotracksEle.style.width = `${percentage * 100}%`;
-            // 设置音量
-            this.audioEle.volume = percentage;
-        },
+
         // 设置音量大小
         playRange(){
             // 设置拖动条颜色
