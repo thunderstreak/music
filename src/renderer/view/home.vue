@@ -24,8 +24,10 @@
         </div>
         <div class="hero-play-audio">
             <img class="hero-play-audios" ref="albumImg" @click="playPaused" draggable="false" :src="currentPlaySong.albumisrc" alt="">
-            {{currentPlaySong.name}}
-            {{currentPlaySong.songname}}
+
+            <div class="hero-play-album-name">
+                {{currentPlaySong.name}}-{{currentPlaySong.songname}}
+            </div>
 
             <!-- <img draggable="false" @click="playPaused" class="hero-play-audios" src="~@/assets/images/index-logo.svg" alt="Index portal blue"> -->
             <audio ref="audio"></audio>
