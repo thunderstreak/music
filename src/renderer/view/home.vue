@@ -6,7 +6,7 @@
                     <input class="hero-gesture-search-ipt" type="text" name="" value="" v-model="searchVal" @change="searchMusics">
                 </div>
             </div>
-            <div class="hero-gesture-closed" @click="closedWindow">x</div>
+            <div class="hero-gesture-closed" @click="closedWindow" title="关闭">x</div>
         </div>
         <div class="hero-logo" aria-hidden="true">
             <div class="hero-logo-circles">
@@ -326,9 +326,9 @@ export default {
             this.startPlay();//开始播放
             this.albumEndRotate();//清除专辑图片动画
 
+            //根据查询的数据重置是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
             this.tableData.find({songmid:this.currentPlaySong.songmid}, (err,doc) => {
                 // console.log(err,doc);
-                //根据查询的数据重置是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
                 this.isLike = doc.length != 0 ? true : false;
             })
         },
@@ -379,10 +379,10 @@ export default {
                     }
                 }
                 // 存储喜欢的歌曲的信息到db
-                this.$db.tableData.insert(doc,(err,newDoc) => {
+                this.tableData.insert(doc,(err,newDoc) => {
                     console.log(newDoc);
                 })
-                this.$db.tableData.find({},(err,docs) => {
+                this.tableData.find({},(err,docs) => {
                     console.log(docs);
                 })
             }
