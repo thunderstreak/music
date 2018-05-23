@@ -216,96 +216,126 @@
         .hero-play-controls{
             height: 20px;
             padding: 10px 15px;
-            .lessBFX();
-            >div{
-                height: 20px;
-                display: inline-block;
-                cursor: pointer;
-            }
-            .hero-play-controls-playpaused{
-                width: 12px;
-                margin-right: 18px;
-            }
-            .play{
-                background: url('../../assets/sprite_radio_play.png') no-repeat center;
-                background-position: 0 0;
-            }
-            .pused{
-                background: url('../../assets/sprite_radio_play.png') no-repeat center;
-                background-position: 0 -20px;
-            }
+            .lessBoxFlexSB();
 
-            .hero-play-controls-playnext{
-                background: url('../../assets/sprite_radio_play.png') no-repeat center;
-                background-position: 0 -40px;
-                width: 15px;
-                margin-right: 18px;
-            }
-
-            .hero-play-controls-playvoice{
-                width: 19px;
-                margin-right: 10px;
-            }
-            .voice-off{
-                background: url('../../assets/sprite_radio_play.png') no-repeat center;
-                background-position: 0 -218px;
-            }
-            .voice-on{
-                background: url('../../assets/sprite_radio_play.png') no-repeat center;
-                background-position: 0 -60px;
-            }
-
-
-            // 拖动的音轨range
-            .hero-play-controls-playrange{
-                background: rgba(211,110,45,.1);
-                margin: 10px 0;
-                width: 100px;
-                height: 2px;
-                position: relative;
-                .playrange-input{
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    // background: rgba(211,110,45,.7);
-                    background: -webkit-linear-gradient(rgba(211,110,45,.7), rgba(211,110,45,.7)) no-repeat;
-                    background-size: 0% 100%;
-                }
-                // 去除系统默认的样式
-                .iptrange[type=range] {
+            .hero-play-controls-left{
+                >div{
+                    height: 20px;
+                    display: inline-block;
                     cursor: pointer;
-                    -webkit-appearance: none;
-                    width: 100px;
-                    border-radius: 1px; /*这个属性设置使填充进度条时的图形为圆角*/
-                }
-                .iptrange[type=range]::-webkit-slider-thumb {
-                    -webkit-appearance: none;
-                }
-
-                // 给滑动轨道(track)添加样式
-                .iptrange[type=range]::-webkit-slider-runnable-track {
-                    height: 2px;
-                    border-radius: 1px; /*将轨道设为圆角的*/
-                    // box-shadow: 0 1px 1px #def3f8, inset 0 .125em .125em #0d1112; /*轨道内置阴影效果*/
-                }
-
-                // 原始的控件获取到焦点时，会显示包裹整个控件的边框，所以还需要把边框取消。
-                .iptrange[type=range]:focus {
-                    outline: none;
-                }
-
-                // 给滑块(thumb)添加样式
-                .iptrange[type=range]::-webkit-slider-thumb {
-                    -webkit-appearance: none;
-                    height: 10px;
-                    width: 10px;
-                    margin-top: -4px; /*使滑块超出轨道部分的偏移量相等*/
                     background: url('../../assets/sprite_radio_play.png') no-repeat center;
-                    background-position: 0 -200px;
-                    // border: solid 0.125em rgba(205, 224, 230, 0.5); /*设置边框*/
-                    // box-shadow: 0 .125em .125em #3b4547; /*添加底部阴影*/
+                }
+                // 播放暂停
+                .hero-play-controls-playpaused{
+                    width: 12px;
+                    margin-right: 18px;
+                }
+                .play{
+                    background-position: 0 0;
+                }
+                .pused{
+                    background-position: 0 -20px;
                 }
 
+                .hero-play-controls-playnext{
+                    background-position: 0 -40px;
+                    width: 15px;
+                    margin-right: 18px;
+                }
+
+                .hero-play-controls-playvoice{
+                    width: 19px;
+                    margin-right: 10px;
+                }
+                .voice-off{
+                    background-position: 0 -218px;
+                }
+                .voice-on{
+                    background-position: 0 -60px;
+                }
+
+                // 拖动的音轨range
+                .hero-play-controls-playrange{
+                    background: rgba(211,110,45,.1);
+                    margin: 10px 0;
+                    width: 100px;
+                    height: 2px;
+                    position: relative;
+                    .playrange-input{
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        // background: rgba(211,110,45,.7);
+                        background: -webkit-linear-gradient(rgba(211,110,45,.7), rgba(211,110,45,.7)) no-repeat;
+                        background-size: 0% 100%;
+                    }
+                    // 去除系统默认的样式
+                    .iptrange[type=range] {
+                        cursor: pointer;
+                        -webkit-appearance: none;
+                        width: 100px;
+                        border-radius: 1px; /*这个属性设置使填充进度条时的图形为圆角*/
+                    }
+                    .iptrange[type=range]::-webkit-slider-thumb {
+                        -webkit-appearance: none;
+                    }
+
+                    // 给滑动轨道(track)添加样式
+                    .iptrange[type=range]::-webkit-slider-runnable-track {
+                        height: 2px;
+                        border-radius: 1px; /*将轨道设为圆角的*/
+                        // box-shadow: 0 1px 1px #def3f8, inset 0 .125em .125em #0d1112; /*轨道内置阴影效果*/
+                    }
+
+                    // 原始的控件获取到焦点时，会显示包裹整个控件的边框，所以还需要把边框取消。
+                    .iptrange[type=range]:focus {
+                        outline: none;
+                    }
+
+                    // 给滑块(thumb)添加样式
+                    .iptrange[type=range]::-webkit-slider-thumb {
+                        -webkit-appearance: none;
+                        height: 10px;
+                        width: 10px;
+                        margin-top: -4px; /*使滑块超出轨道部分的偏移量相等*/
+                        background: url('../../assets/sprite_radio_play.png') no-repeat center;
+                        background-position: 0 -200px;
+                        // border: solid 0.125em rgba(205, 224, 230, 0.5); /*设置边框*/
+                        // box-shadow: 0 .125em .125em #3b4547; /*添加底部阴影*/
+                    }
+
+                }
+            }
+
+            .hero-play-controls-right{
+                >div{
+                    height: 20px;
+                    display: inline-block;
+                    cursor: pointer;
+                    background: url('../../assets/sprite_radio_play.png') no-repeat center;
+                }
+                // 喜欢
+                .hero-play-controls-like{
+                    width: 19px;
+                    margin-right: 15px;
+                    &.like{
+                        background-position: 0 -100px;
+                    }
+                    &.hate{
+                        background-position: 0 -80px;
+                    }
+                }
+                // 讨厌
+                .hero-play-controls-hate{
+                    width: 18px;
+                    background-position: 0 -120px;
+                    margin-right: 15px;
+                }
+                // 其他操作
+                .hero-play-controls-other{
+                    width: 16px;
+                    background-position: 0 -140px;
+                }
             }
         }
     }

@@ -31,7 +31,7 @@
             <!-- <img draggable="false" @click="playPaused" class="hero-play-audios" src="~@/assets/images/index-logo.svg" alt="Index portal blue"> -->
             <audio ref="audioEle"></audio>
         </div>
-        {{audioProgressVal}}
+
         <div class="hero-play-panel">
             <!-- 播放时间 -->
             <div class="hero-play-time">
@@ -39,24 +39,35 @@
                 <div class="hero-play-time-total">{{transformTime(songDuration)}}</div>
             </div>
             <!-- 播放进度条 -->
-            <div class="hero-play-progress" @click="adjustProgress($event)">
+            <div class="hero-play-progress" ref="audioParentEle" @click="adjustProgress($event)">
                 <div ref="audioProgressEle" class="hero-play-progress-bar"></div>
             </div>
-            <br>
-            <div class="hero-play-playprogress">
+            <!-- <div class="hero-play-playprogress">
                 <input ref="playProgressEle" class="hero-play-playprogress-input iptprogress" type="range" value="" max="100" min="0" step="1" v-model="audioProgressVal" @input="progressRange">
-            </div>
+            </div> -->
             <!-- 播放控制 -->
             <div class="hero-play-controls">
-                <!-- 暂停，播放 -->
-                <div class="hero-play-controls-playpaused" :class="[isPlay ? 'pused' : 'play']" @click="playPaused" :title="[isPlay ? '暂停' : '播放']"></div>
-                <!-- 播放下一首 -->
-                <div class="hero-play-controls-playnext" title="下一首" @click="playNext"></div>
-                <!-- 禁音 -->
-                <div class="hero-play-controls-playvoice" :class="[isVoice ? 'voice-off' : 'voice-on']" title="禁音" @click="closedSound"></div>
-                <!-- 音量大小 -->
-                <div class="hero-play-controls-playrange">
-                    <input ref="audioRangeEle" class="playrange-input iptrange" type="range" value="0" max="100" min="0" step="1" v-model="audioRangeVal" @input="playRange">
+                <div class="hero-play-controls-left">
+                    <!-- 暂停，播放 -->
+                    <div class="hero-play-controls-playpaused" :class="[isPlay ? 'pused' : 'play']" @click="playPaused" :title="[isPlay ? '暂停' : '播放']"></div>
+                    <!-- 播放下一首 -->
+                    <div class="hero-play-controls-playnext" title="下一首" @click="playNext"></div>
+                    <!-- 禁音 -->
+                    <div class="hero-play-controls-playvoice" :class="[isVoice ? 'voice-off' : 'voice-on']" title="禁音" @click="closedSound"></div>
+                    <!-- 音量大小 -->
+                    <div class="hero-play-controls-playrange">
+                        <input ref="audioRangeEle" class="playrange-input iptrange" type="range" value="0" max="100" min="0" step="1" v-model="audioRangeVal" @input="playRange">
+                    </div>
+
+                </div>
+
+                <div class="hero-play-controls-right">
+                    <!-- 喜欢 -->
+                    <div class="hero-play-controls-like" :class="[isLike ? 'like' : 'hate']" :title="[isLike ? '已经喜欢' : '喜欢']" @click="audioLike"></div>
+                    <!-- 不喜欢 -->
+                    <div class="hero-play-controls-hate" title="讨厌" @click="audioHate"></div>
+                    <!-- 其他 -->
+                    <div class="hero-play-controls-other" title="更多"></div>
                 </div>
             </div>
         </div>
@@ -74,12 +85,16 @@ export default {
     name: 'index',
     data: () => ({
         currentPlaySong :'',//当前播放音乐对象
+        isLike          :false,//是否喜欢这首歌
         isVoice         :false,//是否禁音
         isPlay          :true,//是否播放
         placeholderImg  :placeholderImg,//默认专辑图片
-        audioProgressEle:'',//音频进度条
+        audioProgressEle:'',//音频进度条元素
+        audioParentEle  :'',//音频进度条父元素
+
         audioProgressVal:0,//音频播放进度值
         playProgressEle :'',//音频播放进度条元素对象
+
         audioEle        :'',//音频元素对象
         audioRangeVal   :50,//音轨值
         audioRangeEle   :'',//input音轨元素对象
@@ -96,6 +111,8 @@ export default {
         albumRotateDeg  :0,//专辑图片旋转度
         timeInterval    :'',//
         albumInterval   :'',//
+
+        tableData       :'',//本地数据库
     }),
     created(){
         window.requestAnimFrame = (function(){
@@ -108,11 +125,17 @@ export default {
                         window.setTimeout(callback, 1000 / 60);
                     };
        })();
+
+
+       // this.$db.chartData.loadDatabase();
+       // 初始化本地数据库
+       this.tableData = this.$db.tableData;
     },
     mounted(){
         this.audioEle          = this.$refs.audioEle;
         this.albumImgEle       = this.$refs.albumImgEle;
         this.audioProgressEle  = this.$refs.audioProgressEle;
+        this.audioParentEle    = this.$refs.audioParentEle;
         this.audioRangeEle     = this.$refs.audioRangeEle;
         this.playProgressEle   = this.$refs.playProgressEle;
 
@@ -275,8 +298,8 @@ export default {
                 this.currSongIndex  = Math.floor(Math.random() * this.playSonglist.length);
             }
             console.log(this.playSonglist[this.currSongIndex]);
-            this.currentPlaySong = this.playSonglist[this.currSongIndex];
-            this.audioEle.src = this.playSonglist[this.currSongIndex].src;
+            this.currentPlaySong    = this.playSonglist[this.currSongIndex];
+            this.audioEle.src       = this.playSonglist[this.currSongIndex].src;
             // 播放开始
             this.audioEle.play();
             //获取歌词
@@ -297,11 +320,17 @@ export default {
 
         // 下一首
         playNext(){
-            console.log('next');
+            // console.log('next');
             this.acceptSonglist.push(this.playSonglist[0]);
             this.playSonglist.splice(0,1);
             this.startPlay();//开始播放
             this.albumEndRotate();//清除专辑图片动画
+
+            this.tableData.find({songmid:this.currentPlaySong.songmid}, (err,doc) => {
+                // console.log(err,doc);
+                //根据查询的数据重置是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
+                this.isLike = doc.length != 0 ? true : false;
+            })
         },
 
         // 开启关闭声音
@@ -334,6 +363,37 @@ export default {
             this.audioRangeEle.style.backgroundSize = `${this.audioRangeVal}% 100%`;
         },
 
+        // 设置歌曲喜欢
+        audioLike(){
+            this.isLike = !this.isLike;
+            // 只有喜欢的歌曲才会被添加到db
+            if(this.isLike){
+                let currentPlaySong = this.currentPlaySong;//当前播放的歌曲信息
+                let doc = {
+                    isLike   : this.isLike,
+                    timestamp: this.$tool.getFormDate('format')
+                }
+                for (let variable in currentPlaySong) {
+                    if (currentPlaySong.hasOwnProperty(variable)) {
+                        doc[variable] = currentPlaySong[variable];
+                    }
+                }
+                // 存储喜欢的歌曲的信息到db
+                this.$db.tableData.insert(doc,(err,newDoc) => {
+                    console.log(newDoc);
+                })
+                this.$db.tableData.find({},(err,docs) => {
+                    console.log(docs);
+                })
+            }
+        },
+
+        // 讨厌歌曲
+        audioHate(){
+            console.log(this.currentPlaySong);
+            this.playNext();//下一首歌
+        },
+
         // 监听播放完成
         playEnd(){
             // 监听播放完成
@@ -351,20 +411,20 @@ export default {
                 cancelAnimationFrame(this.timeInterval);
                 return;
             }
+            // div range播放进度条元素
             this.currPlayTime = parseInt(this.audioEle.currentTime);
             this.audioProgressEle.style.width = `${parseFloat(this.currPlayTime / this.songDuration) * 100}%`;
 
-            // input播放进度条元素
-            let ceil = Math.ceil(parseFloat(this.currPlayTime / this.songDuration) * 100);
+            // input range播放进度条元素
+            /*let ceil = Math.ceil(parseFloat(this.currPlayTime / this.songDuration) * 100);
             this.playProgressEle.style.backgroundSize = `${ceil}% 100%`;
-            this.audioProgressVal = ceil;
+            this.audioProgressVal = ceil;*/
         },
 
         // 返回播放时长
         playTime(){
             this.audioEle.addEventListener("canplay", () => {
                 this.songDuration = parseInt(this.audioEle.duration);
-                // console.log(this.songDuration);
             });
         },
 
@@ -374,14 +434,13 @@ export default {
             this.endPlay();
             // 获取计算点击位置的进度条百分比值
             let {target,offsetX} = e;
-            let progressTotal = this.$tool.getEelUnit(target,'width');
+            let progressTotal = this.$tool.getEelUnit(this.audioParentEle,'width');
             let percentage = (offsetX / progressTotal);
-            console.log(percentage,target);
+
             // 设置播放进度条显示
             this.audioProgressEle.style.width = `${parseFloat(percentage) * 100}%`;
             // 指定播放时间开始播放
             this.audioEle.currentTime = parseInt(percentage * this.audioEle.duration);
-            // console.log(percentage * this.audioEle.duration / progressTotal);
 
             this.audioEle.play();//开始播放音乐
             this.albumStartRotate();//专辑图片开始旋转

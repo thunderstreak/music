@@ -6,7 +6,10 @@
 
 <script>
 export default {
-    name: 'electron2'
+    name: 'Music',
+    data: () => ({
+        msg : 'Song Play'
+    }),
 }
 </script>
 
