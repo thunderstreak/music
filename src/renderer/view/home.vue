@@ -23,13 +23,13 @@
             </div>
         </div>
         <div class="hero-play-audio">
-            <img class="hero-play-audios" ref="albumImg" @click="playPaused" draggable="false" :src="currentPlaySong.albumisrc ? currentPlaySong.albumisrc : placeholderImg" alt="">
+            <img class="hero-play-audios" ref="albumImgEle" @click="playPaused" draggable="false" :src="currentPlaySong.albumisrc ? currentPlaySong.albumisrc : placeholderImg" alt="">
             <div class="hero-play-album-name">
                 {{currentPlaySong.name}}-{{currentPlaySong.songname}}
             </div>
 
             <!-- <img draggable="false" @click="playPaused" class="hero-play-audios" src="~@/assets/images/index-logo.svg" alt="Index portal blue"> -->
-            <audio ref="audio"></audio>
+            <audio ref="audioEle"></audio>
         </div>
 
         <div class="hero-play-panel">
@@ -40,7 +40,7 @@
             </div>
             <!-- 播放进度条 -->
             <div class="hero-play-progress" @click="adjustProgress($event)">
-                <div ref="audioProgress" class="hero-play-progress-bar"></div>
+                <div ref="audioProgressEle" class="hero-play-progress-bar"></div>
             </div>
             <!-- 播放控制 -->
             <div class="hero-play-controls">
@@ -52,11 +52,14 @@
                 <div class="hero-play-controls-playvoice" :class="[isVoice ? 'voice-off' : 'voice-on']" title="禁音" @click="closedSound"></div>
                 <!-- 音量大小 -->
                 <div class="hero-play-controls-playtracks" @click="playVolume($event)">
-                    <div class="playtracks-progress" ref="audiotracks">
+                    <div class="playtracks-progress" ref="audiotracksEle">
                         <div class="playtracks-flag"></div>
                     </div>
                 </div>
 
+                <div class="hero-play-controls-playrange">
+                    <input ref="audioRangeEle" class="playrange-input iptrange" type="range" name="" value="0" max="100" min="0" step="1" v-model="audioRangeVal" @input="playRange">
+                </div>
             </div>
         </div>
 
@@ -76,10 +79,13 @@ export default {
         isVoice         :false,//是否禁音
         isPlay          :true,//是否播放
         placeholderImg  :placeholderImg,//默认专辑图片
-        audioProgress   :'',//audio进度条
-        audio           :'',//audio对象
-        audiotracks     :'',//音轨对象
-        albumImg        :'',//专辑图片对象
+        audioProgressEle:'',//音频进度条
+        audioEle        :'',//音频元素对象
+        audiotracksEle  :'',//音轨元素对象
+        audioRangeVal   :50,//音轨值
+        audioRangeEle   :'',//input音轨元素对象
+
+        albumImgEle     :'',//专辑图片元素对象
         defaultVolume   :0.5,//默认音量值
         searchVal       :'',//搜索字段
         playSonglist    :[],//播放列表
@@ -105,18 +111,21 @@ export default {
        })();
     },
     mounted(){
-        this.audio          = this.$refs.audio;
-        this.albumImg       = this.$refs.albumImg;
-        this.audioProgress  = this.$refs.audioProgress;
-        this.audiotracks    = this.$refs.audiotracks;
+        this.audioEle          = this.$refs.audioEle;
+        this.albumImgEle       = this.$refs.albumImgEle;
+        this.audioProgressEle  = this.$refs.audioProgressEle;
+        this.audiotracksEle    = this.$refs.audiotracksEle;
+        this.audioRangeEle     = this.$refs.audioRangeEle;
 
-        // this.audio.src      = ogg;
-        // this.audio.loop = false;
-        this.audio.play();
+        // this.audioEle.src      = ogg;
+        // this.audioEle.loop = false;
+        this.audioEle.play();
         // console.log();
         this.getMusics();//获取音乐列表
         this.playEnd();//监听播放完成
         this.playTime();//获取当前播放时长
+
+        this.setRangeProgress();// 设置拖动条颜色
     },
     computed:{
 
@@ -124,14 +133,14 @@ export default {
     methods: {
         // 播放
         playPaused(){
-            // this.audio.paused ? this.audio.play() : this.audio.pause();
-            if(this.audio.paused){
+            // this.audioEle.paused ? this.audioEle.play() : this.audioEle.pause();
+            if(this.audioEle.paused){
                 this.isPlay = true;
-                this.audio.play();
+                this.audioEle.play();
                 this.albumStartRotate();//专辑旋转开始
             }else{
                 this.isPlay = false;
-                this.audio.pause();
+                this.audioEle.pause();
                 this.albumEndRotate();//专辑旋转暂停
             }
         },
@@ -264,13 +273,13 @@ export default {
             }
             console.log(this.playSonglist[this.currSongIndex]);
             this.currentPlaySong = this.playSonglist[this.currSongIndex];
-            this.audio.src = this.playSonglist[this.currSongIndex].src;
+            this.audioEle.src = this.playSonglist[this.currSongIndex].src;
             // 播放开始
-            this.audio.play();
+            this.audioEle.play();
             //获取歌词
             this.getLyric();
             // 获取歌曲长度(秒)
-            this.songDuration   = this.audio.duration;
+            this.songDuration   = this.audioEle.duration;
             // 获取当前播放时间
             this.getPlayCurrentTime();
         },
@@ -278,7 +287,7 @@ export default {
         endPlay(){
             cancelAnimationFrame(this.timeInterval);//清除获取当前播放时间
             this.isPlay = false;//是否播放状态为停止
-            this.audio.pause();//停止播放
+            this.audioEle.pause();//停止播放
             this.albumEndRotate();//专辑旋转暂停
         },
         // 下一首
@@ -292,29 +301,45 @@ export default {
         // 开启关闭声音
         closedSound(){
             if(this.isVoice){
-                this.audio.volume = this.defaultVolume;//开音
+                this.audioEle.volume = this.defaultVolume;//开音
                 this.isVoice = false;
             }else{
-                this.audio.volume = 0;//禁音
+                this.audioEle.volume = 0;//禁音
                 this.isVoice = true;
             }
-            console.log(this.audio.muted);
+            console.log(this.audioEle.muted);
         },
-        // 音量大小
+        // 设置音量大小
         playVolume(e){
             let {target,offsetX} = e;
             let tracksTotal = this.$tool.getEelUnit(target,'width');
             let percentage = parseFloat(offsetX / tracksTotal);
             console.log(percentage);
             // 设置音量进度指示条
-            this.audiotracks.style.width = `${percentage * 100}%`;
+            this.audiotracksEle.style.width = `${percentage * 100}%`;
             // 设置音量
-            this.audio.volume = percentage;
+            this.audioEle.volume = percentage;
+        },
+        // 设置音量大小
+        playRange(){
+            // 设置拖动条颜色
+            this.setRangeProgress();
+            // 设置音量大小
+            this.audioEle.volume = this.audioRangeVal / 100;
+            if(this.audioRangeVal == 0){
+                this.isVoice = true;
+            }else{
+                this.isVoice = false;
+            }
+        },
+        // 设置拖动条颜色
+        setRangeProgress(){
+            this.audioRangeEle.style.backgroundSize = `${this.audioRangeVal}% 100%`;
         },
         // 监听播放完成
         playEnd(){
             // 监听播放完成
-            this.audio.addEventListener('ended', () => {
+            this.audioEle.addEventListener('ended', () => {
                 this.playNext();//播放下一首
             }, false);
         },
@@ -327,13 +352,13 @@ export default {
                 cancelAnimationFrame(this.timeInterval);
                 return;
             }
-            this.currPlayTime = parseInt(this.audio.currentTime);
-            this.audioProgress.style.width = `${parseFloat(this.currPlayTime / this.songDuration) * 100}%`;
+            this.currPlayTime = parseInt(this.audioEle.currentTime);
+            this.audioProgressEle.style.width = `${parseFloat(this.currPlayTime / this.songDuration) * 100}%`;
         },
         // 返回播放时长
         playTime(){
-            this.audio.addEventListener("canplay", () => {
-                this.songDuration = parseInt(this.audio.duration);
+            this.audioEle.addEventListener("canplay", () => {
+                this.songDuration = parseInt(this.audioEle.duration);
                 // console.log(this.songDuration);
             });
         },
@@ -345,13 +370,14 @@ export default {
             let {target,offsetX} = e;
             let progressTotal = this.$tool.getEelUnit(target,'width');
             let percentage = (offsetX / progressTotal);
+            console.log(percentage,target);
             // 设置播放进度条显示
-            this.audioProgress.style.width = `${parseFloat(percentage) * 100}%`;
+            this.audioProgressEle.style.width = `${parseFloat(percentage) * 100}%`;
             // 指定播放时间开始播放
-            this.audio.currentTime = parseInt(percentage * this.audio.duration);
-            // console.log(percentage * this.audio.duration / progressTotal);
+            this.audioEle.currentTime = parseInt(percentage * this.audioEle.duration);
+            // console.log(percentage * this.audioEle.duration / progressTotal);
 
-            this.audio.play();//开始播放音乐
+            this.audioEle.play();//开始播放音乐
             this.albumStartRotate();//专辑图片开始旋转
             this.getPlayCurrentTime();//重新获取当前播放时间
             this.isPlay = true;//是否播放状态为播放
@@ -359,7 +385,7 @@ export default {
         // 专辑图片开始旋转
         albumStartRotate(){
             this.albumInterval = requestAnimFrame(this.albumStartRotate);
-            this.albumImg.style.transform = `rotate(${this.albumRotateDeg}deg)`;
+            this.albumImgEle.style.transform = `rotate(${this.albumRotateDeg}deg)`;
             this.albumRotateDeg += .5;
             if(this.albumRotateDeg > 360){
                 this.albumRotateDeg = 0;

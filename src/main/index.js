@@ -28,8 +28,8 @@ function createWindow() {
         frame           : false,//设置为 false 时可以创建一个Frameless Window.
         resizable       : false,//不允许改变窗口尺寸
         webPreferences  : {
-            webSecurity : false//用于本地跨域访问
-            devTools    : false,
+            webSecurity : false,//用于本地跨域访问
+            // devTools    : false,
         },
     })
     mainWindow.setMenu(null)
