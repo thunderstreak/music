@@ -318,6 +318,7 @@ export default {
          * @param  {[type]} playSong           [需要播放的歌曲对象]
          */
         startPlay(playType = 'random',playSong){
+            this.isPlay = true;
             this.audioProgressEle.style.width = `0%`;
             // 旋转专辑图片
             this.albumStartRotate();
@@ -377,8 +378,8 @@ export default {
         playNext(){
             this.acceptSonglist.push(this.playSonglist[0]);
             this.playSonglist.splice(0,1);
-            this.startPlay();//开始播放
             this.albumEndRotate();//清除专辑图片动画
+            this.startPlay();//开始播放
             this.AudioBufferedVal = 1;//默认缓冲值从1开始
             this.searchVal = '';//清空搜索
 
