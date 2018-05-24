@@ -130,9 +130,6 @@ export default {
         searchList      :[],//查询到歌曲的结果列表
         isShowList      :false,//是否显示播放列表
 
-        generateR       :0,
-        generateG       :0,
-        generateB       :0,
     }),
     created(){
         window.requestAnimFrame = (function(){
@@ -190,7 +187,7 @@ export default {
             if(eventType == 'blur'){
                 setTimeout(()=>{
                     this.isShowList = false;
-                },500);
+                },250);
                 return
             }
             this.$http({
@@ -362,6 +359,7 @@ export default {
                 }
             }
 
+            this.changeBackgroundColor();//随机改变背景颜色
             //获取歌词
             // this.getLyric();
 
@@ -528,28 +526,26 @@ export default {
 
         // 根据歌曲缓慢改变背景颜色
         changeBackgroundColor(){
-            this.bgcolorInterval = requestAnimFrame(this.changeBackgroundColor);
+            // this.bgcolorInterval = requestAnimFrame(this.changeBackgroundColor);
             // let generateR = Math.ceil(Math.random() * 100);
             // let generateG = Math.ceil(Math.random() * 100);
             // let generateB = Math.ceil(Math.random() * 100);
 
-
-            if(this.generateR >= 100){
-                this.generateR -= 0.5;
-            }else{
-                this.generateR += 0.5;
-            }
-            if(this.generateG >= 100){
-                this.generateG = 0;
-            }else{
-
-            }
-            if(this.generateB >= 100){
-                this.generateB = 0;
-            }
-
-            let R = `rgb(${this.generateR},${this.generateG},${this.generateB})`;
-            this.heroBoxEle.style.backgroundImage = `radial-gradient(ellipse closest-side at 50% 50%, ${R}, rgb(54,56,59) 25%, rgb(52,50,51))`;
+            let theColor = [
+                ['#693e44','#3c5d90','#000d38'],
+                ['#345e44','#001029','#000d38'],
+                ['#823e54','#290020','#000d38'],
+                ['#393e44','#020000','#46102b'],
+                ['#7ba1ce','#88522f','#523951'],
+                ['#3c7ece','#552f88','#523939'],
+                ['#8e9296','#31283c','#2e2246'],
+                ['#8e9296','#31283c','#2e2246'],
+                ['#1da047','#000000','#25290f'],
+                ['#1da047','#000000','#25290f'],
+                ['#d2272e','#4c4429','#290f26'],
+            ];
+            let random = Math.ceil(Math.random() * 10);
+            this.heroBoxEle.style.backgroundImage = `radial-gradient(ellipse closest-side at 50% 50%, ${theColor[random][0]}, ${theColor[random][1]} 25%, ${theColor[random][2]})`;
 
         },
 
