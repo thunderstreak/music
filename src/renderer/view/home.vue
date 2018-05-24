@@ -39,6 +39,7 @@
             </div>
             <!-- 播放进度条 -->
             <div class="hero-play-progress" ref="audioParentEle" @click="adjustProgress($event)">
+                <div ref="audioBufferedEle" class="hero-play-progress-buffered"></div>
                 <div ref="audioProgressEle" class="hero-play-progress-bar"></div>
             </div>
             <!-- 播放控制 -->
@@ -85,6 +86,7 @@ export default {
         isVoice         :false,//是否禁音
         isPlay          :true,//是否播放
         placeholderImg  :placeholderImg,//默认专辑图片
+        audioBufferedEle:'',//音频缓冲进度条
         audioProgressEle:'',//音频进度条元素
         audioParentEle  :'',//音频进度条父元素
 
@@ -99,13 +101,12 @@ export default {
         acceptSonglist  :[],//播放完成后存储的列表
         songDuration    :0,//歌曲总时长
         currPlayTime    :0,//当前歌曲播放时间
-        transitionTime  :0.2,//进度条过渡时长
         albumRotateDeg  :0,//专辑图片旋转度
         timeInterval    :'',//
         albumInterval   :'',//
 
         AudioPlayer     :'',//new audio 播放器对象
-        AudioBuffered   :0,//audio 以缓冲的百分比
+        AudioBufferedVal:0,//audio 以缓冲的百分比
 
         tableData       :'',//本地数据库
     }),
@@ -129,6 +130,7 @@ export default {
     mounted(){
         this.albumImgEle       = this.$refs.albumImgEle;
         this.audioProgressEle  = this.$refs.audioProgressEle;
+        this.audioBufferedEle  = this.$refs.audioBufferedEle;
         this.audioParentEle    = this.$refs.audioParentEle;
         this.audioRangeEle     = this.$refs.audioRangeEle;
 
@@ -297,10 +299,11 @@ export default {
             this.AudioPlayer.ontimeupdate = () => {
                 if(this.AudioPlayer.readyState == 4){
                     // 如果歌曲已缓冲100%
-                    // if(this.AudioBuffered == 100){
+                    // if(this.AudioBufferedVal == 100){
                     //     return;
                     // }
-                    this.AudioBuffered = Math.round(this.AudioPlayer.buffered.end(0) / this.AudioPlayer.duration * 100);//歌曲缓冲百分值
+                    this.AudioBufferedVal = Math.round(this.AudioPlayer.buffered.end(0) / this.AudioPlayer.duration * 100);//歌曲缓冲百分值
+                    this.audioBufferedEle.style.width = `${this.AudioBufferedVal}%`;
                     this.songDuration = this.AudioPlayer.duration;//音乐总时长(秒)
 
                     // div range 根据当前播放时间设置播放进度条百分值元素
@@ -324,11 +327,11 @@ export default {
 
         // 下一首
         playNext(){
-            // console.log('next');
             this.acceptSonglist.push(this.playSonglist[0]);
             this.playSonglist.splice(0,1);
             this.startPlay();//开始播放
             this.albumEndRotate();//清除专辑图片动画
+            this.AudioBufferedVal = 0;
 
             //根据查询的数据重置是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
             this.tableData.find({songmid:this.currentPlaySong.songmid}, (err,doc) => {

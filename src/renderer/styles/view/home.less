@@ -124,23 +124,31 @@
         }
         // 进度条
         .hero-play-progress {
-            padding: 1px 0;
-            margin: 0 15px;
+            // padding: 1px 0;
+            margin: 1px 15px;
             height: 3px;
             background: #1e2833;
             border-radius: 2px;
             cursor: pointer;
-            .hero-play-progress-bar{
+            position: relative;
+            >div{
                 width: 0;
                 height: 3px;
                 border-radius: 1px;
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+            // 音乐进度条
+            .hero-play-progress-bar{
                 background: #dda032;
             }
-            .transition-effect{
-                transition: .2s;
+            // buffered 音乐缓冲
+            .hero-play-progress-buffered{
+                background: #434c56;
             }
         }
-        
+
         // 仪表盘
         .hero-play-controls{
             height: 20px;
