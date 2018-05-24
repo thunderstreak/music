@@ -41,13 +41,13 @@
       ]
     },
     "mac": {
-      "icon": "build/icons/icon.icns"
+      "icon": "build/icons/Player.icns"
     },
     "win": {
-      "icon": "build/icons/icon.ico"
+      "icon": "build/icons/Player.ico"
     },
     "linux": {
-      "icon": "build/icons"
+      "icon": "build/Player"
     }
   },
   "dependencies": {

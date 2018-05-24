@@ -1,13 +1,24 @@
 <template lang="html">
-    <div class="hero-box">
+    <div class="hero-box" ref="heroBoxEle">
         <div class="hero-gesture">
+            <div class="hero-gesture-logo" title="SongPlay"></div>
+            <!-- 手势区域 -->
             <div class="hero-gesture-box">
                 <div class="hero-gesture-search">
-                    <input class="hero-gesture-search-ipt" type="text" name="" value="" v-model="searchVal" @change="searchMusics">
+                    <input class="hero-gesture-search-ipt" :class="[isShowList ? 'border-ipt' : '']" type="text" name="" value="" v-model="searchVal" @change="searchMusics('change')"  @blur="searchMusics('blur')" placeholder="搜索歌曲/歌手">
+                    <transition name="slide-fade">
+                        <ul class="hero-gesture-search-res" v-show="isShowList">
+                            <li class="res-list" v-for="item in searchList" @click="selectPlaySong(item)">
+                                {{item.singer[0].name}}-{{item.songname}}
+                            </li>
+                        </ul>
+                    </transition>
                 </div>
             </div>
-            <div class="hero-gesture-closed" @click="closedWindow" title="关闭">x</div>
+            <div class="hero-gesture-hide hero-gesture-base" @click="operantWindow('hide')" title="隐藏"></div>
+            <div class="hero-gesture-closed hero-gesture-base" @click="operantWindow('closed')" title="关闭"></div>
         </div>
+        <!-- 中心旋转图片 -->
         <div class="hero-logo" aria-hidden="true">
             <div class="hero-logo-circles">
                 <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-red-semi.svg" alt="Index portal red semi">
@@ -22,6 +33,7 @@
                 <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-blue.svg" alt="Index portal blue">
             </div>
         </div>
+        <!-- 中心专辑图片 -->
         <div class="hero-play-audio">
             <img class="hero-play-audios" ref="albumImgEle" @click="playPaused" draggable="false" :src="currentPlaySong.albumisrc ? currentPlaySong.albumisrc : placeholderImg" alt="">
             <div class="hero-play-album-name">
@@ -95,20 +107,32 @@ export default {
 
         albumImgEle     :'',//专辑图片元素对象
         defaultVolume   :0.5,//默认音量值
-        searchVal       :'',//搜索字段
+
         playSonglist    :[],//播放列表
         currSongIndex   :0,//当前播放歌曲的下标
         acceptSonglist  :[],//播放完成后存储的列表
         songDuration    :0,//歌曲总时长
         currPlayTime    :0,//当前歌曲播放时间
         albumRotateDeg  :0,//专辑图片旋转度
+
         timeInterval    :'',//
         albumInterval   :'',//
+        bgcolorInterval :'',//
+        bgcolorVal      :'',//背景颜色值
+        heroBoxEle      :'',//主体背景元素
 
         AudioPlayer     :'',//new audio 播放器对象
-        AudioBufferedVal:0,//audio 以缓冲的百分比
+        AudioBufferedVal:1,//audio 以缓冲的百分比
 
         tableData       :'',//本地数据库
+
+        searchVal       :'',//搜索字段
+        searchList      :[],//查询到歌曲的结果列表
+        isShowList      :false,//是否显示播放列表
+
+        generateR       :0,
+        generateG       :0,
+        generateB       :0,
     }),
     created(){
         window.requestAnimFrame = (function(){
@@ -133,6 +157,7 @@ export default {
         this.audioBufferedEle  = this.$refs.audioBufferedEle;
         this.audioParentEle    = this.$refs.audioParentEle;
         this.audioRangeEle     = this.$refs.audioRangeEle;
+        this.heroBoxEle        = this.$refs.heroBoxEle;
 
         this.AudioPlayer = new Audio();
 
@@ -160,11 +185,18 @@ export default {
         },
 
         // 搜索音乐
-        searchMusics(){
+        searchMusics(eventType){
+            console.log(eventType);
+            if(eventType == 'blur'){
+                setTimeout(()=>{
+                    this.isShowList = false;
+                },500);
+                return
+            }
             this.$http({
-                url:'https://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp',
-                method:'get',
-                params:{
+                url     :'https://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp',
+                method  :'get',
+                params  :{
                     g_tk        :'5381',
                     uin         :'0',
                     format      :'json',
@@ -181,18 +213,20 @@ export default {
                     ie          :'utf-8',
                     sem         :'1',
                     aggr        :'0',
-                    perpage     :'20',
-                    n           :'20',
+                    perpage     :'10',
+                    n           :'10',
                     p           :'1',
                     remoteplace :'txt.mqq.all',
                     _           :new Date().getTime()
                 }
             }).then((res)=>{
-                console.log(res.data);
+                let data        = res.data.data;
+                this.searchList = data.song.list;
+                this.isShowList = true;//显示搜索结果列表
             })
         },
 
-        // 获取音乐
+        // 获取音乐列表
         getMusics(){
             this.$http({
                 url:'https://c.y.qq.com/v8/fcg-bin/fcg_v8_toplist_cp.fcg',
@@ -217,25 +251,30 @@ export default {
                 for (var i = 0; i < songlist.length; i++) {
                     let data = songlist[i].data;
                     if(data.songmid){
-                        this.playSonglist.push({
-                            src         :`http://ws.stream.qqmusic.qq.com/C100${data.songmid}.m4a?fromtag=0&guid=126548448`,
-                            name        :data.singer[0].name,
-                            songname    :data.songname,
-                            songorig    :data.songorig,
-                            songmid     :data.songmid,
-                            songid      :data.songid,
-
-                            albumisrc   :`http://imgcache.qq.com/music/photo/album_300/${data.albumid%100}/300_albumpic_${data.albumid}_0.jpg`,
-                            albumid     :data.albumid,
-                            albummid    :data.albummid,
-                            albumname   :data.albumname
-                        });
+                        this.playSonglist.push(this.setPlaySongInfo(data));
                     }
                 }
                 // this.playSonglist.splice(0,0,{src:ogg});
                 this.startPlay('random');//开始播放
 
             })
+        },
+
+        // 设置播放歌曲信息
+        setPlaySongInfo(data){
+            return {
+                src         :`http://ws.stream.qqmusic.qq.com/C100${data.songmid}.m4a?fromtag=0&guid=126548448`,
+                name        :data.singer[0].name,
+                songname    :data.songname,
+                songorig    :data.songorig,
+                songmid     :data.songmid,
+                songid      :data.songid,
+
+                albumisrc   :`http://imgcache.qq.com/music/photo/album_300/${data.albumid%100}/300_albumpic_${data.albumid}_0.jpg`,
+                albumid     :data.albumid,
+                albummid    :data.albummid,
+                albumname   :data.albumname
+            }
         },
 
         // 获取歌词
@@ -276,22 +315,32 @@ export default {
 
         },
 
-        // 开始播放 type:[order:'顺序播放',random:'随机播放',loop:'循环播放']
-        startPlay(type = 'order'){
-            // 旋转图片
+        /**
+         * [开始播放歌曲]
+         * @param  {String} [playType='order'] [order:'顺序播放',random:'随机播放',loop:'循环播放']
+         * @param  {[type]} playSong           [需要播放的歌曲对象]
+         */
+        startPlay(playType = 'random',playSong){
+            this.audioProgressEle.style.width = `0%`;
+            // 旋转专辑图片
             this.albumStartRotate();
 
-            if(type == 'order'){
+            if(playType == 'order'){
                 this.currSongIndex = 0;
-            }else if(type == 'random'){
+            }else if(playType == 'random'){
                 // 设置随机播放第一首歌
                 this.currSongIndex  = Math.floor(Math.random() * this.playSonglist.length);
             }
             // console.log(this.playSonglist[this.currSongIndex]);
-            this.currentPlaySong    = this.playSonglist[this.currSongIndex];//当前播放的歌曲详细信息
+            if(playSong){
+                this.currentPlaySong    = this.setPlaySongInfo(playSong);
+                this.AudioPlayer.src    = this.currentPlaySong.src;//当前播放歌曲的src
+            }else{
+                this.currentPlaySong    = this.playSonglist[this.currSongIndex];//当前播放的歌曲详细信息
+                // new audio object
+                this.AudioPlayer.src    = this.playSonglist[this.currSongIndex].src;//当前播放歌曲的src
+            }
 
-            // new audio object
-            this.AudioPlayer.src    = this.playSonglist[this.currSongIndex].src;//当前播放歌曲的src
             this.AudioPlayer.load();
 
             // 开始播放并监听播放位置改变时
@@ -309,6 +358,7 @@ export default {
                     // div range 根据当前播放时间设置播放进度条百分值元素
                     this.currPlayTime = parseInt(this.AudioPlayer.currentTime);
                     this.audioProgressEle.style.width = `${parseFloat(this.currPlayTime / this.songDuration) * 100}%`;
+
                 }
             }
 
@@ -331,11 +381,11 @@ export default {
             this.playSonglist.splice(0,1);
             this.startPlay();//开始播放
             this.albumEndRotate();//清除专辑图片动画
-            this.AudioBufferedVal = 0;
+            this.AudioBufferedVal = 1;//默认缓冲值从1开始
+            this.searchVal = '';//清空搜索
 
             //根据查询的数据重置是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
             this.tableData.find({songmid:this.currentPlaySong.songmid}, (err,doc) => {
-                // console.log(err,doc);
                 this.isLike = doc.length != 0 ? true : false;
             })
         },
@@ -462,14 +512,70 @@ export default {
             }
         },
 
-        // 关闭窗口
-        closedWindow(){
+        // 选中播放歌曲
+        selectPlaySong(data){
+            console.log(data);
+            this.searchVal = `${data.singer[0].name}-${data.songname}`;
+            this.isShowList = false;//隐藏搜索列表
+            this.albumEndRotate();//清除专辑图片动画
+            this.startPlay('order',data);
+
+            //根据查询的数据重置是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
+            this.tableData.find({songmid:data.songmid}, (err,doc) => {
+                this.isLike = doc.length != 0 ? true : false;
+            })
+        },
+
+        // 根据歌曲缓慢改变背景颜色
+        changeBackgroundColor(){
+            this.bgcolorInterval = requestAnimFrame(this.changeBackgroundColor);
+            // let generateR = Math.ceil(Math.random() * 100);
+            // let generateG = Math.ceil(Math.random() * 100);
+            // let generateB = Math.ceil(Math.random() * 100);
+
+
+            if(this.generateR >= 100){
+                this.generateR -= 0.5;
+            }else{
+                this.generateR += 0.5;
+            }
+            if(this.generateG >= 100){
+                this.generateG = 0;
+            }else{
+
+            }
+            if(this.generateB >= 100){
+                this.generateB = 0;
+            }
+
+            let R = `rgb(${this.generateR},${this.generateG},${this.generateB})`;
+            this.heroBoxEle.style.backgroundImage = `radial-gradient(ellipse closest-side at 50% 50%, ${R}, rgb(54,56,59) 25%, rgb(52,50,51))`;
+
+        },
+
+        // 操作窗口
+        operantWindow(type){
             console.log(ipc);
-            ipc.send('window-close');
+            if(type == 'hide'){
+                ipc.send('window-min');
+            }else if(type == 'closed'){
+                ipc.send('window-close');
+            }
         }
     }
 }
 </script>
 
 <style lang="css">
+.slide-fade-enter-active {
+  transition: all .25s ease;
+}
+.slide-fade-leave-active {
+  transition: all .25s ease;
+}
+.slide-fade-enter, .slide-fade-leave-to
+/* .slide-fade-leave-active for below version 2.1.8 */ {
+  transform: translateY(10px);
+  opacity: 0;
+}
 </style>
