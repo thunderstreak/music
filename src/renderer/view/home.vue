@@ -546,7 +546,7 @@ export default {
                 ['#d2272e','#4c4429','#290f26'],
             ];
             let random = Math.ceil(Math.random() * 10);
-            this.heroBoxEle.style.backgroundImage = `radial-gradient(ellipse closest-side at 50% 50%, ${theColor[random][0]}, ${theColor[random][1]} 25%, ${theColor[random][2]})`;
+            this.heroBoxEle.style.backgroundImage = `radial-gradient(circle farthest-corner at 50% 50%, ${theColor[random][0]}, ${theColor[random][1]} 50%, ${theColor[random][2]})`;
 
         },
 

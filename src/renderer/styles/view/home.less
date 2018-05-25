@@ -6,7 +6,7 @@
     transition: 0.5s;
     text-align: center;
     // background-image: radial-gradient(ellipse closest-side at 50% 50%, #393e44, #36383b 50%, #343233);
-    background-image: radial-gradient(ellipse closest-side at 50% 50%, rgb(57,62,68), rgb(54,56,59) 25%, rgb(52,50,51));
+    background-image: radial-gradient(circle closest-side at 50% 50%, rgb(57,62,68), rgb(54,56,59) 25%, rgb(52,50,51));
     background-repeat: no-repeat;
 
 
@@ -408,6 +408,11 @@
 }
 
 @keyframes hero-logo-circle {
+    100% {
+        transform: rotate(-1turn);
+    }
+}
+@keyframes hero-logo-circle-after{
     100% {
         transform: rotate(1turn);
     }
