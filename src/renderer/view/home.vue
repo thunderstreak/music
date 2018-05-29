@@ -81,7 +81,7 @@
             </div>
         </div>
 
-
+        <canvas ref="canvasPlayer" class="hero-play-canvas"></canvas>
     </div>
 </template>
 
@@ -130,6 +130,11 @@ export default {
         searchList      :[],//查询到歌曲的结果列表
         isShowList      :false,//是否显示播放列表
 
+        canvasPlayer    :'',//canvas
+        canvasCtx       :'',//canvas ctx
+        audioCtx        :'',//播放器上下文
+        analyser        :'',//音频分析器
+        mediaSource     :'',//媒体节点
     }),
     created(){
         window.requestAnimFrame = (function(){
@@ -156,7 +161,14 @@ export default {
         this.audioRangeEle     = this.$refs.audioRangeEle;
         this.heroBoxEle        = this.$refs.heroBoxEle;
 
-        this.AudioPlayer = new Audio();
+        this.canvasPlayer      = this.$refs.canvasPlayer;
+        this.canvasCtx         = this.canvasPlayer.getContext("2d");
+
+        this.AudioPlayer = new Audio();//创建播放对象
+
+        // 创建音频源连接的播放节点分析器
+        this.audioCtx    = new (window.AudioContext || window.webkitAudioContext)();
+        // this.analyser    = audioCtx.createAnalyser();
 
         this.getMusics();//获取音乐列表
         this.playEnd();//监听播放完成
@@ -343,6 +355,20 @@ export default {
 
             // 开始播放并监听播放位置改变时
             this.AudioPlayer.play();
+
+            // 闯将频谱分析器
+            this.analyser    = this.audioCtx.createAnalyser();
+            console.log(this.analyser);
+            this.mediaSource = this.audioCtx.createMediaElementSource(this.AudioPlayer);
+            //连接：source → analyser → destination
+            this.mediaSource.connect(this.analyser);
+            this.analyser.connect(this.audioCtx.destination);
+
+
+            // fftSize (Fast Fourier Transform) 是快速傅里叶变换，一般情况下是固定值2048，这个值可以决定音频频谱的密集程度。值大了，频谱就松散，值小就密集。
+            let dataArray = new Uint8Array(this.analyser.fftSize);//dataArray数组将用来放音频高低音不同区域的数据信息，当音频播放时，每一个时间节点，都有不同的音频数据，使用analyser.getByteFrequencyData(dataArray)将数据放入数组，用来进行频谱的可视化绘制。
+            console.log(this.analyser.frequencyBinCount);
+
             this.AudioPlayer.ontimeupdate = () => {
                 if(this.AudioPlayer.readyState == 4){
                     // 如果歌曲已缓冲100%
@@ -547,6 +573,13 @@ export default {
             ];
             let random = Math.ceil(Math.random() * 10);
             this.heroBoxEle.style.backgroundImage = `radial-gradient(circle farthest-corner at 50% 50%, ${theColor[random][0]}, ${theColor[random][1]} 50%, ${theColor[random][2]})`;
+
+        },
+
+        // canvas 频谱绘制
+        canvasDraw(){
+
+            canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
 
         },
 
