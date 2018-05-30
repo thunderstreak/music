@@ -78,31 +78,30 @@ export function voiceCircleSpectrum(canvasCtx,canvasPlayer,dataArray){
         canvasCtx.moveTo(x, y);
         //R * cos (PI/180*一次旋转的角度数) ,-R * sin (PI/180*一次旋转的角度数)
         canvasCtx.lineTo(
-            (Math.cos((i  + 90) / 180 * Math.PI) * (r + value) + x),
-            -Math.sin((i  + 90) / 180 * Math.PI) * (r + value) + y
+            (Math.cos((360) / 180 * Math.PI) * (r + value) + x),
+            -Math.sin((360) / 180 * Math.PI) * (r + value) + y
+
         );
         canvasCtx.stroke();
         canvasCtx.beginPath();
 
         //绘制右半边
-        canvasCtx.beginPath();
-        canvasCtx.lineWidth = 1;
-        canvasCtx.moveTo(x, y);
-        canvasCtx.lineTo(
-            (Math.sin((i * 0.5) / 180 * Math.PI) * (r + value) + x),
-            -Math.cos((i * 0.5) / 180 * Math.PI) * (r + value) + y
-        );
-        canvasCtx.stroke();
-        canvasCtx.beginPath();
+        // canvasCtx.beginPath();
+        // canvasCtx.lineWidth = 1;
+        // canvasCtx.moveTo(x, y);
+        // canvasCtx.lineTo(
+        //     (Math.sin((i * 0.705) / 180 * Math.PI) * (r + value) + x),
+        //     -Math.cos((i * 0.705) / 180 * Math.PI) * (r + value) + y
+        // );
+        // canvasCtx.stroke();
+        // canvasCtx.beginPath();
 
         //将缓冲区的数据绘制到Canvas上
-        //将缓冲区的数据绘制到C
-        // var heights = 100, widths = 400;
-        canvasCtx.beginPath();
-        for (var i = 0; i < width; i++) {
-            canvasCtx.lineTo(i + 100, 300 - (height / 2 * (dataArray[dataArray.length * i / width | 0] / 256 - 0.5)));
-        }
-        canvasCtx.stroke();
+        // canvasCtx.beginPath();
+        // for (var i = 0; i < width; i++) {
+        //     canvasCtx.lineTo(i + (x / 2), 300 - (height / 2 * (dataArray[dataArray.length * i / width | 0] / 256 - 0.5)));
+        // }
+        // canvasCtx.stroke();
 
     }
 
