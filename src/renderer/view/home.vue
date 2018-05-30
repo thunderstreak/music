@@ -89,7 +89,10 @@
 const {ipcRenderer: ipc} = require('electron');
 import ogg from '../assets/audios/horse.ogg';
 import mp3 from '../assets/audios/ConfessionBallon.mp3';
-import placeholderImg from '../assets/person_300.png'
+import placeholderImg from '../assets/person_300.png';
+import * as analyser from '../tools/analyser';
+import * as spectrum from '../tools/spectrum';
+console.log(spectrum);
 export default {
     name: 'index',
     data: () => ({
@@ -132,9 +135,14 @@ export default {
 
         canvasPlayer    :'',//canvas
         canvasCtx       :'',//canvas ctx
+        drawVisual      :'',//canvas draw requestAnimFrame
+
         audioCtx        :'',//播放器上下文
         analyser        :'',//音频分析器
         mediaSource     :'',//媒体节点
+
+        bufferLength    :'',//
+        dataArray       :'',//
     }),
     created(){
         window.requestAnimFrame = (function(){
@@ -164,17 +172,37 @@ export default {
         this.canvasPlayer      = this.$refs.canvasPlayer;
         this.canvasCtx         = this.canvasPlayer.getContext("2d");
 
-        this.AudioPlayer = new Audio();//创建播放对象
+        // 设置canvas宽高
+        this.canvasPlayer.setAttribute('width',document.body.clientWidth);
+        this.canvasPlayer.setAttribute('height',document.body.clientHeight);
 
-        // 创建音频源连接的播放节点分析器
-        this.audioCtx    = new (window.AudioContext || window.webkitAudioContext)();
-        // this.analyser    = audioCtx.createAnalyser();
+        this.AudioPlayer = new Audio();//创建播放对象
 
         this.getMusics();//获取音乐列表
         this.playEnd();//监听播放完成
         this.playTime();//获取当前播放时长
-
         this.setRangeProgress();// 设置拖动条颜色
+
+        // 创建音频源连接的播放节点分析器
+        this.audioCtx    = new (window.AudioContext || window.webkitAudioContext)();
+        // 闯将频谱分析器
+        this.analyser    = this.audioCtx.createAnalyser();
+        this.mediaSource = this.audioCtx.createMediaElementSource(this.AudioPlayer);
+        //连接：source → analyser → destination
+        this.mediaSource.connect(this.analyser);
+        this.analyser.connect(this.audioCtx.destination);
+
+        // fftSize (Fast Fourier Transform) 是快速傅里叶变换，一般情况下是固定值2048，这个值可以决定音频频谱的密集程度。值大了，频谱就松散，值小就密集。
+        // this.analyser.fftSize = 4096;
+        this.bufferLength = this.analyser.frequencyBinCount;
+        this.dataArray = new Uint8Array(this.bufferLength);//dataArray数组将用来放音频高低音不同区域的数据信息，当音频播放时，每一个时间节点，都有不同的音频数据，使用analyser.getByteFrequencyData(dataArray)将数据放入数组，用来进行频谱的可视化绘制。
+
+        // 清除canvas绘制区域
+        this.canvasCtx.clearRect(0, 0, this.canvasPlayer.width, this.canvasPlayer.height);
+
+        this.canvasDraw()
+
+
     },
     computed:{
 
@@ -355,19 +383,6 @@ export default {
 
             // 开始播放并监听播放位置改变时
             this.AudioPlayer.play();
-
-            // 闯将频谱分析器
-            this.analyser    = this.audioCtx.createAnalyser();
-            console.log(this.analyser);
-            this.mediaSource = this.audioCtx.createMediaElementSource(this.AudioPlayer);
-            //连接：source → analyser → destination
-            this.mediaSource.connect(this.analyser);
-            this.analyser.connect(this.audioCtx.destination);
-
-
-            // fftSize (Fast Fourier Transform) 是快速傅里叶变换，一般情况下是固定值2048，这个值可以决定音频频谱的密集程度。值大了，频谱就松散，值小就密集。
-            let dataArray = new Uint8Array(this.analyser.fftSize);//dataArray数组将用来放音频高低音不同区域的数据信息，当音频播放时，每一个时间节点，都有不同的音频数据，使用analyser.getByteFrequencyData(dataArray)将数据放入数组，用来进行频谱的可视化绘制。
-            console.log(this.analyser.frequencyBinCount);
 
             this.AudioPlayer.ontimeupdate = () => {
                 if(this.AudioPlayer.readyState == 4){
@@ -571,15 +586,21 @@ export default {
                 ['#1da047','#000000','#25290f'],
                 ['#d2272e','#4c4429','#290f26'],
             ];
-            let random = Math.ceil(Math.random() * 10);
+            let random = 10;//Math.ceil(Math.random() * 10);
             this.heroBoxEle.style.backgroundImage = `radial-gradient(circle farthest-corner at 50% 50%, ${theColor[random][0]}, ${theColor[random][1]} 50%, ${theColor[random][2]})`;
 
         },
 
         // canvas 频谱绘制
         canvasDraw(){
+            let dataArray = this.dataArray;
+            let bufferLength = this.bufferLength;
 
-            canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+            this.drawVisual = requestAnimationFrame(this.canvasDraw);
+
+            this.analyser.getByteFrequencyData(dataArray);
+
+            spectrum.voiceCircleSpectrum(this.canvasCtx,this.canvasPlayer,dataArray,bufferLength);
 
         },
 
