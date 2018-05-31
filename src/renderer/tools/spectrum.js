@@ -78,23 +78,23 @@ export function voiceCircleSpectrum(canvasCtx,canvasPlayer,dataArray){
         canvasCtx.moveTo(x, y);
         //R * cos (PI/180*一次旋转的角度数) ,-R * sin (PI/180*一次旋转的角度数)
         canvasCtx.lineTo(
-            (Math.cos((360) / 180 * Math.PI) * (r + value) + x),
-            -Math.sin((360) / 180 * Math.PI) * (r + value) + y
+            (Math.cos((i + 90) / 180 * Math.PI) * (r + value) + x),
+            -Math.sin((i + 90) / 180 * Math.PI) * (r + value) + y
 
         );
         canvasCtx.stroke();
         canvasCtx.beginPath();
 
         //绘制右半边
-        // canvasCtx.beginPath();
-        // canvasCtx.lineWidth = 1;
-        // canvasCtx.moveTo(x, y);
-        // canvasCtx.lineTo(
-        //     (Math.sin((i * 0.705) / 180 * Math.PI) * (r + value) + x),
-        //     -Math.cos((i * 0.705) / 180 * Math.PI) * (r + value) + y
-        // );
-        // canvasCtx.stroke();
-        // canvasCtx.beginPath();
+        canvasCtx.beginPath();
+        canvasCtx.lineWidth = 1;
+        canvasCtx.moveTo(x, y);
+        canvasCtx.lineTo(
+            (Math.sin((i * 0.705) / 180 * Math.PI) * (r + value) + x),
+            -Math.cos((i * 0.705) / 180 * Math.PI) * (r + value) + y
+        );
+        canvasCtx.stroke();
+        canvasCtx.beginPath();
 
         //将缓冲区的数据绘制到Canvas上
         // canvasCtx.beginPath();

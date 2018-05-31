@@ -4,18 +4,18 @@
         <!-- 手势区域 -->
         <div class="hero-gesture-box">
             <div class="hero-gesture-search">
-                <input class="hero-gesture-search-ipt" :class="[isShowList ? 'border-ipt' : '']" type="text" name="" value="" v-model="searchVal" @change="searchMusics('change')"  @blur="searchMusics('blur')" placeholder="搜索歌曲/歌手">
+                <input class="hero-gesture-search-ipt" :class="[isShowList ? 'border-ipt' : '']" type="text" name="" value="" v-model="searchVal" @change.stop="searchMusics('change')"  @blur.stop="searchMusics('blur')" placeholder="搜索歌曲/歌手">
                 <transition name="slide-fade">
                     <ul class="hero-gesture-search-res" v-show="isShowList">
-                        <li class="res-list" v-for="item in searchList" @click="selectPlaySong(item)">
+                        <li class="res-list" v-for="item in searchList" @click.stop="selectPlaySong(item)">
                             {{item.singer[0].name}}-{{item.songname}}
                         </li>
                     </ul>
                 </transition>
             </div>
         </div>
-        <div class="hero-gesture-hide hero-gesture-base" @click="operantWindow('hide')" title="隐藏"></div>
-        <div class="hero-gesture-closed hero-gesture-base" @click="operantWindow('closed')" title="关闭"></div>
+        <div class="hero-gesture-hide hero-gesture-base" @click.stop="operantWindow('hide')" title="隐藏"></div>
+        <div class="hero-gesture-closed hero-gesture-base" @click.stop="operantWindow('closed')" title="关闭"></div>
     </section>
 </template>
 
@@ -74,4 +74,15 @@ export default {
 </script>
 
 <style lang="css">
+.slide-fade-enter-active {
+  transition: all .25s ease;
+}
+.slide-fade-leave-active {
+  transition: all .25s ease;
+}
+.slide-fade-enter, .slide-fade-leave-to
+/* .slide-fade-leave-active for below version 2.1.8 */ {
+  transform: translateY(10px);
+  opacity: 0;
+}
 </style>

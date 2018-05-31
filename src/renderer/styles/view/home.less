@@ -250,6 +250,7 @@
             }
 
             .hero-play-controls-right{
+                position: relative;
                 >div{
                     height: 20px;
                     display: inline-block;
@@ -278,6 +279,74 @@
                 .hero-play-controls-other{
                     width: 16px;
                     background-position: 0 -140px;
+                }
+                // 喜欢讨厌的歌曲列表
+                .hero-play-controls-more{
+                    position: absolute;
+                    right: 0;
+                    bottom: 35px;
+                    width: 200px;
+                    height: 250px;
+                    background: #fff;
+                    border-radius: 3px;
+                    overflow: hidden;
+
+                    &::after{
+                        // content: '';
+                        display: block;
+                        position: absolute;
+                        bottom: -7.5px;
+                        right: 0;
+
+                        width: 0;
+                        height: 0;
+                        border-left: 7.5px solid transparent;
+                        border-right: 7.5px solid transparent;
+                        border-top: 10px solid #fff;
+                    }
+                    .hero-play-controls-more-tab{
+                        .lessBoxFlexSB();
+                        transition: 0.25s;
+                        border-bottom:1px #f1f1f1 solid;
+                        .tab-list{
+                            transition: 0.25s;
+                            width: 50%;
+                            padding: 5px 0;
+                            &.activate{
+                                background: #f1f1f1;
+                            }
+                        }
+                    }
+                    .hero-play-controls-more-list{
+                        height: 220px;
+                        overflow: auto;
+                        font-size: 14px;
+                        .like-or-hate-list{
+                            .lessBoxFlexSB();
+                            padding: 5px 5px 5px 10px;
+                            border-bottom: 1px #f1f1f1 solid;
+                            cursor: default;
+                            &:hover{
+                                background: #eaeaea;
+                                border-bottom: 1px #eaeaea solid;
+                            }
+                            .list-play{
+                                text-overflow: ellipsis;
+                                overflow: hidden;
+                                white-space: nowrap;
+                                text-align: left;
+                                width: 175px;
+                            }
+                            .list-removed{
+                                width: 25px;
+                                background: url('../../assets/close-icon.png') no-repeat center;
+                                background-size: 15px;
+                            }
+                        }
+                        .like-or-hate-nodata{
+                            line-height: 220px;
+                        }
+                    }
                 }
             }
         }

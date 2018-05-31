@@ -18,7 +18,7 @@
         </div>
         <!-- 中心专辑图片 -->
         <div class="hero-play-audio">
-            <img class="hero-play-audios" ref="albumImgEle" @click="playPaused" draggable="false" :src="currentPlaySong.albumisrc ? currentPlaySong.albumisrc : placeholderImg" alt="">
+            <img class="hero-play-audios" ref="albumImgEle" @click.stop="playPaused" draggable="false" :src="currentPlaySong.albumisrc ? currentPlaySong.albumisrc : placeholderImg" alt="">
             <div class="hero-play-album-name">
                 {{currentPlaySong.name}}-{{currentPlaySong.songname}}
             </div>
@@ -35,7 +35,7 @@
                 <div class="hero-play-time-total">{{transformTime(songDuration)}}</div>
             </div>
             <!-- 播放进度条 -->
-            <div class="hero-play-progress" ref="audioParentEle" @click="adjustProgress($event)">
+            <div class="hero-play-progress" ref="audioParentEle" @click.stop="adjustProgress($event)">
                 <div ref="audioBufferedEle" class="hero-play-progress-buffered"></div>
                 <div ref="audioProgressEle" class="hero-play-progress-bar"></div>
             </div>
@@ -43,25 +43,42 @@
             <div class="hero-play-controls">
                 <div class="hero-play-controls-left">
                     <!-- 暂停，播放 -->
-                    <div class="hero-play-controls-playpaused" :class="[isPlay ? 'pused' : 'play']" @click="playPaused" :title="[isPlay ? '暂停' : '播放']"></div>
+                    <div class="hero-play-controls-playpaused" :class="[isPlay ? 'pused' : 'play']" @click.stop="playPaused" :title="[isPlay ? '暂停' : '播放']"></div>
                     <!-- 播放下一首 -->
-                    <div class="hero-play-controls-playnext" title="下一首" @click="playNext"></div>
+                    <div class="hero-play-controls-playnext" title="下一首" @click.stop="playNext"></div>
                     <!-- 禁音 -->
-                    <div class="hero-play-controls-playvoice" :class="[isVoice ? 'voice-off' : 'voice-on']" title="禁音" @click="closedSound"></div>
+                    <div class="hero-play-controls-playvoice" :class="[isVoice ? 'voice-off' : 'voice-on']" title="禁音" @click.stop="closedSound"></div>
                     <!-- 音量大小 -->
                     <div class="hero-play-controls-playrange">
                         <input ref="audioRangeEle" class="playrange-input iptrange" type="range" value="0" max="100" min="0" step="1" v-model="audioRangeVal" @input="playRange">
                     </div>
-
                 </div>
 
                 <div class="hero-play-controls-right">
                     <!-- 喜欢 -->
-                    <div class="hero-play-controls-like" :class="[isLike ? 'like' : 'hate']" :title="[isLike ? '已经喜欢' : '喜欢']" @click="audioLike"></div>
+                    <div class="hero-play-controls-like" :class="[isLike ? 'like' : 'hate']" :title="[isLike ? '已经喜欢' : '喜欢']" @click.stop="audioLike"></div>
                     <!-- 不喜欢 -->
-                    <div class="hero-play-controls-hate" title="讨厌" @click="audioHate"></div>
+                    <div class="hero-play-controls-hate" title="讨厌" @click.stop="audioHate"></div>
                     <!-- 其他 -->
-                    <div class="hero-play-controls-other" title="更多"></div>
+                    <div class="hero-play-controls-other" title="更多" @click.stop="audioMore"></div>
+                    <!-- 喜欢讨厌的歌曲列表 -->
+                    <transition name="slide-collect">
+                        <div class="hero-play-controls-more" v-show="isShowCollect">
+                            <div class="hero-play-controls-more-tab">
+                                <span class="tab-list" :class="[collectType == 'likes' ? 'activate' : '']" @click.stop="toggleList('likes')">Likes</span>
+                                <span class="tab-list" :class="[collectType == 'hates' ? 'activate' : '']" @click.stop="toggleList('hates')">Hates</span>
+                            </div>
+                            <!-- <transition-group name="slide-left" tag="ul" class="hero-play-controls-more-list"> -->
+                                <ul class="hero-play-controls-more-list">
+                                    <li class="like-or-hate-list" v-for="item in collectList" :key="item.id">
+                                        <span class="list-play" @click.stop="selectPlaySong(item)">{{item.name}}-{{item.songname}}</span>
+                                        <span class="list-removed" @click.stop="removedCollect(item)"></span>
+                                    </li>
+                                    <li class="like-or-hate-nodata" v-show="collectList.length == 0">no data</li>
+                                </ul>
+                            <!-- </transition-group> -->
+                        </div>
+                    </transition>
                 </div>
             </div>
         </div>
@@ -74,6 +91,7 @@
 import placeholderImg from '../assets/person_300.png';
 import * as analyser from '../tools/analyser';
 import * as spectrum from '../tools/spectrum';
+import * as songInfo from '../tools/songInfo';
 export default {
     name: 'index',
     data: () => ({
@@ -92,6 +110,7 @@ export default {
         albumImgEle     :'',//专辑图片元素对象
         defaultVolume   :0.5,//默认音量值
 
+        collectList     :[],//标记喜欢的歌曲列表
         playSonglist    :[],//播放列表
         currSongIndex   :0,//当前播放歌曲的下标
         acceptSonglist  :[],//播放完成后存储的列表
@@ -120,6 +139,9 @@ export default {
 
         bufferLength    :'',//
         dataArray       :'',//
+
+        isShowCollect   :false,//是否显示收藏
+        collectType     :'likes',//收藏列表默认显示
     }),
     created(){
         // 设置request animation frame
@@ -128,6 +150,7 @@ export default {
         // this.$db.chartData.loadDatabase();
         // 初始化本地数据库
         this.tableData = this.$db.tableData;
+        // this.tableData.remove({},{ multi: true },(err, numRemoved) => {});
     },
     mounted(){
         this.albumImgEle       = this.$refs.albumImgEle;
@@ -170,9 +193,12 @@ export default {
         // 清除canvas绘制区域
         this.canvasCtx.clearRect(0, 0, this.canvasPlayer.width, this.canvasPlayer.height);
 
-        this.canvasDraw()
+        // this.canvasDraw()
 
-
+        // 隐藏收藏列表
+        document.addEventListener('click', () => {
+            this.isShowCollect ? this.isShowCollect = false : '';
+        })
     },
     computed:{
 
@@ -211,7 +237,7 @@ export default {
         setPlaySongInfo(data){
             return {
                 src         :`http://ws.stream.qqmusic.qq.com/C100${data.songmid}.m4a?fromtag=0&guid=126548448`,
-                name        :data.singer[0].name,
+                name        :data.name || data.singer[0].name,
                 songname    :data.songname,
                 songorig    :data.songorig,
                 songmid     :data.songmid,
@@ -303,7 +329,7 @@ export default {
             this.searchVal = '';//清空搜索
 
             //根据查询的数据重置是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
-            this.tableData.find({songmid:this.currentPlaySong.songmid}, (err,doc) => {
+            this.tableData.find({ songmid : this.currentPlaySong.songmid }, (err,doc) => {
                 this.isLike = doc.length != 0 ? true : false;
             })
         },
@@ -343,21 +369,13 @@ export default {
             this.isLike = !this.isLike;
             // 只有喜欢的歌曲才会被添加到db
             if(this.isLike){
-                let currentPlaySong = this.currentPlaySong;//当前播放的歌曲信息
-                let doc = {
-                    isLike   : this.isLike,
-                    timestamp: this.$tool.getFormDate('format')
-                }
-                for (let variable in currentPlaySong) {
-                    if (currentPlaySong.hasOwnProperty(variable)) {
-                        doc[variable] = currentPlaySong[variable];
-                    }
-                }
+                // 设置喜欢的歌曲
+                let songdata = songInfo.songPlayData(this.currentPlaySong,true);
                 // 存储喜欢的歌曲的信息到db
-                this.tableData.insert(doc,(err,newDoc) => {
+                this.tableData.insert(songdata, (err, newDoc) => {
                     console.log(newDoc);
                 })
-                this.tableData.find({},(err,docs) => {
+                this.tableData.find({}, (err, docs) => {
                     console.log(docs);
                 })
             }
@@ -366,7 +384,54 @@ export default {
         // 讨厌歌曲
         audioHate(){
             console.log(this.currentPlaySong);
+            // 设置讨厌的歌曲
+            let songdata = songInfo.songPlayData(this.currentPlaySong,false);
+            this.tableData.insert(songdata, (err, newDoc) => {});//标记这首歌曲不喜欢
             this.playNext();//下一首歌
+        },
+
+        // 更多
+        audioMore(){
+            this.isShowCollect = !this.isShowCollect;
+            if(this.collectType == 'likes'){
+                this.tableData.find({ isLike: true }, (err, docs) => {
+                    this.collectList = [];
+                    docs.forEach(item => this.collectList.push(item));
+                });
+            }
+        },
+
+        // 移除收藏
+        removedCollect(item){
+            let collectList = this.collectList;
+            for (var i = 0; i < collectList.length; i++) {
+                if(collectList[i].songid == item.songid){
+                    collectList.splice(i,1);
+                    break;
+                }
+            }
+            // 删除一条记录
+            this.tableData.remove({ songid: item.songid }, {}, (err, numRemoved) => {
+              console.log(numRemoved);
+            });
+        },
+
+        // 切换歌曲
+        toggleList(type){
+            console.log(type);
+            this.collectType = type;
+            if(type == 'likes'){
+                this.tableData.find({ isLike: true }, (err, docs) => {
+                    this.collectList = [];
+                    docs.forEach(item => this.collectList.push(item));
+                });
+            }else if(type == 'hates'){
+                this.tableData.find({ isLike: false }, (err, docs) => {
+                    this.collectList = [];
+                    docs.forEach(item => this.collectList.push(item));
+                    console.log(docs);
+                });
+            }
         },
 
         // 监听播放完成
@@ -434,12 +499,15 @@ export default {
         selectPlaySong(data){
             // this.searchVal = `${data.singer[0].name}-${data.songname}`;
             // this.isShowList = false;//隐藏搜索列表
+            console.log(data);
+
+            this.isShowCollect ? this.isShowCollect = false : '';
 
             this.albumEndRotate();//清除专辑图片动画
             this.startPlay('order',data);
 
             //根据查询的数据重置是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
-            this.tableData.find({songmid:data.songmid}, (err,doc) => {
+            this.tableData.find({ songmid : data.songmid }, (err,doc) => {
                 this.isLike = doc.length != 0 ? true : false;
             })
 
@@ -447,7 +515,6 @@ export default {
 
         // 根据歌曲缓慢改变背景颜色
         changeBackgroundColor(){
-
             let theColor = [
                 ['#693e44','#3c5d90','#000d38'],
                 ['#345e44','#001029','#000d38'],
@@ -466,12 +533,13 @@ export default {
 
         },
 
+
         // canvas 频谱绘制
         canvasDraw(){
             let dataArray = this.dataArray;
             let bufferLength = this.bufferLength;
 
-            // this.drawVisual = requestAnimationFrame(this.canvasDraw);
+            this.drawVisual = requestAnimationFrame(this.canvasDraw);
 
             this.analyser.getByteFrequencyData(dataArray);
 
@@ -485,15 +553,28 @@ export default {
 </script>
 
 <style lang="css">
-.slide-fade-enter-active {
+
+.slide-collect-enter-active {
   transition: all .25s ease;
 }
-.slide-fade-leave-active {
+.slide-collect-leave-active {
   transition: all .25s ease;
 }
-.slide-fade-enter, .slide-fade-leave-to
-/* .slide-fade-leave-active for below version 2.1.8 */ {
+.slide-collect-enter, .slide-collect-leave-to
+/* .slide-collect-leave-active for below version 2.1.8 */ {
   transform: translateY(10px);
+  opacity: 0;
+}
+
+.slide-slide-left-enter-active {
+  transition: all .25s ease;
+}
+.slide-slide-left-leave-active {
+  transition: all .25s ease;
+}
+.slide-slide-left-enter, .slide-slide-left-leave-to
+/* .slide-slide-left-leave-active for below version 2.1.8 */ {
+  transform: translateX(10px);
   opacity: 0;
 }
 </style>
