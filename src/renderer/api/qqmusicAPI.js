@@ -27,7 +27,7 @@ export function qqMusicSearchAPI(searchStr){
             sem         :'1',
             aggr        :'0',
             perpage     :'10',
-            n           :'10',
+            n           :'20',
             p           :'1',
             remoteplace :'txt.mqq.all',
             _           :new Date().getTime()

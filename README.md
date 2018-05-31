@@ -1,21 +1,50 @@
-# electron2
+# Electron Music Player
 
 > An electron-vue project
+
+<img src="https://github.com/thunderstreak/music/tree/master/static/player1.png" width="800" height="463"/>
+
+<img src="https://github.com/thunderstreak/music/tree/master/static/player2.png" width="800" height="463"/>
+
+<img src="https://github.com/thunderstreak/music/tree/master/static/player3.png" width="800" height="463"/>
 
 #### Build Setup
 
 ``` bash
-# install dependencies
+# install dependencies recommend to use 'yarn'
+yarn
+
 npm install
 
 # serve with hot reload at localhost:9080
+yarn run dev
+
 npm run dev
 
 # build electron application for production
+yarn run build
+
 npm run build
 
-
 ```
+
+### Technology stack
+
+electron + vue2 + vuex + vue-router + webpack + ES6/7 + less
+
+Attention: Due to the large number of new attributes such as es6/7, node requires more than 6.0 versions
+
+### Feature
+- Play the song
+- Collect the list
+- Search the song
+...
+
+### Note
+Some styles borrow from the atom web site
+
+### API
+From the network
 
 ---
 

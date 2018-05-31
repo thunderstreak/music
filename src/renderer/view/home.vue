@@ -4,16 +4,16 @@
         <!-- 中心旋转图片 -->
         <div class="hero-logo" aria-hidden="true">
             <div class="hero-logo-circles">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-red-semi.svg" alt="Index portal red semi">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-red.svg" alt="Index portal red">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-orange.svg" alt="Index portal orange semi">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-orange.svg" alt="Index portal orange">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-yellow-semi.svg" alt="Index portal yellow semi">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-yellow.svg" alt="Index portal yellow">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-green-semi.svg" alt="Index portal green semi">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-green.svg" alt="Index portal green">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-blue-semi.svg" alt="Index portal blue semi">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-blue.svg" alt="Index portal blue">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-red-semi.svg">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-red.svg">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-orange.svg">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-orange.svg">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-yellow-semi.svg">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-yellow.svg">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-green-semi.svg">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-green.svg">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-blue-semi.svg">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-blue.svg">
             </div>
         </div>
         <!-- 中心专辑图片 -->
@@ -74,7 +74,7 @@
                                         <span class="list-play" @click.stop="selectPlaySong(item)">{{item.name}}-{{item.songname}}</span>
                                         <span class="list-removed" @click.stop="removedCollect(item)"></span>
                                     </li>
-                                    <li class="like-or-hate-nodata" v-show="collectList.length == 0">no data</li>
+                                    <li class="like-or-hate-nodata" v-show="collectList.length == 0">No Data</li>
                                 </ul>
                             <!-- </transition-group> -->
                         </div>
@@ -343,7 +343,6 @@ export default {
                 this.AudioPlayer.volume = 0;//禁音
                 this.isVoice = true;
             }
-            console.log(this.AudioPlayer.muted);
         },
 
         // 设置音量大小
@@ -367,23 +366,22 @@ export default {
         // 设置歌曲喜欢
         audioLike(){
             this.isLike = !this.isLike;
+            let songdata = songInfo.songPlayData(this.currentPlaySong,this.isLike);
             // 只有喜欢的歌曲才会被添加到db
             if(this.isLike){
                 // 设置喜欢的歌曲
-                let songdata = songInfo.songPlayData(this.currentPlaySong,true);
+                this.collectList.push(songdata);
                 // 存储喜欢的歌曲的信息到db
-                this.tableData.insert(songdata, (err, newDoc) => {
-                    console.log(newDoc);
-                })
-                this.tableData.find({}, (err, docs) => {
-                    console.log(docs);
-                })
+                this.tableData.insert(songdata, (err, newDoc) => { console.log(newDoc) })
+                // this.tableData.find({}, (err, docs) => { console.log(docs) })
+            }else{
+                this.removedCollect(songdata);
             }
         },
 
         // 讨厌歌曲
         audioHate(){
-            console.log(this.currentPlaySong);
+            // console.log(this.currentPlaySong);
             // 设置讨厌的歌曲
             let songdata = songInfo.songPlayData(this.currentPlaySong,false);
             this.tableData.insert(songdata, (err, newDoc) => {});//标记这首歌曲不喜欢
@@ -418,7 +416,6 @@ export default {
 
         // 切换歌曲
         toggleList(type){
-            console.log(type);
             this.collectType = type;
             if(type == 'likes'){
                 this.tableData.find({ isLike: true }, (err, docs) => {
@@ -429,7 +426,7 @@ export default {
                 this.tableData.find({ isLike: false }, (err, docs) => {
                     this.collectList = [];
                     docs.forEach(item => this.collectList.push(item));
-                    console.log(docs);
+                    // console.log(docs);
                 });
             }
         },
@@ -499,7 +496,7 @@ export default {
         selectPlaySong(data){
             // this.searchVal = `${data.singer[0].name}-${data.songname}`;
             // this.isShowList = false;//隐藏搜索列表
-            console.log(data);
+            // console.log(data);
 
             this.isShowCollect ? this.isShowCollect = false : '';
 

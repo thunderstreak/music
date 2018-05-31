@@ -4,7 +4,7 @@
         <!-- 手势区域 -->
         <div class="hero-gesture-box">
             <div class="hero-gesture-search">
-                <input class="hero-gesture-search-ipt" :class="[isShowList ? 'border-ipt' : '']" type="text" name="" value="" v-model="searchVal" @change.stop="searchMusics('change')"  @blur.stop="searchMusics('blur')" placeholder="搜索歌曲/歌手">
+                <input class="hero-gesture-search-ipt" :class="[isShowList ? 'border-ipt' : '']" type="text" name="" value="" v-model="searchVal" @change.stop="searchMusics('change')"  @blur.stop="searchMusics('blur')" @input.stop="searchMusics('input')" placeholder="搜索歌曲/歌手">
                 <transition name="slide-fade">
                     <ul class="hero-gesture-search-res" v-show="isShowList">
                         <li class="res-list" v-for="item in searchList" @click.stop="selectPlaySong(item)">
@@ -28,6 +28,8 @@ export default {
         searchVal       :'',//搜索字段
         searchList      :[],//查询到歌曲的结果列表
         isShowList      :false,//是否显示播放列表
+        isHttp          :false,
+        timeout         :'',
     }),
     created(){
 
@@ -36,6 +38,19 @@ export default {
 
     },
     methods:{
+        // API
+        searchApi(){
+            this.$API.qq.qqMusicSearchAPI(this.searchVal).then((res)=>{
+                let data        = res.data.data;
+                this.searchList = data.song.list;
+                this.isHttp     = false;
+                if(data.song.list.length != 0){
+                    this.isShowList = true;//显示搜索结果列表
+                }
+            }).catch((res) => {
+                this.isHttp     = false;
+            })
+        },
         // 搜索音乐
         searchMusics(eventType){
             if(eventType == 'blur'){
@@ -43,13 +58,20 @@ export default {
                     this.isShowList = false;
                 },250);
                 return
+            }else if(eventType == 'input'){
+                if(this.searchVal == ''){
+                    return
+                }
+                if(this.isHttp == false){
+                    this.isHttp = true;
+                    this.timeout = setTimeout(() => {
+                        this.searchApi();
+                    }, 500)
+                }
+            }else if(eventType == 'change'){
+                this.searchApi();
             }
 
-            this.$API.qq.qqMusicSearchAPI(this.searchVal).then((res)=>{
-                let data        = res.data.data;
-                this.searchList = data.song.list;
-                this.isShowList = true;//显示搜索结果列表
-            })
         },
 
         // 选中播放歌曲
