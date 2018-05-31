@@ -2,11 +2,11 @@
 
 > An electron-vue project
 
-<img src="https://github.com/thunderstreak/music/tree/master/static/player1.png" width="800" height="463"/>
+<img src="https://github.com/thunderstreak/music/blob/NewAudioBuffered/static/player1.jpg" width="800" height="463"/>
 
-<img src="https://github.com/thunderstreak/music/tree/master/static/player2.png" width="800" height="463"/>
+<img src="https://github.com/thunderstreak/music/blob/NewAudioBuffered/static/player2.jpg" width="800" height="463"/>
 
-<img src="https://github.com/thunderstreak/music/tree/master/static/player3.png" width="800" height="463"/>
+<img src="https://github.com/thunderstreak/music/blob/NewAudioBuffered/static/player3.jpg" width="800" height="463"/>
 
 #### Build Setup
 
