@@ -226,6 +226,7 @@ export default {
                     let data = songlist[i].data;
                     if(data.songmid){
                         this.playSonglist.push(this.setPlaySongInfo(data));
+                        // this.playSonglist.push(songInfo.songPlayInfo(data));
                     }
                 }
                 // this.playSonglist.splice(0,0,{src:ogg});
