@@ -33,7 +33,11 @@ export default {
     methods:{
         videoPlay(){
             console.log(this.VideoPlayer);
-            this.VideoPlayer.play()
+            if(this.VideoPlayer.paused){
+                this.VideoPlayer.play();
+            }else{
+                this.VideoPlayer.pause();
+            }
         }
     }
 }

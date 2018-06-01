@@ -311,7 +311,7 @@ export default {
 
             // 判断歌曲是否需要付费才能播放
             if(this.currentPlaySong.payplay == 1){
-                console.log(this.currentPlaySong.songname + '该歌曲需要付费播放');
+                console.log(this.currentPlaySong.songname + '：该歌曲需要付费播放');
                 let options = {
                     type    : 'warning',
                     title   : '提示',
