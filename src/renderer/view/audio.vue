@@ -20,7 +20,7 @@
         <div class="hero-play-audio">
             <img class="hero-play-audios" ref="albumImgEle" @click.stop="playPaused" draggable="false" :src="currentPlaySong.albumisrc ? currentPlaySong.albumisrc : placeholderImg" alt="">
             <div class="hero-play-album-name">
-                {{currentPlaySong.name}}-{{currentPlaySong.songname}}
+                {{currentPlaySong.singername}}</br>{{currentPlaySong.songname}}
             </div>
 
             <!-- <img draggable="false" @click="playPaused" class="hero-play-audios" src="~@/assets/images/index-logo.svg" alt="Index portal blue"> -->
@@ -71,7 +71,7 @@
                             <!-- <transition-group name="slide-left" tag="ul" class="hero-play-controls-more-list"> -->
                                 <ul class="hero-play-controls-more-list">
                                     <li class="like-or-hate-list" v-for="item in collectList" :key="item.id">
-                                        <span class="list-play" @click.stop="selectPlaySong(item)">{{item.name}}-{{item.songname}}</span>
+                                        <span class="list-play" @click.stop="selectPlaySong(item)">{{item.singername}}-{{item.songname}}</span>
                                         <span class="list-removed" @click.stop="removedCollect(item)"></span>
                                     </li>
                                     <li class="like-or-hate-nodata" v-show="collectList.length == 0">No Data</li>
@@ -88,7 +88,7 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron';
+import { ipcRenderer,remote } from 'electron';
 import placeholderImg from '../assets/person_300.png';
 import * as analyser from '../tools/analyser';
 import * as spectrum from '../tools/spectrum';
@@ -201,6 +201,11 @@ export default {
         document.addEventListener('click', () => {
             this.isShowCollect ? this.isShowCollect = false : '';
         })
+
+        // 接受主进程事件通知，渲染歌词
+        ipcRenderer.on('ipcMainSongLyric',(event,data) => {
+            console.log(data);
+        })
     },
     computed:{
 
@@ -231,38 +236,37 @@ export default {
                         // this.playSonglist.push(songInfo.songPlayInfo(data));
                     }
                 }
-                // this.playSonglist.splice(0,0,{src:ogg});
-                this.startPlay('random');//开始播放
+                this.startPlay();//开始播放
             })
         },
 
         // 设置播放歌曲信息
         setPlaySongInfo(data){
             return {
-                src         :`http://ws.stream.qqmusic.qq.com/C100${data.songmid}.m4a?fromtag=0&guid=126548448`,
-                name        :data.name || data.singer[0].name,
-                songname    :data.songname,
+                src         :`http://ws.stream.qqmusic.qq.com/C100${data.songmid}.m4a?fromtag=0&guid=126548448`,//歌曲地址
+                singername  :data.singername || data.singer.map(res => res.name).join('-'),//歌手名称
+                songname    :data.songname,//歌曲名称
                 songorig    :data.songorig,
                 songmid     :data.songmid,
-                songid      :data.songid,
+                songid      :data.songid,//歌曲id
+                pay         :data.pay,
+                payplay     :(data.pay.payplay == 1 && data.pay.payalbumprice != 0) ? true : false,//是否需要购买才能播放
 
-                albumisrc   :`http://imgcache.qq.com/music/photo/album_300/${data.albumid%100}/300_albumpic_${data.albumid}_0.jpg`,
-                albumid     :data.albumid,
+                albumisrc   :`http://imgcache.qq.com/music/photo/album_300/${data.albumid%100}/300_albumpic_${data.albumid}_0.jpg`,//专辑封面
+                albumid     :data.albumid,//专辑id
                 albummid    :data.albummid,
-                albumname   :data.albumname
+                albumname   :data.albumname,//专辑名称
             }
         },
 
         // 获取歌词
         getLyric(){
             let songId = this.playSonglist[this.currSongIndex].songid;
-            console.log(songId);
+            console.log(this.playSonglist[this.currSongIndex]);
+
             // 向主进程发送事件，获取歌词
             ipcRenderer.send('ipcRendererSongLyric', songId);
-            // 接受主进程事件通知，渲染歌词
-            ipcRenderer.on('ipcMainSongLyric',(event,data) => {
-                console.log(data);
-            })
+
         },
 
         /**
@@ -284,21 +288,43 @@ export default {
             }
             // 如果有指定播放的歌曲
             if(playSong){
-                this.currentPlaySong    = this.setPlaySongInfo(playSong);
-                this.AudioPlayer.src    = this.currentPlaySong.src;//当前播放歌曲的src
+                this.currentPlaySong = this.setPlaySongInfo(playSong);
+                this.AudioPlayer.src = this.currentPlaySong.src;//当前播放歌曲的src
             }else{
                 // 如果没有指定播放的歌曲先查询数据库里面是否存在记录，如果存在记录再判断是否标记为是否喜欢，如果不喜欢则跳过播放
                 let tempsong = this.playSonglist[this.currSongIndex];
                 this.tableData.find({ songid: tempsong.songid }, (err,doc) => {
+                    console.log(doc);
                     if(doc.length != 0){
                         // 如果不是喜欢的歌曲则跳过播放
-                        if(!doc[0].isLike){
+                        if(doc[0].isLike == false){
+                            this.isLike = false;
                             this.playSonglist.splice(0,1);
+                        }else{
+                            this.isLike = true;
                         }
                     }
                 })
                 this.currentPlaySong = tempsong;//当前播放的歌曲详细信息
                 this.AudioPlayer.src = tempsong.src;//当前播放歌曲的src
+            }
+
+            // 判断歌曲是否需要付费才能播放
+            if(this.currentPlaySong.payplay == 1){
+                console.log(this.currentPlaySong.songname + '该歌曲需要付费播放');
+                let options = {
+                    type    : 'warning',
+                    title   : '提示',
+                    message : `该歌曲需要付费播放`,
+                    buttons : ['播放下一曲']
+                }
+                remote.dialog.showMessageBox(options, (index) => {
+                    console.log(index);
+                    if(!index){
+                        this.playNext();
+                        return;
+                    }
+                })
             }
 
             this.AudioPlayer.load();
@@ -402,7 +428,7 @@ export default {
 
         // 讨厌歌曲
         audioHate(){
-            // console.log(this.currentPlaySong);
+            console.log(this.currentPlaySong);
             // 设置讨厌的歌曲
             let songdata = songInfo.songPlayData(this.currentPlaySong,false);
 
@@ -539,7 +565,12 @@ export default {
 
             //根据查询的数据重置是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
             this.tableData.find({ songmid : data.songmid }, (err,doc) => {
-                this.isLike = doc.length != 0 ? true : false;
+                // console.log(doc);
+                if(doc.length != 0){
+                    doc[0].isLike ? this.isLike = true : this.isLike = false;
+                }else{
+                    this.isLike = false;
+                }
             })
 
         },

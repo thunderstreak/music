@@ -22,9 +22,11 @@ ipcMain.on('ipcRendererSongLyric',(event,data) => {
             console.log(body);
             // 向ipcRenderer发送事件
             event.sender.send('ipcMainSongLyric', body);
+            
         }else{
             console.log(2);
             console.log("error");
         }
     });
+
 })
