@@ -92,6 +92,7 @@ import placeholderImg from '../assets/person_300.png';
 import * as analyser from '../tools/analyser';
 import * as spectrum from '../tools/spectrum';
 import * as songInfo from '../tools/songInfo';
+
 export default {
     name: 'index',
     data: () => ({
@@ -274,14 +275,23 @@ export default {
                 // 设置随机播放第一首歌
                 this.currSongIndex  = Math.floor(Math.random() * this.playSonglist.length);
             }
-            // console.log(this.playSonglist[this.currSongIndex]);
+            // 如果有指定播放的歌曲
             if(playSong){
                 this.currentPlaySong    = this.setPlaySongInfo(playSong);
                 this.AudioPlayer.src    = this.currentPlaySong.src;//当前播放歌曲的src
             }else{
-                this.currentPlaySong    = this.playSonglist[this.currSongIndex];//当前播放的歌曲详细信息
-                // new audio object
-                this.AudioPlayer.src    = this.playSonglist[this.currSongIndex].src;//当前播放歌曲的src
+                // 如果没有指定播放的歌曲先查询数据库里面是否存在记录，如果存在记录再判断是否标记为是否喜欢，如果不喜欢则跳过播放
+                let tempsong = this.playSonglist[this.currSongIndex];
+                this.tableData.find({ songid: tempsong.songid }, (err,doc) => {
+                    if(doc.length != 0){
+                        // 如果不是喜欢的歌曲则跳过播放
+                        if(!doc[0].isLike){
+                            this.playSonglist.splice(0,1);
+                        }
+                    }
+                })
+                this.currentPlaySong = tempsong;//当前播放的歌曲详细信息
+                this.AudioPlayer.src = tempsong.src;//当前播放歌曲的src
             }
 
             this.AudioPlayer.load();
@@ -329,7 +339,7 @@ export default {
             this.AudioBufferedVal = 1;//默认缓冲值从1开始
             this.searchVal = '';//清空搜索
 
-            //根据查询的数据重置是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
+            //根据查询的数据标记是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
             this.tableData.find({ songmid : this.currentPlaySong.songmid }, (err,doc) => {
                 this.isLike = doc.length != 0 ? true : false;
             })
@@ -370,10 +380,13 @@ export default {
             let songdata = songInfo.songPlayData(this.currentPlaySong,this.isLike);
             // 只有喜欢的歌曲才会被添加到db
             if(this.isLike){
-                // 设置喜欢的歌曲
-                this.collectList.push(songdata);
+
                 // 存储喜欢的歌曲的信息到db
-                this.tableData.insert(songdata, (err, newDoc) => { console.log(newDoc) })
+                this.tableData.insert(songdata, (err, newDoc) => {
+                    // 设置喜欢的歌曲
+                    this.collectList.push(songdata);
+                    console.log(newDoc)
+                })
                 // this.tableData.find({}, (err, docs) => { console.log(docs) })
             }else{
                 this.removedCollect(songdata);
@@ -385,15 +398,28 @@ export default {
             // console.log(this.currentPlaySong);
             // 设置讨厌的歌曲
             let songdata = songInfo.songPlayData(this.currentPlaySong,false);
-            this.tableData.insert(songdata, (err, newDoc) => {});//标记这首歌曲不喜欢
+
+            //标记这首歌曲不喜欢
+            this.tableData.insert(songdata, (err, newDoc) => {
+                this.collectList.push(newDoc)
+            })
             this.playNext();//下一首歌
         },
 
         // 更多
         audioMore(){
             this.isShowCollect = !this.isShowCollect;
-            if(this.collectType == 'likes'){
-                this.tableData.find({ isLike: true }, (err, docs) => {
+            if(this.isShowCollect){
+
+                let type;
+                if(this.collectType == 'likes'){
+                    type = true;
+                }else if(this.collectType == 'hates'){
+                    type = false;
+                }
+
+                // 默认查询喜欢的
+                this.tableData.find({ isLike: type }, (err, docs) => {
                     this.collectList = [];
                     docs.forEach(item => this.collectList.push(item));
                 });
