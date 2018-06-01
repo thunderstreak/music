@@ -30,7 +30,7 @@ npm run build
 
 ### Technology stack
 
-electron + vue2 + vuex + vue-router + webpack + ES6/7 + less
+electron + vue2 + vuex + vue-router + nedb + webpack + ES6/7 + less
 
 Attention: Due to the large number of new attributes such as es6/7, node requires more than 6.0 versions
 

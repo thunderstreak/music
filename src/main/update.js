@@ -1,9 +1,9 @@
 import https from 'https';
 
-let getHttpsData = (filepath, success, error){
+let getHttpsData = (filepath, success, error) => {
     // 回调缺省处理
-    success = success || (){};
-    error   = error   || (){};
+    success = success;
+    error   = error;
 
     let url = 'https://github.com/thunderstreak/music/blob/NewAudioBuffered/package.json';
 

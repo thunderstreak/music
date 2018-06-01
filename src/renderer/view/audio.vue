@@ -25,7 +25,7 @@
 
             <!-- <img draggable="false" @click="playPaused" class="hero-play-audios" src="~@/assets/images/index-logo.svg" alt="Index portal blue"> -->
         </div>
-
+        <SwitchRouter></SwitchRouter>
         <!-- <AudioPanel></AudioPanel> -->
 
         <div class="hero-play-panel">
@@ -88,13 +88,14 @@
 </template>
 
 <script>
+import { ipcRenderer } from 'electron';
 import placeholderImg from '../assets/person_300.png';
 import * as analyser from '../tools/analyser';
 import * as spectrum from '../tools/spectrum';
 import * as songInfo from '../tools/songInfo';
 
 export default {
-    name: 'index',
+    name: 'AudioPlayer',
     data: () => ({
         currentPlaySong :'',//当前播放音乐对象
         isLike          :false,//是否喜欢这首歌
@@ -256,6 +257,12 @@ export default {
         getLyric(){
             let songId = this.playSonglist[this.currSongIndex].songid;
             console.log(songId);
+            // 向主进程发送事件，获取歌词
+            ipcRenderer.send('ipcRendererSongLyric', songId);
+            // 接受主进程事件通知，渲染歌词
+            ipcRenderer.on('ipcMainSongLyric',(event,data) => {
+                console.log(data);
+            })
         },
 
         /**
@@ -570,8 +577,16 @@ export default {
             spectrum.voiceCircleSpectrum(this.canvasCtx,this.canvasPlayer,dataArray,bufferLength);
 
         },
-
-
+    },
+    beforeDestroyed(){
+        console.log('beforeDestroyed');
+        this.endPlay();
+        this.AudioPlayer = '';
+    },
+    destroyed(){
+        console.log('destroyed');
+        this.endPlay();
+        this.AudioPlayer = '';
     }
 }
 </script>
