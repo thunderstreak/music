@@ -29,9 +29,12 @@
         <!-- <AudioPanel></AudioPanel> -->
 
         <div class="hero-play-panel">
+            <!-- 歌词 -->
+            <!-- <div class="hero-play-lyric">{{currentLyric}}</div> -->
             <!-- 播放时间 -->
             <div class="hero-play-time">
                 <div class="hero-play-time-current">{{transformTime(currPlayTime)}}</div>
+                <div class="hero-play-time-lyric">{{currentLyric}}</div>
                 <div class="hero-play-time-total">{{transformTime(songDuration)}}</div>
             </div>
             <!-- 播放进度条 -->
@@ -114,6 +117,9 @@ export default {
 
         collectList     :[],//标记喜欢的歌曲列表
         playSonglist    :[],//播放列表
+        playSongLyric   :[],//播放歌曲的歌词
+        currentLyric    :'',//播放歌曲的当前歌词
+
         currSongIndex   :0,//当前播放歌曲的下标
         acceptSonglist  :[],//播放完成后存储的列表
         songDuration    :0,//歌曲总时长
@@ -201,16 +207,64 @@ export default {
         document.addEventListener('click', () => {
             this.isShowCollect ? this.isShowCollect = false : '';
         })
-
+        let slef = this;
         // 接受主进程事件通知，渲染歌词
-        ipcRenderer.on('ipcMainSongLyric',(event,data) => {
-            console.log(data);
+        ipcRenderer.on('ipcMainSongLyric',(event,lyric) => {
+            // let datalyric = JSON.parse(data.match(/\{(.+?)\}/g)[0]);
+            // let lyric = Base64.Base64.decode(datalyric.lyric).split("[offset:0]")[1].split('\n');
+
+            this.playSongLyric = [];
+            for(let i = 1; i < lyric.length; i++){
+                if(lyric[i]){
+                    if(lyric[i].split("[")[1].split("]")[1]){
+
+                        this.playSongLyric.push({
+                            lyric       :lyric[i].split("[")[1].split("]")[1],
+                            lyricTime   :this.getTime(lyric[i].split("[")[1].split("]")[0]),
+                        })
+                    }
+                }
+            }
+            // console.log(this.playSongLyric);
+
+            /*eval(data);
+
+
+            //创建一个函数MusicJsonCallback_lrc
+            function MusicJsonCallback_lrc(data){
+                let lyric = Base64.Base64.decode(data.lyric).split("[offset:0]")[1].split('\n');
+
+                for(let i = 1; i < lyric.length; i++){
+                    if(lyric[i]){
+                        if(lyric[i].split("[")[1].split("]")[1]){
+
+                            slef.playSongLyric.push({
+                                lyric       :lyric[i].split("[")[1].split("]")[1],
+                                lyricTime   :slef.getTime(lyric[i].split("[")[1].split("]")[0]),
+                                lyFontStyle :{//所有单条歌词样式
+                                    fontSize:'14px',
+                                    color   :'white'
+                                },
+                            })
+                            // console.log(lyric[i].split("[")[1].split("]")[0]);
+                        }
+                    }
+                }
+            }*/
+
         })
     },
     computed:{
 
     },
     methods: {
+        getTime(str){
+            let minutes = parseInt(str.split(':')[0]);
+            let seconds = parseInt(str.split(':')[1].split('.')[0]);
+            let ms      = parseInt(str.split('.')[1]);
+            // console.log(minutes,seconds,ms,Math.floor(((minutes * 60) + seconds + (ms / 100))));
+            return Math.floor(((minutes * 60) + seconds + (ms / 100)));
+        },
         // 播放
         playPaused(){
             if(this.AudioPlayer.paused){
@@ -261,12 +315,11 @@ export default {
 
         // 获取歌词
         getLyric(){
-            let songId = this.playSonglist[this.currSongIndex].songid;
-            console.log(this.playSonglist[this.currSongIndex]);
+            let songmid = this.playSonglist[this.currSongIndex].songmid;
+            // console.log(this.playSonglist[this.currSongIndex]);
 
             // 向主进程发送事件，获取歌词
-            ipcRenderer.send('ipcRendererSongLyric', songId);
-
+            ipcRenderer.send('ipcRendererSongLyric', songmid);
         },
 
         /**
@@ -345,7 +398,14 @@ export default {
                     // div range 根据当前播放时间设置播放进度条百分值元素
                     this.currPlayTime = parseInt(this.AudioPlayer.currentTime);
                     this.audioProgressEle.style.width = `${parseFloat(this.currPlayTime / this.songDuration) * 100}%`;
+                    // console.log(this.AudioPlayer.currentTime);
 
+                    for (var i = 0; i < this.playSongLyric.length; i++) {
+                        if(this.playSongLyric[i].lyricTime == this.currPlayTime){
+                            this.currentLyric = this.playSongLyric[i].lyric;
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -371,6 +431,7 @@ export default {
             this.startPlay();//开始播放
             this.AudioBufferedVal = 1;//默认缓冲值从1开始
             this.searchVal = '';//清空搜索
+            this.currentLyric = '';//清空当前歌词
 
             //根据查询的数据标记是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
             this.tableData.find({ songmid : this.currentPlaySong.songmid }, (err,doc) => {
@@ -523,6 +584,7 @@ export default {
             this.AudioPlayer.play();//开始播放音乐
             this.albumStartRotate();//专辑图片开始旋转
             this.isPlay = true;//是否播放状态为播放
+            this.currentLyric = '';//清空当前歌词
         },
 
         // 专辑图片开始旋转
@@ -616,6 +678,7 @@ export default {
     },
     destroyed(){
         console.log('destroyed');
+        ipcRenderer.removeAllListeners(['ipcMainSongLyric']);
         this.endPlay();
         this.AudioPlayer = '';
     }

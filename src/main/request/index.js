@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron';
 import request from 'request';
+import Base64 from 'js-base64';
 
 // 接受ipcRenderer事件
 ipcMain.on('ipcRendererSongLyric',(event,data) => {
@@ -18,13 +19,13 @@ ipcMain.on('ipcRendererSongLyric',(event,data) => {
     };
     request(options,(error, response, body) => {
         if(!error && response.statusCode == 200){
-            console.log(1);
-            console.log(body);
+            // 解码歌词
+            let data = JSON.parse(body.match(/\{(.+?)\}/g)[0]);
+            let lyric = Base64.Base64.decode(data.lyric).split("[offset:0]")[1].split('\n');
             // 向ipcRenderer发送事件
-            event.sender.send('ipcMainSongLyric', body);
-            
+            event.sender.send('ipcMainSongLyric', lyric);
+
         }else{
-            console.log(2);
             console.log("error");
         }
     });
