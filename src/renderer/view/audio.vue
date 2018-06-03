@@ -22,8 +22,6 @@
             <div class="hero-play-album-name">
                 {{currentPlaySong.singername}}</br>{{currentPlaySong.songname}}
             </div>
-
-            <!-- <img draggable="false" @click="playPaused" class="hero-play-audios" src="~@/assets/images/index-logo.svg" alt="Index portal blue"> -->
         </div>
         <SwitchRouter></SwitchRouter>
         <!-- <AudioPanel></AudioPanel> -->
@@ -34,7 +32,11 @@
             <!-- 播放时间 -->
             <div class="hero-play-time">
                 <div class="hero-play-time-current">{{transformTime(currPlayTime)}}</div>
-                <div class="hero-play-time-lyric">{{currentLyric}}</div>
+                <div class="hero-play-time-lyric">
+                    <transition name="slide-fade">
+                        <span>{{currentLyric}}</span>
+                    </transition>
+                </div>
                 <div class="hero-play-time-total">{{transformTime(songDuration)}}</div>
             </div>
             <!-- 播放进度条 -->
@@ -201,7 +203,7 @@ export default {
         // 清除canvas绘制区域
         this.canvasCtx.clearRect(0, 0, this.canvasPlayer.width, this.canvasPlayer.height);
 
-        // this.canvasDraw()
+        this.canvasDraw()
 
         // 隐藏收藏列表
         document.addEventListener('click', () => {
@@ -210,8 +212,6 @@ export default {
         let slef = this;
         // 接受主进程事件通知，渲染歌词
         ipcRenderer.on('ipcMainSongLyric',(event,lyric) => {
-            // let datalyric = JSON.parse(data.match(/\{(.+?)\}/g)[0]);
-            // let lyric = Base64.Base64.decode(datalyric.lyric).split("[offset:0]")[1].split('\n');
 
             this.playSongLyric = [];
             for(let i = 1; i < lyric.length; i++){
@@ -225,32 +225,6 @@ export default {
                     }
                 }
             }
-            // console.log(this.playSongLyric);
-
-            /*eval(data);
-
-
-            //创建一个函数MusicJsonCallback_lrc
-            function MusicJsonCallback_lrc(data){
-                let lyric = Base64.Base64.decode(data.lyric).split("[offset:0]")[1].split('\n');
-
-                for(let i = 1; i < lyric.length; i++){
-                    if(lyric[i]){
-                        if(lyric[i].split("[")[1].split("]")[1]){
-
-                            slef.playSongLyric.push({
-                                lyric       :lyric[i].split("[")[1].split("]")[1],
-                                lyricTime   :slef.getTime(lyric[i].split("[")[1].split("]")[0]),
-                                lyFontStyle :{//所有单条歌词样式
-                                    fontSize:'14px',
-                                    color   :'white'
-                                },
-                            })
-                            // console.log(lyric[i].split("[")[1].split("]")[0]);
-                        }
-                    }
-                }
-            }*/
 
         })
     },
@@ -400,6 +374,7 @@ export default {
                     this.audioProgressEle.style.width = `${parseFloat(this.currPlayTime / this.songDuration) * 100}%`;
                     // console.log(this.AudioPlayer.currentTime);
 
+                    // 显示当前歌词
                     for (var i = 0; i < this.playSongLyric.length; i++) {
                         if(this.playSongLyric[i].lyricTime == this.currPlayTime){
                             this.currentLyric = this.playSongLyric[i].lyric;
@@ -431,6 +406,7 @@ export default {
             this.startPlay();//开始播放
             this.AudioBufferedVal = 1;//默认缓冲值从1开始
             this.searchVal = '';//清空搜索
+            this.playSongLyric = [];//清空当前歌词组
             this.currentLyric = '';//清空当前歌词
 
             //根据查询的数据标记是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
@@ -584,6 +560,7 @@ export default {
             this.AudioPlayer.play();//开始播放音乐
             this.albumStartRotate();//专辑图片开始旋转
             this.isPlay = true;//是否播放状态为播放
+            this.playSongLyric = [];//清空当前歌词组
             this.currentLyric = '';//清空当前歌词
         },
 
@@ -667,7 +644,7 @@ export default {
 
             this.analyser.getByteFrequencyData(dataArray);
 
-            spectrum.voiceCircleSpectrum(this.canvasCtx,this.canvasPlayer,dataArray,bufferLength);
+            spectrum.voiceBarSpectrum(this.canvasCtx,this.canvasPlayer,dataArray,bufferLength);
 
         },
     },
@@ -707,6 +684,20 @@ export default {
 }
 .slide-slide-left-enter, .slide-slide-left-leave-to
 /* .slide-slide-left-leave-active for below version 2.1.8 */ {
+  transform: translateX(10px);
+  opacity: 0;
+}
+
+/* 可以设置不同的进入和离开动画 */
+/* 设置持续时间和动画函数 */
+.slide-fade-enter-active {
+  transition: all .3s ease;
+}
+.slide-fade-leave-active {
+  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.slide-fade-enter, .slide-fade-leave-to
+/* .slide-fade-leave-active for below version 2.1.8 */ {
   transform: translateX(10px);
   opacity: 0;
 }

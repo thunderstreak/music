@@ -1,12 +1,12 @@
 # Electron Music Player
 
-> An electron-vue project
+> Based on the electron and vue development of desktop applications, support music online play, video playback and picture browsing, content resources are from the network, anyone can modify this project, completely open source, if you think it is good to give me a star, thank you
 
-<img src="https://github.com/thunderstreak/music/blob/NewAudioBuffered/static/player1.jpg" width="800" height="463"/>
+<img src="https://github.com/thunderstreak/music/blob/NewAudioBuffered/static/player1.jpg" width="900" height="463"/>
 
-<img src="https://github.com/thunderstreak/music/blob/NewAudioBuffered/static/player2.jpg" width="800" height="463"/>
+<img src="https://github.com/thunderstreak/music/blob/NewAudioBuffered/static/player2.jpg" width="900" height="463"/>
 
-<img src="https://github.com/thunderstreak/music/blob/NewAudioBuffered/static/player3.jpg" width="800" height="463"/>
+<img src="https://github.com/thunderstreak/music/blob/NewAudioBuffered/static/player3.jpg" width="900" height="463"/>
 
 #### Build Setup
 
@@ -38,10 +38,11 @@ Attention: Due to the large number of new attributes such as es6/7, node require
 - Play the song
 - Collect the list
 - Search the song
-...
+- Video Player In development...
+- ...
 
 ### Note
-Some styles borrow from the atom web site
+Part of the resources, style from atom official website
 
 ### API
 From the network
