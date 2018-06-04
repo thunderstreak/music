@@ -21,9 +21,16 @@ ipcMain.on('ipcRendererSongLyric',(event,data) => {
         if(!error && response.statusCode == 200){
             // 解码歌词
             let data = JSON.parse(body.match(/\{(.+?)\}/g)[0]);
-            let lyric = Base64.Base64.decode(data.lyric).split("[offset:0]")[1].split('\n');
-            // 向ipcRenderer发送事件
-            event.sender.send('ipcMainSongLyric', lyric);
+            let lyric;
+            try {
+                lyric = Base64.Base64.decode(data.lyric).split("[offset:0]")[1].split('\n');
+            } catch (e) {
+                console.log(e);
+            } finally {
+                // 向ipcRenderer发送事件
+                event.sender.send('ipcMainSongLyric', lyric);
+            }
+
 
         }else{
             console.log("error");
