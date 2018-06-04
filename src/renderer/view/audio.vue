@@ -203,7 +203,7 @@ export default {
         // 清除canvas绘制区域
         this.canvasCtx.clearRect(0, 0, this.canvasPlayer.width, this.canvasPlayer.height);
 
-        this.canvasDraw()
+        // this.canvasDraw()
 
         // 隐藏收藏列表
         document.addEventListener('click', () => {
@@ -560,7 +560,7 @@ export default {
             this.AudioPlayer.play();//开始播放音乐
             this.albumStartRotate();//专辑图片开始旋转
             this.isPlay = true;//是否播放状态为播放
-            this.playSongLyric = [];//清空当前歌词组
+            // this.playSongLyric = [];//清空当前歌词组
             this.currentLyric = '';//清空当前歌词
         },
 
