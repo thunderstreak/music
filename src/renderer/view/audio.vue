@@ -229,7 +229,6 @@ export default {
 
         // 接受主进程事件通知，渲染歌词
         ipcRenderer.on('ipcMainSongLyric',(event,lyric) => {
-
             this.playSongLyric = [];
             for(let i = 1; i < lyric.length; i++){
                 if(lyric[i]){
@@ -242,8 +241,28 @@ export default {
                     }
                 }
             }
-
         })
+
+        // 检查是否有更新
+        ipcRenderer.send("checkForUpdate");
+
+        // 接受更新信息
+        ipcRenderer.on("message", (event, text) => {
+            console.log(text);
+            this.tips = text;
+        });
+
+        // 下载进度
+        ipcRenderer.on("downloadProgress", (event, progressObj) => {
+            console.log(progressObj);
+            this.downloadPercent = progressObj.percent || 0;
+        });
+
+        // 是否现在更新
+        ipcRenderer.on("isUpdateNow", () => {
+            ipcRenderer.send("isUpdateNow");
+        });
+
     },
     computed:{
 
@@ -659,6 +678,8 @@ export default {
         ipcRenderer.removeAllListeners(['ipcMainSongLyric']);
         this.endPlay();
         this.AudioPlayer = '';
+        //组件销毁前移除所有事件监听channel
+        ipcRenderer.removeAll(["message", "downloadProgress", "isUpdateNow"]);//remove只能移除单个事件，单独封装removeAll移除所有事件
     }
 }
 </script>
