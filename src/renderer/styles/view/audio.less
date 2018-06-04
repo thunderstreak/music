@@ -20,7 +20,7 @@
         -webkit-user-select: none;
         user-select: none;
         .lessTransformCenter();
-
+        z-index: 1;
         .hero-logo-circles {
             width: 366px;
             height: 366px;
@@ -88,6 +88,7 @@
         margin: auto;
         width: 140px;
         height: 140px;
+        z-index: 2;
         .hero-play-album-name{
             font-size: 14px;
             color: #fff;
@@ -117,13 +118,18 @@
         left: 0;
         bottom: 0;
         right: 0;
-        height: 65px;
+        // height: 65px;
+        z-index: 2;
         // 播放时间
         .hero-play-time{
-            padding: 2px 15px;
+            padding: 0 15px;
+            height: 20px;
             font-size: 12px;
             color: #c7c7c7;
             .lessBoxFlexSB();
+            .hero-play-time-lyric{
+                font-size: 14px;
+            }
         }
         // 进度条
         .hero-play-progress {
@@ -248,6 +254,7 @@
             }
 
             .hero-play-controls-right{
+                position: relative;
                 >div{
                     height: 20px;
                     display: inline-block;
@@ -277,6 +284,75 @@
                     width: 16px;
                     background-position: 0 -140px;
                 }
+                // 喜欢讨厌的歌曲列表
+                .hero-play-controls-more{
+                    position: absolute;
+                    right: 0;
+                    bottom: 35px;
+                    width: 200px;
+                    height: 250px;
+                    background: #fff;
+                    border-radius: 3px;
+                    overflow: hidden;
+
+                    &::after{
+                        // content: '';
+                        display: block;
+                        position: absolute;
+                        bottom: -7.5px;
+                        right: 0;
+
+                        width: 0;
+                        height: 0;
+                        border-left: 7.5px solid transparent;
+                        border-right: 7.5px solid transparent;
+                        border-top: 10px solid #fff;
+                    }
+                    .hero-play-controls-more-tab{
+                        .lessBoxFlexSB();
+                        transition: 0.25s;
+                        border-bottom:1px #f1f1f1 solid;
+                        background: #f1f1f1;
+                        .tab-list{
+                            transition: 0.25s;
+                            width: 50%;
+                            padding: 5px 0;
+                            &.activate{
+                                background: #fff;
+                            }
+                        }
+                    }
+                    .hero-play-controls-more-list{
+                        height: 220px;
+                        overflow: auto;
+                        font-size: 14px;
+                        .like-or-hate-list{
+                            .lessBoxFlexSB();
+                            padding: 5px 5px 5px 10px;
+                            border-bottom: 1px #f1f1f1 solid;
+                            cursor: default;
+                            &:hover{
+                                background: #eaeaea;
+                                border-bottom: 1px #eaeaea solid;
+                            }
+                            .list-play{
+                                text-overflow: ellipsis;
+                                overflow: hidden;
+                                white-space: nowrap;
+                                text-align: left;
+                                width: 175px;
+                            }
+                            .list-removed{
+                                width: 25px;
+                                background: url('../../assets/close-icon.png') no-repeat center;
+                                background-size: 15px;
+                            }
+                        }
+                        .like-or-hate-nodata{
+                            line-height: 220px;
+                        }
+                    }
+                }
             }
         }
     }
@@ -284,6 +360,7 @@
     // 手势
     .hero-gesture{
         position: relative;
+        z-index: 2;
         -webkit-app-region: drag;
 
         .hero-gesture-logo{
@@ -316,7 +393,7 @@
                 left: 0;
                 right: 0;
                 margin: auto;
-                z-index: 1;
+                z-index: 2;
                 // top: -35px;
                 -webkit-app-region: no-drag;
                 >div{
@@ -412,8 +489,7 @@
         right: 0;
         bottom: 0;
         margin: auto;
-        border: 1px solid #000;
-        // z-index: -1;
+        // z-index: 3;
         width: 100%;
         height: 100%;
     }

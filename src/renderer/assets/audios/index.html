@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+</head>
+
+<body>
+    <input type="button" onclick="audio.play()" value="播放" />
+    <input type="button" onclick="audio.pause()" value="暂停" />
+    <canvas id="wrap" height="550" width="800"></canvas>
+
+</body>
+<script>
+var wrap = document.getElementById("wrap");
+var cxt = wrap.getContext("2d");
+//获取API
+var AudioContext = AudioContext || webkitAudioContext;
+var context = new AudioContext;
+//加载媒体
+var audio = new Audio("./ConfessionBallon.mp3");
+
+//创建节点
+var source = context.createMediaElementSource(audio);
+var analyser = context.createAnalyser();
+//连接：source → analyser → destination
+source.connect(analyser);
+analyser.connect(context.destination);
+//创建数据
+var output = new Uint8Array(361);
+(function drawSpectrum() {
+    analyser.getByteFrequencyData(output); //获取频域数据
+    cxt.clearRect(0, 0, wrap.width, wrap.height);
+    //画线条
+    for (var i = 0; i < output.length; i++) {
+        var value = output[i] / 10;
+        //绘制左半边
+        cxt.beginPath();
+        cxt.lineWidth = 1;
+        cxt.moveTo(300, 300);
+        cxt.lineTo(Math.cos((i * 0.5 + 90) / 180 * Math.PI) * (200 + value) + 300, (-Math.sin((i * 0.5 + 90) / 180 * Math.PI) * (200 + value) + 300));
+        cxt.stroke();
+        //绘制右半边
+        cxt.beginPath();
+        cxt.lineWidth = 1;
+        cxt.moveTo(300, 300);
+        cxt.lineTo((Math.sin((i * 0.5) / 180 * Math.PI) * (200 + value) + 300), -Math.cos((i * 0.5) / 180 * Math.PI) * (200 + value) + 300);
+        cxt.stroke();
+    }
+    //画一个小圆，将线条覆盖
+    cxt.beginPath();
+    cxt.lineWidth = 1;
+    cxt.arc(300, 300, 200, 0, 2 * Math.PI, false);
+    cxt.fillStyle = "#fff";
+    cxt.stroke();
+    cxt.fill();
+    //请求下一帧
+    requestAnimationFrame(drawSpectrum);
+})();
+</script>
+
+</html>

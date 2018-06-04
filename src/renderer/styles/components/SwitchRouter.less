@@ -1,0 +1,33 @@
+.switch-router{
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 55px;
+    margin: auto;
+    z-index: 1;
+    padding: 50px 0;
+    .lessBoxFlexSB();
+    >div{
+        margin: 0 10px;
+        width: 50px;
+        height: 53px;
+        background: url('../../assets/sprite_radio_play.png') no-repeat center;
+        transition: 0.5s;
+        cursor: pointer;
+    }
+    .switch-router-left{
+        transform: translateX(-100px);
+        background-position: 0 -240px;
+    }
+    .switch-router-right{
+        transform: translateX(100px);
+        background-position: 25px -300px;
+    }
+    &:hover{
+        >div{
+            transform: translateX(0);
+        }
+    }
+}

@@ -1,103 +1,54 @@
 <template lang="html">
-    <div class="hero-box" ref="heroBoxEle">
-        <div class="hero-gesture">
-            <div class="hero-gesture-logo" title="SongPlay"></div>
-            <!-- 手势区域 -->
-            <div class="hero-gesture-box">
-                <div class="hero-gesture-search">
-                    <input class="hero-gesture-search-ipt" :class="[isShowList ? 'border-ipt' : '']" type="text" name="" value="" v-model="searchVal" @change="searchMusics('change')"  @blur="searchMusics('blur')" placeholder="搜索歌曲/歌手">
-                    <transition name="slide-fade">
-                        <ul class="hero-gesture-search-res" v-show="isShowList">
-                            <li class="res-list" v-for="item in searchList" @click="selectPlaySong(item)">
-                                {{item.singer[0].name}}-{{item.songname}}
-                            </li>
-                        </ul>
-                    </transition>
-                </div>
-            </div>
-            <div class="hero-gesture-hide hero-gesture-base" @click="operantWindow('hide')" title="隐藏"></div>
-            <div class="hero-gesture-closed hero-gesture-base" @click="operantWindow('closed')" title="关闭"></div>
+    <section class="hero-play-panel">
+        <!-- 播放时间 -->
+        <div class="hero-play-time">
+            <div class="hero-play-time-current">{{transformTime(currPlayTime)}}</div>
+            <div class="hero-play-time-total">{{transformTime(songDuration)}}</div>
         </div>
-        <!-- 中心旋转图片 -->
-        <div class="hero-logo" aria-hidden="true">
-            <div class="hero-logo-circles">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-red-semi.svg" alt="Index portal red semi">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-red.svg" alt="Index portal red">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-orange.svg" alt="Index portal orange semi">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-orange.svg" alt="Index portal orange">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-yellow-semi.svg" alt="Index portal yellow semi">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-yellow.svg" alt="Index portal yellow">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-green-semi.svg" alt="Index portal green semi">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-green.svg" alt="Index portal green">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-blue-semi.svg" alt="Index portal blue semi">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-blue.svg" alt="Index portal blue">
-            </div>
+        <!-- 播放进度条 -->
+        <div class="hero-play-progress" ref="audioParentEle" @click="adjustProgress($event)">
+            <div ref="audioBufferedEle" class="hero-play-progress-buffered"></div>
+            <div ref="audioProgressEle" class="hero-play-progress-bar"></div>
         </div>
-        <!-- 中心专辑图片 -->
-        <div class="hero-play-audio">
-            <img class="hero-play-audios" ref="albumImgEle" @click="playPaused" draggable="false" :src="currentPlaySong.albumisrc ? currentPlaySong.albumisrc : placeholderImg" alt="">
-            <div class="hero-play-album-name">
-                {{currentPlaySong.name}}-{{currentPlaySong.songname}}
-            </div>
-
-            <!-- <img draggable="false" @click="playPaused" class="hero-play-audios" src="~@/assets/images/index-logo.svg" alt="Index portal blue"> -->
-        </div>
-
-        <div class="hero-play-panel">
-            <!-- 播放时间 -->
-            <div class="hero-play-time">
-                <div class="hero-play-time-current">{{transformTime(currPlayTime)}}</div>
-                <div class="hero-play-time-total">{{transformTime(songDuration)}}</div>
-            </div>
-            <!-- 播放进度条 -->
-            <div class="hero-play-progress" ref="audioParentEle" @click="adjustProgress($event)">
-                <div ref="audioBufferedEle" class="hero-play-progress-buffered"></div>
-                <div ref="audioProgressEle" class="hero-play-progress-bar"></div>
-            </div>
-            <!-- 播放控制 -->
-            <div class="hero-play-controls">
-                <div class="hero-play-controls-left">
-                    <!-- 暂停，播放 -->
-                    <div class="hero-play-controls-playpaused" :class="[isPlay ? 'pused' : 'play']" @click="playPaused" :title="[isPlay ? '暂停' : '播放']"></div>
-                    <!-- 播放下一首 -->
-                    <div class="hero-play-controls-playnext" title="下一首" @click="playNext"></div>
-                    <!-- 禁音 -->
-                    <div class="hero-play-controls-playvoice" :class="[isVoice ? 'voice-off' : 'voice-on']" title="禁音" @click="closedSound"></div>
-                    <!-- 音量大小 -->
-                    <div class="hero-play-controls-playrange">
-                        <input ref="audioRangeEle" class="playrange-input iptrange" type="range" value="0" max="100" min="0" step="1" v-model="audioRangeVal" @input="playRange">
-                    </div>
-
+        <!-- 播放控制 -->
+        <div class="hero-play-controls">
+            <div class="hero-play-controls-left">
+                <!-- 暂停，播放 -->
+                <div class="hero-play-controls-playpaused" :class="[isPlay ? 'pused' : 'play']" @click="playPaused" :title="[isPlay ? '暂停' : '播放']"></div>
+                <!-- 播放下一首 -->
+                <div class="hero-play-controls-playnext" title="下一首" @click="playNext"></div>
+                <!-- 禁音 -->
+                <div class="hero-play-controls-playvoice" :class="[AudioIsVoice ? 'voice-off' : 'voice-on']" title="禁音" @click="closedSound"></div>
+                <!-- 音量大小 -->
+                <div class="hero-play-controls-playrange">
+                    <input ref="audioRangeEle" class="playrange-input iptrange" type="range" value="0" max="100" min="0" step="1" v-model="audioRangeVal" @input="playRange">
                 </div>
 
-                <div class="hero-play-controls-right">
-                    <!-- 喜欢 -->
-                    <div class="hero-play-controls-like" :class="[isLike ? 'like' : 'hate']" :title="[isLike ? '已经喜欢' : '喜欢']" @click="audioLike"></div>
-                    <!-- 不喜欢 -->
-                    <div class="hero-play-controls-hate" title="讨厌" @click="audioHate"></div>
-                    <!-- 其他 -->
-                    <div class="hero-play-controls-other" title="更多"></div>
-                </div>
+            </div>
+
+            <div class="hero-play-controls-right">
+                <!-- 喜欢 -->
+                <div class="hero-play-controls-like" :class="[AudioIsLike ? 'like' : 'hate']" :title="[AudioIsLike ? '已经喜欢' : '喜欢']" @click="audioLike"></div>
+                <!-- 不喜欢 -->
+                <div class="hero-play-controls-hate" title="讨厌" @click="audioHate"></div>
+                <!-- 其他 -->
+                <div class="hero-play-controls-other" title="更多"></div>
             </div>
         </div>
-
-        <canvas ref="canvasPlayer" class="hero-play-canvas"></canvas>
-    </div>
+    </section>
 </template>
 
 <script>
-const {ipcRenderer: ipc} = require('electron');
-import ogg from '../assets/audios/horse.ogg';
-import mp3 from '../assets/audios/ConfessionBallon.mp3';
-import placeholderImg from '../assets/person_300.png'
 export default {
-    name: 'index',
-    data: () => ({
+    name:'AudioPanel',
+    props:{
+
+    },
+    data:() => ({
         currentPlaySong :'',//当前播放音乐对象
         isLike          :false,//是否喜欢这首歌
         isVoice         :false,//是否禁音
         isPlay          :true,//是否播放
-        placeholderImg  :placeholderImg,//默认专辑图片
         audioBufferedEle:'',//音频缓冲进度条
         audioProgressEle:'',//音频进度条元素
         audioParentEle  :'',//音频进度条父元素
@@ -117,69 +68,43 @@ export default {
 
         timeInterval    :'',//
         albumInterval   :'',//
-        bgcolorInterval :'',//
-        bgcolorVal      :'',//背景颜色值
-        heroBoxEle      :'',//主体背景元素
 
         AudioPlayer     :'',//new audio 播放器对象
         AudioBufferedVal:1,//audio 以缓冲的百分比
 
         tableData       :'',//本地数据库
 
-        searchVal       :'',//搜索字段
-        searchList      :[],//查询到歌曲的结果列表
-        isShowList      :false,//是否显示播放列表
-
         canvasPlayer    :'',//canvas
         canvasCtx       :'',//canvas ctx
+        drawVisual      :'',//canvas draw requestAnimFrame
+
         audioCtx        :'',//播放器上下文
         analyser        :'',//音频分析器
         mediaSource     :'',//媒体节点
+
+        bufferLength    :'',//
+        dataArray       :'',//
     }),
     created(){
-        window.requestAnimFrame = (function(){
-            return  window.requestAnimationFrame       ||
-                    window.webkitRequestAnimationFrame ||
-                    window.mozRequestAnimationFrame    ||
-                    window.oRequestAnimationFrame      ||
-                    window.msRequestAnimationFrame     ||
-                    function(/* function */ callback, /* DOMElement */ element){
-                        window.setTimeout(callback, 1000 / 60);
-                    };
-       })();
-
-
-       // this.$db.chartData.loadDatabase();
-       // 初始化本地数据库
-       this.tableData = this.$db.tableData;
+        // this.$tool.setRequestAnimFrame();
     },
     mounted(){
-        this.albumImgEle       = this.$refs.albumImgEle;
+
         this.audioProgressEle  = this.$refs.audioProgressEle;
         this.audioBufferedEle  = this.$refs.audioBufferedEle;
         this.audioParentEle    = this.$refs.audioParentEle;
+
         this.audioRangeEle     = this.$refs.audioRangeEle;
         this.heroBoxEle        = this.$refs.heroBoxEle;
 
-        this.canvasPlayer      = this.$refs.canvasPlayer;
-        this.canvasCtx         = this.canvasPlayer.getContext("2d");
-
         this.AudioPlayer = new Audio();//创建播放对象
-
-        // 创建音频源连接的播放节点分析器
-        this.audioCtx    = new (window.AudioContext || window.webkitAudioContext)();
-        // this.analyser    = audioCtx.createAnalyser();
 
         this.getMusics();//获取音乐列表
         this.playEnd();//监听播放完成
         this.playTime();//获取当前播放时长
-
         this.setRangeProgress();// 设置拖动条颜色
     },
-    computed:{
-
-    },
-    methods: {
+    methods:{
         // 播放
         playPaused(){
             if(this.AudioPlayer.paused){
@@ -191,48 +116,6 @@ export default {
                 this.AudioPlayer.pause();
                 this.albumEndRotate();//专辑旋转暂停
             }
-        },
-
-        // 搜索音乐
-        searchMusics(eventType){
-            console.log(eventType);
-            if(eventType == 'blur'){
-                setTimeout(()=>{
-                    this.isShowList = false;
-                },250);
-                return
-            }
-            this.$http({
-                url     :'https://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp',
-                method  :'get',
-                params  :{
-                    g_tk        :'5381',
-                    uin         :'0',
-                    format      :'json',
-                    inCharset   :'utf-8',
-                    outCharset  :'utf-8',
-                    notice      :'0',
-                    platform    :'h5',
-                    needNewCode :'1',
-                    w           :this.searchVal,
-                    zhidaqu     :'1',
-                    catZhida    :'1',
-                    t           :'0',
-                    flag        :'1',
-                    ie          :'utf-8',
-                    sem         :'1',
-                    aggr        :'0',
-                    perpage     :'10',
-                    n           :'10',
-                    p           :'1',
-                    remoteplace :'txt.mqq.all',
-                    _           :new Date().getTime()
-                }
-            }).then((res)=>{
-                let data        = res.data.data;
-                this.searchList = data.song.list;
-                this.isShowList = true;//显示搜索结果列表
-            })
         },
 
         // 获取音乐列表
@@ -356,19 +239,6 @@ export default {
             // 开始播放并监听播放位置改变时
             this.AudioPlayer.play();
 
-            // 闯将频谱分析器
-            this.analyser    = this.audioCtx.createAnalyser();
-            console.log(this.analyser);
-            this.mediaSource = this.audioCtx.createMediaElementSource(this.AudioPlayer);
-            //连接：source → analyser → destination
-            this.mediaSource.connect(this.analyser);
-            this.analyser.connect(this.audioCtx.destination);
-
-
-            // fftSize (Fast Fourier Transform) 是快速傅里叶变换，一般情况下是固定值2048，这个值可以决定音频频谱的密集程度。值大了，频谱就松散，值小就密集。
-            let dataArray = new Uint8Array(this.analyser.fftSize);//dataArray数组将用来放音频高低音不同区域的数据信息，当音频播放时，每一个时间节点，都有不同的音频数据，使用analyser.getByteFrequencyData(dataArray)将数据放入数组，用来进行频谱的可视化绘制。
-            console.log(this.analyser.frequencyBinCount);
-
             this.AudioPlayer.ontimeupdate = () => {
                 if(this.AudioPlayer.readyState == 4){
                     // 如果歌曲已缓冲100%
@@ -386,7 +256,7 @@ export default {
                 }
             }
 
-            this.changeBackgroundColor();//随机改变背景颜色
+            // this.changeBackgroundColor();//随机改变背景颜色
             //获取歌词
             // this.getLyric();
 
@@ -512,12 +382,12 @@ export default {
 
         // 专辑图片开始旋转
         albumStartRotate(){
-            this.albumInterval = requestAnimFrame(this.albumStartRotate);
-            this.albumImgEle.style.transform = `rotate(${this.albumRotateDeg}deg)`;
-            this.albumRotateDeg += .5;
-            if(this.albumRotateDeg > 360){
-                this.albumRotateDeg = 0;
-            }
+            // this.albumInterval = requestAnimFrame(this.albumStartRotate);
+            // this.albumImgEle.style.transform = `rotate(${this.albumRotateDeg}deg)`;
+            // this.albumRotateDeg += .5;
+            // if(this.albumRotateDeg > 360){
+            //     this.albumRotateDeg = 0;
+            // }
         },
 
         // 专辑图片暂停旋转
@@ -539,9 +409,9 @@ export default {
 
         // 选中播放歌曲
         selectPlaySong(data){
-            console.log(data);
-            this.searchVal = `${data.singer[0].name}-${data.songname}`;
-            this.isShowList = false;//隐藏搜索列表
+            // this.searchVal = `${data.singer[0].name}-${data.songname}`;
+            // this.isShowList = false;//隐藏搜索列表
+
             this.albumEndRotate();//清除专辑图片动画
             this.startPlay('order',data);
 
@@ -549,63 +419,12 @@ export default {
             this.tableData.find({songmid:data.songmid}, (err,doc) => {
                 this.isLike = doc.length != 0 ? true : false;
             })
-        },
-
-        // 根据歌曲缓慢改变背景颜色
-        changeBackgroundColor(){
-            // this.bgcolorInterval = requestAnimFrame(this.changeBackgroundColor);
-            // let generateR = Math.ceil(Math.random() * 100);
-            // let generateG = Math.ceil(Math.random() * 100);
-            // let generateB = Math.ceil(Math.random() * 100);
-
-            let theColor = [
-                ['#693e44','#3c5d90','#000d38'],
-                ['#345e44','#001029','#000d38'],
-                ['#823e54','#290020','#000d38'],
-                ['#393e44','#020000','#46102b'],
-                ['#7ba1ce','#88522f','#523951'],
-                ['#3c7ece','#552f88','#523939'],
-                ['#8e9296','#31283c','#2e2246'],
-                ['#8e9296','#31283c','#2e2246'],
-                ['#1da047','#000000','#25290f'],
-                ['#1da047','#000000','#25290f'],
-                ['#d2272e','#4c4429','#290f26'],
-            ];
-            let random = Math.ceil(Math.random() * 10);
-            this.heroBoxEle.style.backgroundImage = `radial-gradient(circle farthest-corner at 50% 50%, ${theColor[random][0]}, ${theColor[random][1]} 50%, ${theColor[random][2]})`;
 
         },
 
-        // canvas 频谱绘制
-        canvasDraw(){
-
-            canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
-
-        },
-
-        // 操作窗口
-        operantWindow(type){
-            console.log(ipc);
-            if(type == 'hide'){
-                ipc.send('window-min');
-            }else if(type == 'closed'){
-                ipc.send('window-close');
-            }
-        }
     }
 }
 </script>
 
 <style lang="css">
-.slide-fade-enter-active {
-  transition: all .25s ease;
-}
-.slide-fade-leave-active {
-  transition: all .25s ease;
-}
-.slide-fade-enter, .slide-fade-leave-to
-/* .slide-fade-leave-active for below version 2.1.8 */ {
-  transform: translateY(10px);
-  opacity: 0;
-}
 </style>

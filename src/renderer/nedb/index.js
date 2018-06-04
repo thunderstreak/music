@@ -2,6 +2,7 @@ import DataStore from 'nedb'
 import path from 'path'
 import {remote} from 'electron'
 
+// 创建本地数据库
 const db = {
     tableData : new DataStore({
         filename : path.join(remote.app.getPath('userData'), '/tableData.db'),

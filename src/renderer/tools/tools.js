@@ -520,9 +520,23 @@ const libs={
         }
         return false;
     },
+    // 获取时间戳
     getTimestamp:()=>{
         let timestamp = new Date().getTime();
         return timestamp;
+    },
+    // 设置request animation frame
+    setRequestAnimFrame(){
+        window.requestAnimFrame = (function(){
+            return  window.requestAnimationFrame       ||
+                    window.webkitRequestAnimationFrame ||
+                    window.mozRequestAnimationFrame    ||
+                    window.oRequestAnimationFrame      ||
+                    window.msRequestAnimationFrame     ||
+                    function(/* function */ callback, /* DOMElement */ element){
+                        window.setTimeout(callback, 1000 / 60);
+                    };
+       })();
     }
 }
 

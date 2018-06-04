@@ -6,14 +6,22 @@ Vue.use(Router)
 export default new Router({
     routes: [
         {
-            path: '/home',
-            name: 'home',
+            path: '/audio',
+            name: 'audio',
             meta     : {
                 auth : false,
-                level: 1,
-                title: '登录',
+                title: 'AudioPlayer',
             },
-            component: resolve => require(['@/view/home'], resolve)
+            component: resolve => require(['@/view/audio'], resolve)
+        },
+        {
+            path: '/video',
+            name: 'video',
+            meta     : {
+                auth : false,
+                title: 'VideoPlayer',
+            },
+            component: resolve => require(['@/view/video'], resolve)
         },
         {
             path: '/landing-page',
@@ -23,7 +31,7 @@ export default new Router({
         {
             path: '*',
             redirect: {
-                name: 'home'
+                name: 'audio'
             }
         }
     ]
