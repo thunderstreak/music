@@ -24,8 +24,9 @@ npm run build
 
 ```
 
-## Versions 0.1.1
+## Versions
 
+- current version 0.1.1
 
 
 ## Technology stack
@@ -34,13 +35,13 @@ electron + vue2 + vuex + vue-router + nedb + webpack + ES6/7 + less
 
 | Project | Status | Description |
 |---------|--------|-------------|
-| [electron]          | [![electron-status]][electron-package] | Build cross platform desktop apps with JavaScript, HTML, and CSS |
+| [electron]     | [![electron-status]][electron-package] | Build cross platform desktop apps with JavaScript, HTML, and CSS |
 | [vue]          | [![vue-status]][vue-package] | Vue is a progressive framework for building user interfaces |
-| [vue-router]          | [![vue-router-status]][vue-router-package] | Single-page application routing |
-| [vuex]                | [![vuex-status]][vuex-package] | Large-scale state management |
-| [nedb]                | [![nedb-status]][nedb-package] | The JavaScript Database, for Node.js, nw.js, electron and the browser |
-| [webpack]                | [![webpack-status]][webpack-package] | webpack is a module bundler |
-| [less]                | [![less-status]][less-package] | Less. The dynamic stylesheet language. |
+| [vue-router]   | [![vue-router-status]][vue-router-package] | Single-page application routing |
+| [vuex]         | [![vuex-status]][vuex-package] | Large-scale state management |
+| [nedb]         | [![nedb-status]][nedb-package] | The JavaScript Database, for Node.js, nw.js, electron and the browser |
+| [webpack]      | [![webpack-status]][webpack-package] | webpack is a module bundler |
+| [less]         | [![less-status]][less-package] | Less. The dynamic stylesheet language. |
 
 
 [electron]: https://electronjs.org/
