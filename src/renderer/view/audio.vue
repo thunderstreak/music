@@ -88,6 +88,17 @@
             </div>
         </div>
 
+        <MaskLayer ref="dialogInfoObj">
+            <div class="dialog-info">
+                <div class="dialog-info-tit">
+                    该歌曲需要付费播放
+                </div>
+                <div class="dialog-info-btn" @click.stop="playNext">
+                    播放下一首
+                </div>
+                <div class="dialog-info-closed"></div>
+            </div>
+        </MaskLayer>
         <canvas ref="canvasPlayer" class="hero-play-canvas"></canvas>
     </div>
 </template>
@@ -152,6 +163,8 @@ export default {
 
         isShowCollect   :false,//是否显示收藏
         collectType     :'likes',//收藏列表默认显示
+
+        dialogInfoObj   :'',//提示层layer
     }),
     created(){
         // 设置request animation frame
@@ -171,6 +184,8 @@ export default {
 
         this.audioRangeEle     = this.$refs.audioRangeEle;
         this.heroBoxEle        = this.$refs.heroBoxEle;
+
+        this.dialogInfoObj     = this.$refs.dialogInfoObj;
 
         this.canvasPlayer      = this.$refs.canvasPlayer;
         this.canvasCtx         = this.canvasPlayer.getContext("2d");
@@ -209,7 +224,9 @@ export default {
         document.addEventListener('click', () => {
             this.isShowCollect ? this.isShowCollect = false : '';
         })
-        let slef = this;
+
+
+
         // 接受主进程事件通知，渲染歌词
         ipcRenderer.on('ipcMainSongLyric',(event,lyric) => {
 
@@ -260,40 +277,12 @@ export default {
                 for (var i = 0; i < songlist.length; i++) {
                     let data = songlist[i].data;
                     if(data.songmid){
-                        this.playSonglist.push(this.setPlaySongInfo(data));
+                        this.playSonglist.push(songInfo.SetSongPlayInfo(data));// 设置播放歌曲信息
                         // this.playSonglist.push(songInfo.songPlayInfo(data));
                     }
                 }
                 this.startPlay();//开始播放
             })
-        },
-
-        // 设置播放歌曲信息
-        setPlaySongInfo(data){
-            return {
-                src         :`http://ws.stream.qqmusic.qq.com/C100${data.songmid}.m4a?fromtag=0&guid=126548448`,//歌曲地址
-                singername  :data.singername || data.singer.map(res => res.name).join('-'),//歌手名称
-                songname    :data.songname,//歌曲名称
-                songorig    :data.songorig,
-                songmid     :data.songmid,
-                songid      :data.songid,//歌曲id
-                pay         :data.pay,
-                payplay     :(data.pay.payplay == 1 && data.pay.payalbumprice != 0) ? true : false,//是否需要购买才能播放
-
-                albumisrc   :`http://imgcache.qq.com/music/photo/album_300/${data.albumid%100}/300_albumpic_${data.albumid}_0.jpg`,//专辑封面
-                albumid     :data.albumid,//专辑id
-                albummid    :data.albummid,
-                albumname   :data.albumname,//专辑名称
-            }
-        },
-
-        // 获取歌词
-        getLyric(){
-            let songmid = this.playSonglist[this.currSongIndex].songmid;
-            // console.log(this.playSonglist[this.currSongIndex]);
-
-            // 向主进程发送事件，获取歌词
-            ipcRenderer.send('ipcRendererSongLyric', songmid);
         },
 
         /**
@@ -315,13 +304,13 @@ export default {
             }
             // 如果有指定播放的歌曲
             if(playSong){
-                this.currentPlaySong = this.setPlaySongInfo(playSong);
+                this.currentPlaySong = songInfo.SetSongPlayInfo(playSong);// 设置播放歌曲信息
                 this.AudioPlayer.src = this.currentPlaySong.src;//当前播放歌曲的src
             }else{
                 // 如果没有指定播放的歌曲先查询数据库里面是否存在记录，如果存在记录再判断是否标记为是否喜欢，如果不喜欢则跳过播放
                 let tempsong = this.playSonglist[this.currSongIndex];
                 this.tableData.find({ songid: tempsong.songid }, (err,doc) => {
-                    console.log(doc);
+                    // console.log(doc);
                     if(doc.length != 0){
                         // 如果不是喜欢的歌曲则跳过播放
                         if(doc[0].isLike == false){
@@ -335,11 +324,11 @@ export default {
                 this.currentPlaySong = tempsong;//当前播放的歌曲详细信息
                 this.AudioPlayer.src = tempsong.src;//当前播放歌曲的src
             }
-
+            console.log(this.currentPlaySong);
             // 判断歌曲是否需要付费才能播放
             if(this.currentPlaySong.payplay == 1){
                 console.log(this.currentPlaySong.songname + '：该歌曲需要付费播放');
-                let options = {
+                /*let options = {
                     type    : 'warning',
                     title   : '提示',
                     message : `该歌曲需要付费播放`,
@@ -351,7 +340,8 @@ export default {
                         this.playNext();
                         return;
                     }
-                })
+                })*/
+                this.$refs.dialogInfoObj.toggle(true);
             }
 
             this.AudioPlayer.load();
@@ -385,8 +375,9 @@ export default {
             }
 
             // this.changeBackgroundColor();//随机改变背景颜色
-            //获取歌词
-            this.getLyric();
+
+            // 向主进程发送事件，获取歌词
+            ipcRenderer.send('ipcRendererSongLyric', this.currentPlaySong.songmid);
 
         },
 
@@ -405,9 +396,13 @@ export default {
             this.albumEndRotate();//清除专辑图片动画
             this.startPlay();//开始播放
             this.AudioBufferedVal = 1;//默认缓冲值从1开始
-            this.searchVal = '';//清空搜索
             this.playSongLyric = [];//清空当前歌词组
             this.currentLyric = '';//清空当前歌词
+
+            // 歌曲付费播放提示是否显示，如果显示就在切换歌曲时隐藏
+            if(this.dialogInfoObj.show == true){
+                this.dialogInfoObj.toggle(false);
+            }
 
             //根据查询的数据标记是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
             this.tableData.find({ songmid : this.currentPlaySong.songmid }, (err,doc) => {
@@ -447,7 +442,7 @@ export default {
         // 设置歌曲喜欢
         audioLike(){
             this.isLike = !this.isLike;
-            let songdata = songInfo.songPlayData(this.currentPlaySong,this.isLike);
+            let songdata = songInfo.SongPlayData(this.currentPlaySong,this.isLike);
             // 只有喜欢的歌曲才会被添加到db
             if(this.isLike){
 
@@ -467,7 +462,7 @@ export default {
         audioHate(){
             console.log(this.currentPlaySong);
             // 设置讨厌的歌曲
-            let songdata = songInfo.songPlayData(this.currentPlaySong,false);
+            let songdata = songInfo.SongPlayData(this.currentPlaySong,false);
 
             //标记这首歌曲不喜欢
             this.tableData.insert(songdata, (err, newDoc) => {
@@ -560,8 +555,16 @@ export default {
             this.AudioPlayer.play();//开始播放音乐
             this.albumStartRotate();//专辑图片开始旋转
             this.isPlay = true;//是否播放状态为播放
-            // this.playSongLyric = [];//清空当前歌词组
-            this.currentLyric = '';//清空当前歌词
+
+            // 拖动进度条显示当前歌词
+            let playSongLyric = this.playSongLyric
+            let currPlayTime = parseInt(this.AudioPlayer.currentTime);
+            for (var i = 0; i < playSongLyric.length; i++) {
+                if(playSongLyric[i].lyricTime <= currPlayTime && currPlayTime <= playSongLyric[i + 1].lyricTime){
+                    this.currentLyric = playSongLyric[i].lyric;
+                    break;
+                }
+            }
         },
 
         // 专辑图片开始旋转
@@ -593,9 +596,6 @@ export default {
 
         // 选中播放歌曲
         selectPlaySong(data){
-            // this.searchVal = `${data.singer[0].name}-${data.songname}`;
-            // this.isShowList = false;//隐藏搜索列表
-            // console.log(data);
 
             this.isShowCollect ? this.isShowCollect = false : '';
 
@@ -629,8 +629,9 @@ export default {
                 ['#1da047','#000000','#25290f'],
                 ['#d2272e','#4c4429','#290f26'],
             ];
-            let random = 10;//Math.ceil(Math.random() * 10);
-            this.heroBoxEle.style.backgroundImage = `radial-gradient(circle farthest-corner at 50% 50%, ${theColor[random][0]}, ${theColor[random][1]} 50%, ${theColor[random][2]})`;
+            let random = Math.ceil(Math.random() * 10);
+            this.heroBoxEle.style.transition = '15s';
+            this.heroBoxEle.style.background = `radial-gradient(circle farthest-corner at 50% 50%, ${theColor[random][0]}, ${theColor[random][1]} 50%, ${theColor[random][2]})`;
 
         },
 
