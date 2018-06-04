@@ -90,24 +90,25 @@ function updateHandle() {
     const os = require('os');
 
     autoUpdater.setFeedURL('http://192.168.1.186:8000/');
-    autoUpdater.on('error', function(error) {
-        sendUpdateMessage(message.error)
+    // 通过main进程发送事件给renderer进程，提示更新信息
+    autoUpdater.on('error', (error) => {
+        mainWindow.webContents.send('message', message.error)
     });
-    autoUpdater.on('checking-for-update', function() {
-        sendUpdateMessage(message.checking)
+    autoUpdater.on('checking-for-update', () => {
+        mainWindow.webContents.send('message', message.checking)
     });
-    autoUpdater.on('update-available', function(info) {
-        sendUpdateMessage(message.updateAva)
+    autoUpdater.on('update-available', (info) => {
+        mainWindow.webContents.send('message', message.updateAva)
     });
-    autoUpdater.on('update-not-available', function(info) {
-        sendUpdateMessage(message.updateNotAva)
+    autoUpdater.on('update-not-available', (info) => {
+        mainWindow.webContents.send('message', message.updateNotAva)
     });
 
     // 更新下载进度事件
-    autoUpdater.on('download-progress', function(progressObj) {
+    autoUpdater.on('download-progress', (progressObj) => {
         mainWindow.webContents.send('downloadProgress', progressObj)
     })
-    autoUpdater.on('update-downloaded', function(event, releaseNotes, releaseName, releaseDate, updateUrl, quitAndUpdate) {
+    autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName, releaseDate, updateUrl, quitAndUpdate) => {
 
         ipcMain.on('isUpdateNow', (e, arg) => {
             console.log(arguments);
@@ -123,11 +124,6 @@ function updateHandle() {
         //执行自动更新检查
         autoUpdater.checkForUpdates();
     })
-}
-
-// 通过main进程发送事件给renderer进程，提示更新信息
-function sendUpdateMessage(text) {
-    mainWindow.webContents.send('message', text)
 }
 
 
