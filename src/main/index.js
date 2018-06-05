@@ -2,7 +2,6 @@ import {app, BrowserWindow, globalShortcut,screen,ipcMain} from 'electron'
 import { autoUpdater } from "electron-updater"
 
 import './request/'
-
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -40,7 +39,7 @@ function createWindow() {
     })
 
     // 在所有东西都加载完成时，显示窗口并聚焦在上面提醒用户,这里推荐使用 BrowserWindow 的 "ready-to-show" 事件实现，或者用 webContents 的 'did-finish-load' 事件。
-    mainWindow.on('ready-to-show', function() {
+    mainWindow.on('ready-to-show', () => {
         mainWindow.show();
         mainWindow.focus();
     });
@@ -58,7 +57,7 @@ function createWindow() {
     }
 
     //注册打开控制台的快捷键
-    globalShortcut.register('CommandOrControl+shift+alt+e', function () {
+    globalShortcut.register('CommandOrControl+shift+alt+e', () => {
         let win = BrowserWindow.getFocusedWindow();
         if (win) {
             win.webContents.openDevTools({ detach: true });
@@ -79,45 +78,38 @@ const shouldQuit = app.makeSingleInstance((commandLine, workingDirectory) => {
 if (shouldQuit) {
     app.quit()
 }
+
 // 检测更新，在你想要检查更新的时候执行，renderer事件触发后的操作自行编写
 function updateHandle() {
-    let message = {
-        error: '检查更新出错',
-        checking: '正在检查更新……',
-        updateAva: '检测到新版本，正在下载……',
-        updateNotAva: '现在使用的就是最新版本，不用更新'
+    let options = {
+        error       : {msg:'检查更新出错',type:'error'},
+        checking    : {msg:'正在检查更新…',type:'checking'},
+        updating    : {msg:'检测到最新版本，是否更新',type:'updating'},
+        noUpdate    : {msg:'当前已是最新版本，不用更新',type:'noUpdate'}
     };
-    const os = require('os');
+    // const os            = require('os');
+    const webContents   = mainWindow.webContents;
 
     autoUpdater.setFeedURL('http://192.168.1.186:8000/');
     // 通过main进程发送事件给renderer进程，提示更新信息
-    autoUpdater.on('error', (error) => {
-        mainWindow.webContents.send('message', message.error)
-    });
-    autoUpdater.on('checking-for-update', () => {
-        mainWindow.webContents.send('message', message.checking)
-    });
-    autoUpdater.on('update-available', (info) => {
-        mainWindow.webContents.send('message', message.updateAva)
-    });
-    autoUpdater.on('update-not-available', (info) => {
-        mainWindow.webContents.send('message', message.updateNotAva)
-    });
+    autoUpdater.on('error',                 err => webContents.send('message', options.error));
+    autoUpdater.on('checking-for-update',   res => webContents.send('message', options.checking));
+    autoUpdater.on('update-available',      res => webContents.send('message', options.updating));
+    autoUpdater.on('update-not-available',  res => webContents.send('message', options.noUpdate));
 
     // 更新下载进度事件
-    autoUpdater.on('download-progress', (progressObj) => {
-        mainWindow.webContents.send('downloadProgress', progressObj)
-    })
+    autoUpdater.on('download-progress',     res => webContents.send('downloadProgress', res));
+    // 更新下载完成，准备退出并安装
     autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName, releaseDate, updateUrl, quitAndUpdate) => {
+        // 向渲染进程发送更新下载完成通知
+        webContents.send('updateDownloaded',event, releaseNotes)
+    });
 
-        ipcMain.on('isUpdateNow', (e, arg) => {
-            console.log(arguments);
-            console.log("开始更新");
-            //some code here to handle event
-            autoUpdater.quitAndInstall();
-        });
-
-        mainWindow.webContents.send('isUpdateNow')
+    // 接受渲染进程更新通知事件
+    ipcMain.on('updateNow', () => {
+        console.log("开始更新");
+        //退出并重新更新
+        autoUpdater.quitAndInstall();
     });
 
     ipcMain.on("checkForUpdate", () => {
@@ -127,21 +119,26 @@ function updateHandle() {
 }
 
 
-app.on('ready', createWindow)
+app.on('ready', () => {
+    // 创建主窗口
+    createWindow();
+    // 尝试更新
+    updateHandle();
+})
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
-        app.quit()
+        app.quit();
     }
 })
 
 app.on('activate', () => {
     if (mainWindow === null) {
-        createWindow()
+        createWindow();
     }
 })
 // 关闭窗口
-ipcMain.on('window-close', (e) => {mainWindow.close();});
+ipcMain.on('window-close', e => mainWindow.close());
 // 最小化窗口
 ipcMain.on('window-min', e => mainWindow.minimize());
 // 最大化窗口

@@ -5,7 +5,7 @@
 // import { uploadUrl } from "../../renderer/config/config";
 
 // 检测更新，在你想要检查更新的时候执行，renderer事件触发后的操作自行编写
-export default function updateHandle() {
+export default function updateHandle(autoUpdater,mainWindow) {
     let message = {
         error: '检查更新出错',
         checking: '正在检查更新……',

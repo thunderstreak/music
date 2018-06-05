@@ -1,0 +1,9 @@
+version: 0.1.6
+files:
+  - url: Player_setup_0.1.6.exe
+    sha512: 1BBEp5ni+6hXa20Eq2xk13RePxRdjO0IvqKOKMDeMpBr1U4xj4zpxdsAO1n1vNoLt+lVcT4DT47mYg00l04WWA==
+    size: 37720712
+path: Player_setup_0.1.6.exe
+sha512: 1BBEp5ni+6hXa20Eq2xk13RePxRdjO0IvqKOKMDeMpBr1U4xj4zpxdsAO1n1vNoLt+lVcT4DT47mYg00l04WWA==
+sha2: 8cac58b9a242285a0e81328d98557bc5d645be646a41080a058aec8993d897e4
+releaseDate: '2018-06-05T08:24:06.581Z'

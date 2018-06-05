@@ -90,12 +90,8 @@
 
         <MaskLayer ref="dialogInfoObj">
             <div class="dialog-info">
-                <div class="dialog-info-tit">
-                    该歌曲需要付费播放
-                </div>
-                <div class="dialog-info-btn" @click.stop="playNext">
-                    播放下一首
-                </div>
+                <div class="dialog-info-tit">该歌曲需要付费播放</div>
+                <div class="dialog-info-btn" @click.stop="playNext">播放下一首</div>
                 <div class="dialog-info-closed"></div>
             </div>
         </MaskLayer>
@@ -229,38 +225,41 @@ export default {
 
         // 接受主进程事件通知，渲染歌词
         ipcRenderer.on('ipcMainSongLyric',(event,lyric) => {
-            this.playSongLyric = [];
-            for(let i = 1; i < lyric.length; i++){
-                if(lyric[i]){
-                    if(lyric[i].split("[")[1].split("]")[1]){
-
-                        this.playSongLyric.push({
-                            lyric       :lyric[i].split("[")[1].split("]")[1],
-                            lyricTime   :this.getTime(lyric[i].split("[")[1].split("]")[0]),
-                        })
-                    }
-                }
-            }
+            this.parseLyric(lyric);//解析歌词
         })
 
         // 检查是否有更新
         ipcRenderer.send("checkForUpdate");
 
         // 接受更新信息
-        ipcRenderer.on("message", (event, text) => {
-            console.log(text);
-            this.tips = text;
+        ipcRenderer.on("message", (event, msg) => {
+            console.log(msg);
+
+            if(msg.type == 'updating'){
+                // 检查到最新版本
+                this.$dialog.alert({
+                    title   : '123',
+                    type    : 'msg',
+                    message : msg.msg,
+                    leftbtn : '下次',
+                    rightbtn: '确认',
+                    callback: (flag) => {
+                        console.log(flag);
+                    }
+                })
+            }
         });
 
         // 下载进度
         ipcRenderer.on("downloadProgress", (event, progressObj) => {
             console.log(progressObj);
-            this.downloadPercent = progressObj.percent || 0;
         });
 
-        // 是否现在更新
-        ipcRenderer.on("isUpdateNow", () => {
-            ipcRenderer.send("isUpdateNow");
+        // 接受更新下载完成通知
+        ipcRenderer.on("updateDownloaded", (event, releaseNotes) => {
+            // 通知主进程立即更新
+            // ipcRenderer.send("updateNow");
+            console.log(event, releaseNotes);
         });
 
     },
@@ -302,6 +301,26 @@ export default {
                 }
                 this.startPlay();//开始播放
             })
+        },
+
+        // 解析歌词
+        parseLyric(lyric){
+            this.playSongLyric = [];
+            if(lyric.length == 0){
+                this.currentLyric = '当前暂无歌词显示';
+                return
+            }
+            for(let i = 1; i < lyric.length; i++){
+                if(lyric[i]){
+                    if(lyric[i].split("[")[1].split("]")[1]){
+
+                        this.playSongLyric.push({
+                            lyric       :lyric[i].split("[")[1].split("]")[1],
+                            lyricTime   :this.getTime(lyric[i].split("[")[1].split("]")[0]),
+                        })
+                    }
+                }
+            }
         },
 
         /**
@@ -397,7 +416,9 @@ export default {
 
             // 向主进程发送事件，获取歌词
             ipcRenderer.send('ipcRendererSongLyric', this.currentPlaySong.songmid);
-
+            /*this.$API.qq.qqMusicLyricAPI(this.currentPlaySong.songmid).then((res) => {
+                this.parseLyric(res);//解析歌词
+            })*/
         },
 
         // 停止播放
@@ -679,7 +700,7 @@ export default {
         this.endPlay();
         this.AudioPlayer = '';
         //组件销毁前移除所有事件监听channel
-        ipcRenderer.removeAll(["message", "downloadProgress", "isUpdateNow"]);//remove只能移除单个事件，单独封装removeAll移除所有事件
+        ipcRenderer.removeAll(["message", "downloadProgress", "updateDownloaded"]);//remove只能移除单个事件，单独封装removeAll移除所有事件
     }
 }
 </script>
