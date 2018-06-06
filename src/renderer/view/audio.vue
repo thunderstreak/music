@@ -244,22 +244,22 @@ export default {
                     leftbtn : '下次',
                     rightbtn: '确认',
                     callback: (flag) => {
-                        console.log(flag);
+                        flag && ipcRenderer.send("updateNow");
                     }
                 })
             }
         });
 
         // 下载进度
-        ipcRenderer.on("downloadProgress", (event, progressObj) => {
-            console.log(progressObj);
+        ipcRenderer.on("downloadProgress", (event, progress) => {
+            console.log(progress);
         });
 
         // 接受更新下载完成通知
-        ipcRenderer.on("updateDownloaded", (event, releaseNotes) => {
+        ipcRenderer.on("updateDownloaded", (event, downloaded) => {
             // 通知主进程立即更新
             // ipcRenderer.send("updateNow");
-            console.log(event, releaseNotes);
+            console.log(downloaded);
         });
 
     },
@@ -696,11 +696,10 @@ export default {
     },
     destroyed(){
         console.log('destroyed');
-        ipcRenderer.removeAllListeners(['ipcMainSongLyric']);
+        //组件销毁前移除所有事件监听channel
+        ipcRenderer.removeAllListeners(['ipcMainSongLyric','message','downloadProgress','updateDownloaded']);
         this.endPlay();
         this.AudioPlayer = '';
-        //组件销毁前移除所有事件监听channel
-        ipcRenderer.removeAll(["message", "downloadProgress", "updateDownloaded"]);//remove只能移除单个事件，单独封装removeAll移除所有事件
     }
 }
 </script>

@@ -32,8 +32,18 @@ Vue.config.productionTip = false
 
 /* eslint-disable no-new */
 new Vue({
-    components: { App },
+    el        : '#app',
     router,
     store,
-    template: '<App/>'
-}).$mount('#app')
+    components: {App},
+    template  : '<App/>',
+    data      : {
+        eventHub: new Vue()
+    }
+})
+// 某一个组件内调用事件
+// this.$root.eventHub.$emit('eventName', event.target);
+// 某一个组件内接受事件
+// this.$root.eventHub.$on('eventName',(target) => {
+//     this.functionName(target)
+// });

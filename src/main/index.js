@@ -1,7 +1,14 @@
 import {app, BrowserWindow, globalShortcut,screen,ipcMain} from 'electron'
 import { autoUpdater } from "electron-updater"
 
+import checkUpdate from './update'
+import diffVer from './updater/differenceVersions'
+
 import './request/'
+
+// 获取本地package.json信息
+const pack = require("../../package.json");
+
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -18,7 +25,7 @@ function createWindow() {
    * Initial window options
    */
 
-   let {width,height} = screen.getPrimaryDisplay().workAreaSize;
+    let {width,height} = screen.getPrimaryDisplay().workAreaSize;
     mainWindow = new BrowserWindow({
         height          : 563,
         width           : 1000,
@@ -66,6 +73,7 @@ function createWindow() {
 
 
 }
+
 
 // 防止启动多个实例
 const shouldQuit = app.makeSingleInstance((commandLine, workingDirectory) => {
@@ -118,12 +126,18 @@ function updateHandle() {
     })
 }
 
+// checkUpdate((res) => {
+//     console.log(res);
+// })
+// console.log(diffVer.diffVer(pack.version,));
 
 app.on('ready', () => {
     // 创建主窗口
     createWindow();
     // 尝试更新
     updateHandle();
+    // 立即下载更新然后在退出的时候安装
+    // autoUpdater.checkForUpdatesAndNotify();
 })
 
 app.on('window-all-closed', () => {
