@@ -1,6 +1,7 @@
 import DataStore from 'nedb'
 import path from 'path'
 import {remote} from 'electron'
+// const electron = require('electron')
 
 // 创建本地数据库
 const db = {

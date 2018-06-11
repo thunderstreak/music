@@ -1,5 +1,6 @@
 import axios from 'axios';
 import request from 'request'
+import Base64 from 'js-base64';
 /**
  * [qqMusicSearchAPI description]
  * @param  {[type]} searchStr [description]
@@ -53,8 +54,8 @@ export function qqMusicLsitAPI(){
             needNewCode :'1',
             tpl         :'3',
             page        :'detail',
-            type        :'top',
-            topid       :'27',
+            type        :'top',//巅峰榜
+            topid       :'26',//33:歌手2018,32:音乐人,31:微信分享,30:梦想的声音,29:影视金曲,28:网络歌曲,27:新歌,26:热歌，25:中国新歌声,
             _           :new Date().getTime()
         }
     })
@@ -81,8 +82,17 @@ export function qqMusicLyricAPI(songId){
     return new Promise((resolve,reject) => {
         request(options, (error, response, body) => {
             if(!error && response.statusCode == 200){
-                console.log(body);
-                resolve(body);
+                // 解码歌词
+                let data = JSON.parse(body.match(/\{(.+?)\}/g)[0]);
+                let decodelyric = Base64.Base64.decode(data.lyric);
+                let reslyric;
+                try {
+                    reslyric = decodelyric.split("[offset:0]")[1].split('\n');
+                } catch (e) {
+                    reslyric = [];
+                } finally {
+                    resolve(reslyric);
+                }
             }else{
                 console.log("error");
                 reject(error);

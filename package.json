@@ -1,6 +1,6 @@
 {
-  "name": "SongPlay",
-  "version": "0.1.1",
+  "name": "Player",
+  "version": "0.1.8",
   "author": "yanbin <821470904@qq.com>",
   "description": "An electron-vue project",
   "license": null,
@@ -17,11 +17,17 @@
     "postinstall": ""
   },
   "build": {
-    "productName": "SongPlay",
+    "productName": "Player",
     "appId": "org.simulatedgreg.electron-vue",
     "directories": {
       "output": "build"
     },
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "http://**.**.**.**:3002/download/"
+      }
+    ],
     "files": [
       "dist/electron/**/*"
     ],
@@ -41,18 +47,22 @@
       ]
     },
     "mac": {
-      "icon": "build/icons/Player.icns"
+      "icon": "build/icons/Player.icns",
+      "artifactName": "${productName}_setup_${version}.${ext}"
     },
     "win": {
-      "icon": "build/icons/Player.ico"
+      "icon": "build/icons/Player.ico",
+      "artifactName": "${productName}_setup_${version}.${ext}"
     },
     "linux": {
-      "icon": "build/Player"
+      "icon": "build/Player",
+      "artifactName": "${productName}_setup_${version}.${ext}"
     }
   },
   "dependencies": {
     "axios": "^0.16.1",
     "cheerio": "^1.0.0-rc.2",
+    "electron-updater": "^2.21.10",
     "nedb": "^1.8.0",
     "request": "^2.87.0",
     "vue": "^2.3.3",

@@ -1,11 +1,11 @@
 import https from 'https';
 
-let getHttpsData = (filepath, success, error) => {
+export default function getHttpsData (success, error) {
     // 回调缺省处理
-    success = success;
-    error   = error;
+    success = success || function(){};
+    error   = error || function(){};
 
-    let url = 'https://github.com/thunderstreak/music/blob/NewAudioBuffered/package.json';
+    let url = 'https://192.168.1.186:8001/package.json';
 
     https.get(url, (res) => {
         let statusCode = res.statusCode;

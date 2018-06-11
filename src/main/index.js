@@ -1,6 +1,12 @@
 import {app, BrowserWindow, globalShortcut,screen,ipcMain} from 'electron'
+import { autoUpdater } from "electron-updater"
+import checkUpdate from './updater/update'
+import diffVer from './updater/differenceVersions'
 
+// import './events/'
 import './request/'
+import config from '../config/'
+
 
 /**
  * Set `__static` path to static files in production
@@ -18,7 +24,7 @@ function createWindow() {
    * Initial window options
    */
 
-   let {width,height} = screen.getPrimaryDisplay().workAreaSize;
+    let {width,height} = screen.getPrimaryDisplay().workAreaSize;
     mainWindow = new BrowserWindow({
         height          : 563,
         width           : 1000,
@@ -39,7 +45,7 @@ function createWindow() {
     })
 
     // 在所有东西都加载完成时，显示窗口并聚焦在上面提醒用户,这里推荐使用 BrowserWindow 的 "ready-to-show" 事件实现，或者用 webContents 的 'did-finish-load' 事件。
-    mainWindow.on('ready-to-show', function() {
+    mainWindow.on('ready-to-show', () => {
         mainWindow.show();
         mainWindow.focus();
     });
@@ -57,13 +63,16 @@ function createWindow() {
     }
 
     //注册打开控制台的快捷键
-    globalShortcut.register('CommandOrControl+shift+alt+e', function () {
+    globalShortcut.register('CommandOrControl+shift+alt+e', () => {
         let win = BrowserWindow.getFocusedWindow();
         if (win) {
             win.webContents.openDevTools({ detach: true });
         }
     });
+
+
 }
+
 
 // 防止启动多个实例
 const shouldQuit = app.makeSingleInstance((commandLine, workingDirectory) => {
@@ -77,21 +86,75 @@ if (shouldQuit) {
     app.quit()
 }
 
-app.on('ready', createWindow)
+// 检测更新，在你想要检查更新的时候执行，renderer事件触发后的操作自行编写
+function updateHandle() {
+    let options = {
+        error       : {msg:'检查更新出错',type:'error'},
+        checking    : {msg:'正在检查更新…',type:'checking'},
+        updating    : {msg:'检测到最新版本，是否更新',type:'updating'},
+        noUpdate    : {msg:'当前已是最新版本，不用更新',type:'noUpdate'}
+    };
+
+    // const os            = require('os');
+    const webContents   = mainWindow.webContents;
+    autoUpdater.setFeedURL(config.downloadURL);
+
+    // 通过main进程发送事件给renderer进程，提示更新信息
+    autoUpdater.on('error',                 err => webContents.send('message', options.error));
+    autoUpdater.on('checking-for-update',   res => webContents.send('message', options.checking));
+    autoUpdater.on('update-available',      res => webContents.send('message', options.updating));
+    autoUpdater.on('update-not-available',  res => webContents.send('message', options.noUpdate));
+
+    // 更新下载进度事件
+    autoUpdater.on('download-progress',     res => webContents.send('downloadProgress', res));
+
+    // 更新下载完成，准备退出并安装
+    autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName, releaseDate, updateUrl, quitAndUpdate) => {
+        // 向渲染进程发送更新下载完成通知
+        webContents.send('updateDownloaded',event, releaseNotes)
+    });
+
+    // 接受渲染进程更新通知事件
+    ipcMain.on('updateNow', () => {
+        console.log("开始更新");
+        //退出并重新更新
+        autoUpdater.quitAndInstall();
+    });
+
+    // 接受渲染进程进行更新检查事件
+    ipcMain.on("checkForUpdate", () => {
+        //执行自动更新检查
+        autoUpdater.checkForUpdates();
+    })
+}
+
+// checkUpdate((res) => {
+//     console.log(res);
+// })
+// console.log(diffVer.diffVer(pack.version,));
+
+app.on('ready', () => {
+    // 创建主窗口
+    createWindow();
+    // 尝试更新
+    updateHandle();
+    // 立即下载更新然后在退出的时候安装
+    // autoUpdater.checkForUpdatesAndNotify();
+})
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
-        app.quit()
+        app.quit();
     }
 })
 
 app.on('activate', () => {
     if (mainWindow === null) {
-        createWindow()
+        createWindow();
     }
 })
 // 关闭窗口
-ipcMain.on('window-close', (e) => {mainWindow.close();});
+ipcMain.on('window-close', e => mainWindow.close());
 // 最小化窗口
 ipcMain.on('window-min', e => mainWindow.minimize());
 // 最大化窗口

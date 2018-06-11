@@ -1,0 +1,75 @@
+.dialogLayer{
+    width: 100%;
+    height:100%;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,.5);
+    position: fixed;
+    transition: .25s;
+    .dialogLayer-box{
+        position: fixed;
+        width: 250px;
+        top: 50%;
+        left: 50%;
+        z-index: 9999;
+        transform: translate3d(-50%,-50%,0);
+        background-color: #FAFAFC;
+        text-align: center;
+        border-radius: 6px;
+        overflow: hidden;
+        .dialogLayer-tit{
+            font-size: .5rem;
+            line-height: 2;
+        }
+        .dialogLayer-content{
+            padding:10px 0;
+            text-align: left;
+            line-height: 1.5;
+            >input{
+                -webkit-appearance: none;
+                padding: 0;
+                margin:0;
+                border-radius: 0;
+                width: 80%;
+                height: .75rem;
+                line-height: .75rem;
+                font-size: .45rem;
+                border: 1px #ccc solid;
+            }
+        }
+        .toast{
+            text-align: center;
+            // .lessPadding(50,40,50,40);
+        }
+        .msg{
+            // .lessPadding(35,40,35,40);
+        }
+        .dialogLayer-btn{
+            display: flex;
+            justify-content: space-between;
+            >span{
+                width: 50%;
+                // .lessFZ(30);
+                // .lessRem(height,80);
+                // .lessLineHeight(80);
+                padding: 5px 0;
+                border-top: 1px #ccc solid;
+                cursor: pointer;
+            }
+            span.dialogLayer-msg{
+                color: #3494d8;
+            }
+            >span:first-child{
+                border-right:1px #ccc solid;
+            }
+            .dialogLayer-enter{
+                color: #3494d8;
+            }
+            .dialogLayer-close{
+                color: #333;
+            }
+        }
+        
+    }
+}
