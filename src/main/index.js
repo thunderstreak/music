@@ -1,13 +1,12 @@
 import {app, BrowserWindow, globalShortcut,screen,ipcMain} from 'electron'
 import { autoUpdater } from "electron-updater"
-
-import checkUpdate from './update'
+import checkUpdate from './updater/update'
 import diffVer from './updater/differenceVersions'
 
+// import './events/'
 import './request/'
+import config from '../config/'
 
-// 获取本地package.json信息
-const pack = require("../../package.json");
 
 /**
  * Set `__static` path to static files in production
@@ -95,10 +94,11 @@ function updateHandle() {
         updating    : {msg:'检测到最新版本，是否更新',type:'updating'},
         noUpdate    : {msg:'当前已是最新版本，不用更新',type:'noUpdate'}
     };
+
     // const os            = require('os');
     const webContents   = mainWindow.webContents;
+    autoUpdater.setFeedURL(config.downloadURL);
 
-    autoUpdater.setFeedURL('http://192.168.1.186:8000/');
     // 通过main进程发送事件给renderer进程，提示更新信息
     autoUpdater.on('error',                 err => webContents.send('message', options.error));
     autoUpdater.on('checking-for-update',   res => webContents.send('message', options.checking));
@@ -107,6 +107,7 @@ function updateHandle() {
 
     // 更新下载进度事件
     autoUpdater.on('download-progress',     res => webContents.send('downloadProgress', res));
+
     // 更新下载完成，准备退出并安装
     autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName, releaseDate, updateUrl, quitAndUpdate) => {
         // 向渲染进程发送更新下载完成通知
@@ -120,6 +121,7 @@ function updateHandle() {
         autoUpdater.quitAndInstall();
     });
 
+    // 接受渲染进程进行更新检查事件
     ipcMain.on("checkForUpdate", () => {
         //执行自动更新检查
         autoUpdater.checkForUpdates();
