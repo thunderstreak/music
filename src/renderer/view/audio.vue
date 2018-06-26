@@ -209,12 +209,12 @@ export default {
         // fftSize (Fast Fourier Transform) 是快速傅里叶变换，一般情况下是固定值2048，这个值可以决定音频频谱的密集程度。值大了，频谱就松散，值小就密集。
         // this.analyser.fftSize = 4096;
         this.bufferLength = this.analyser.frequencyBinCount;
-        this.dataArray = new Uint8Array(256);//dataArray数组将用来放音频高低音不同区域的数据信息，当音频播放时，每一个时间节点，都有不同的音频数据，使用analyser.getByteFrequencyData(dataArray)将数据放入数组，用来进行频谱的可视化绘制。
+        this.dataArray = new Uint8Array(360);//dataArray数组将用来放音频高低音不同区域的数据信息，当音频播放时，每一个时间节点，都有不同的音频数据，使用analyser.getByteFrequencyData(dataArray)将数据放入数组，用来进行频谱的可视化绘制。
 
         // 清除canvas绘制区域
         this.canvasCtx.clearRect(0, 0, this.canvasPlayer.width, this.canvasPlayer.height);
 
-        // this.canvasDraw()
+        this.canvasDraw()
 
         // 隐藏收藏列表
         document.addEventListener('click', () => {
@@ -678,14 +678,14 @@ export default {
 
         // canvas 频谱绘制
         canvasDraw(){
-            let dataArray = this.dataArray;
-            let bufferLength = this.bufferLength;
+            // let dataArray = this.dataArray;
+            // let bufferLength = this.bufferLength;
 
             this.drawVisual = requestAnimationFrame(this.canvasDraw);
 
-            this.analyser.getByteFrequencyData(dataArray);
+            this.analyser.getByteFrequencyData(this.dataArray);
 
-            spectrum.voiceBarSpectrum(this.canvasCtx,this.canvasPlayer,dataArray,bufferLength);
+            spectrum.inTheCricleSpectrum(this.canvasCtx,this.canvasPlayer,this.dataArray,this.bufferLength);
 
         },
     },
