@@ -228,6 +228,13 @@ export default {
             this.isShowCollect ? this.isShowCollect = false : '';
         })
 
+        // 监听ArrowRight方向键切换下一首歌曲
+        document.addEventListener('keydown',(e)=>{
+            if(e.keyCode === 39){
+                this.playNext();
+            }
+        })
+
         // 接受主进程事件通知，渲染歌词
         ipcRenderer.on('ipcMainSongLyric',(event,lyric) => {
             this.parseLyric(lyric);//解析歌词
