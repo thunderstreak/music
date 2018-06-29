@@ -1,5 +1,7 @@
-import {app, BrowserWindow, globalShortcut,screen,ipcMain} from 'electron'
+import {app, BrowserWindow, globalShortcut, screen, ipcMain, Tray, Menu, shell} from 'electron'
 import { autoUpdater } from "electron-updater"
+import path from 'path'
+import cheerio from 'cheerio'
 import checkUpdate from './updater/update'
 import diffVer from './updater/differenceVersions'
 
@@ -19,6 +21,7 @@ if (process.env.NODE_ENV !== 'development') {
 let mainWindow
 const winURL = process.env.NODE_ENV === 'development' ? `http://localhost:9080` : `file://${__dirname}/index.html`
 
+let appTray = null;
 function createWindow() {
     /**
    * Initial window options
@@ -39,7 +42,7 @@ function createWindow() {
             webSecurity : false,//用于本地跨域访问
             // devTools    : false,
         },
-
+        // icon            : './player.png',
         backgroundColor : '#36383b',//如果你的应用没有白色背景，那么一定要在 BrowserWindow 选项中明确声明。这并不会阻止应用加载时的纯色方块，但至少它不会半路改变颜色：
         show            : false,//在所有资源加载完成前隐藏窗口。在开始前，确保隐藏掉浏览器窗口：
     })
@@ -70,15 +73,57 @@ function createWindow() {
         }
     });
 
+    //系统托盘右键菜单
+    let trayMenuTemplate = [
+        {
+            label: '关于',
+            click: () => { shell.openExternal('https://github.com/thunderstreak/music'); }
+        },
+        {
+            label: '退出',
+            click: () => { app.quit(); }
+        }
+    ];
 
+    //系统托盘图标目录
+    let assetsDir = path.resolve(__dirname, '../assets');
+    appTray = new Tray(path.join(assetsDir, 'Player.ico'));
+
+    //图标的上下文菜单
+    const contextMenu = Menu.buildFromTemplate(trayMenuTemplate);
+
+    //设置此托盘图标的悬停提示内容
+    appTray.setToolTip('Player');
+
+    //设置此图标的上下文菜单
+    appTray.setContextMenu(contextMenu);
+
+
+    //系统托盘图标闪烁
+    let count = 0,timer = null;
+    timer = setInterval(() => {
+        count ++;
+        appTray.setImage(path.join(assetsDir, (count % 2 == 0) ? 'Player.ico' : 'Player1.ico'));
+    }, 600);
+
+    //单点击 1.主窗口显示隐藏切换 2.清除闪烁
+    appTray.on("click", () => {
+        if(timer){
+            clearInterval(timer);
+            appTray.setImage(path.join(assetsDir, 'Player.ico'));
+            //主窗口显示隐藏切换
+            mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
+        }
+    })
 }
 
 
 // 防止启动多个实例
 const shouldQuit = app.makeSingleInstance((commandLine, workingDirectory) => {
     if (mainWindow) {
-        if (mainWindow.isMinimized())
+        if (mainWindow.isMinimized()){
             mainWindow.restore()
+        }
         mainWindow.focus()
     }
 })
@@ -109,9 +154,9 @@ function updateHandle() {
     autoUpdater.on('download-progress',     res => webContents.send('downloadProgress', res));
 
     // 更新下载完成，准备退出并安装
-    autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName, releaseDate, updateUrl, quitAndUpdate) => {
+    autoUpdater.on('update-downloaded',     (event, releaseNotes) => {
         // 向渲染进程发送更新下载完成通知
-        webContents.send('updateDownloaded',event, releaseNotes)
+        webContents.send('updateDownloaded', event, releaseNotes)
     });
 
     // 接受渲染进程更新通知事件
@@ -128,10 +173,17 @@ function updateHandle() {
     })
 }
 
-// checkUpdate((res) => {
-//     console.log(res);
-// })
-// console.log(diffVer.diffVer(pack.version,));
+/**
+ * [checkUpdate 获取git仓库packages version 版本号与本地进行对比]
+ * @param  {[type]} res [git package files]
+ * @return {[type]}     [description]
+ */
+checkUpdate((res) => {
+    let $ = cheerio.load(res);
+    let online = JSON.parse($('.type-json>table').text());
+    console.log(diffVer(config.version,online.version));
+})
+
 
 app.on('ready', () => {
     // 创建主窗口
@@ -154,7 +206,10 @@ app.on('activate', () => {
     }
 })
 // 关闭窗口
-ipcMain.on('window-close', e => mainWindow.close());
+ipcMain.on('window-close', e => {
+    // mainWindow.close();
+    mainWindow.hide();
+});
 // 最小化窗口
 ipcMain.on('window-min', e => mainWindow.minimize());
 // 最大化窗口
@@ -165,6 +220,7 @@ ipcMain.on('window-max', e => {
         mainWindow.maximize()
     }
 });
+
 /**
  * Auto Updater
  *

@@ -105,6 +105,7 @@ import placeholderImg from '../assets/person_300.png';
 import * as analyser from '../tools/analyser';
 import * as spectrum from '../tools/spectrum';
 import * as songInfo from '../tools/songInfo';
+import Spectra from '../class/Spectra';
 
 export default {
     name: 'AudioPlayer',
@@ -136,7 +137,7 @@ export default {
         albumRotateDeg  :0,//专辑图片旋转度
 
         timeInterval    :'',//
-        albumInterval   :'',//
+        albumInterval   :'',//专辑
         bgcolorInterval :'',//
         bgcolorVal      :'',//背景颜色值
         heroBoxEle      :'',//主体背景元素
@@ -161,6 +162,8 @@ export default {
         collectType     :'likes',//收藏列表默认显示
 
         dialogInfoObj   :'',//提示层layer
+
+        SpectraClass    :'',//频谱构造函数
     }),
     created(){
         // 设置request animation frame
@@ -209,19 +212,28 @@ export default {
         // fftSize (Fast Fourier Transform) 是快速傅里叶变换，一般情况下是固定值2048，这个值可以决定音频频谱的密集程度。值大了，频谱就松散，值小就密集。
         // this.analyser.fftSize = 4096;
         this.bufferLength = this.analyser.frequencyBinCount;
-        this.dataArray = new Uint8Array(256);//dataArray数组将用来放音频高低音不同区域的数据信息，当音频播放时，每一个时间节点，都有不同的音频数据，使用analyser.getByteFrequencyData(dataArray)将数据放入数组，用来进行频谱的可视化绘制。
+        this.dataArray = new Uint8Array(360);//dataArray数组将用来放音频高低音不同区域的数据信息，当音频播放时，每一个时间节点，都有不同的音频数据，使用analyser.getByteFrequencyData(dataArray)将数据放入数组，用来进行频谱的可视化绘制。
 
         // 清除canvas绘制区域
         this.canvasCtx.clearRect(0, 0, this.canvasPlayer.width, this.canvasPlayer.height);
 
-        // this.canvasDraw()
+        // 初始化频谱构造函数
+        this.SpectraClass = new Spectra(this.canvasCtx,this.canvasPlayer,this.dataArray,this.bufferLength);
+
+        // 绘制频谱
+        this.canvasDraw();
 
         // 隐藏收藏列表
         document.addEventListener('click', () => {
             this.isShowCollect ? this.isShowCollect = false : '';
         })
 
-
+        // 监听ArrowRight方向键切换下一首歌曲
+        document.addEventListener('keydown',(e)=>{
+            if(e.keyCode === 39){
+                this.playNext();
+            }
+        })
 
         // 接受主进程事件通知，渲染歌词
         ipcRenderer.on('ipcMainSongLyric',(event,lyric) => {
@@ -424,6 +436,7 @@ export default {
         // 停止播放
         endPlay(){
             cancelAnimationFrame(this.timeInterval);//清除获取当前播放时间
+
             this.isPlay = false;//是否播放状态为停止
             this.AudioPlayer.pause();//停止播放
             this.albumEndRotate();//专辑旋转暂停
@@ -678,15 +691,13 @@ export default {
 
         // canvas 频谱绘制
         canvasDraw(){
-            let dataArray = this.dataArray;
-            let bufferLength = this.bufferLength;
 
             this.drawVisual = requestAnimationFrame(this.canvasDraw);
 
-            this.analyser.getByteFrequencyData(dataArray);
+            this.analyser.getByteFrequencyData(this.dataArray);//获取频域数据
 
-            spectrum.voiceBarSpectrum(this.canvasCtx,this.canvasPlayer,dataArray,bufferLength);
-
+            // spectrum.inTheCricleSpectrum(this.canvasCtx,this.canvasPlayer,this.dataArray,this.bufferLength);
+            this.SpectraClass.inTheCricleSpectrum();
         },
     },
     beforeDestroyed(){
@@ -696,6 +707,7 @@ export default {
     },
     destroyed(){
         console.log('destroyed');
+        cancelAnimationFrame(this.drawVisual);//清除频谱绘制
         //组件销毁前移除所有事件监听channel
         ipcRenderer.removeAllListeners(['ipcMainSongLyric','message','downloadProgress','updateDownloaded']);
         this.endPlay();

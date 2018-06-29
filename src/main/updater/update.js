@@ -5,7 +5,7 @@ export default function getHttpsData (success, error) {
     success = success || function(){};
     error   = error || function(){};
 
-    let url = 'https://192.168.1.186:8001/package.json';
+    let url = 'https://github.com/thunderstreak/music/blob/master/package.json';
 
     https.get(url, (res) => {
         let statusCode = res.statusCode;
