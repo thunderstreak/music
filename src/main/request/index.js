@@ -19,15 +19,15 @@ ipcMain.on('ipcRendererSongLyric',(event,data) => {
     };
     request(options,(error, response, body) => {
         if(!error && response.statusCode == 200){
+
             // 解码歌词
-            let data = JSON.parse(body.match(/\{(.+?)\}/g)[0]);
+            let data        = JSON.parse(body.match(/\{(.+?)\}/g)[0]);
             let decodelyric = Base64.Base64.decode(data.lyric);
-            let reslyric;
+            let reslyric    = [];
 
             try {
-                reslyric = decodelyric.split("[offset:0]")[1].split('\n');
+                reslyric = decodelyric ? decodelyric.split("[offset:0]")[1].split('\n') : [];
             } catch (e) {
-                reslyric = [];
                 console.log(e);
             } finally {
                 // 向ipcRenderer发送事件

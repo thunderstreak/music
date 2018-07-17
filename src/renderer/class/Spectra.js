@@ -1,4 +1,9 @@
-export default class Spectrum {
+class BaseSpectrum{
+    constructor(){
+        this.globalAlpha = 0.5;
+    }
+}
+export default class Spectrum extends BaseSpectrum{
     /**
      * [constructor description]
      * @param  {[type]} canvasCtx    [canvas 上下文]
@@ -7,6 +12,7 @@ export default class Spectrum {
      * @param  {[type]} bufferLength [傅里叶变换的长度值]
      */
     constructor(canvasCtx,canvasPlayer,dataArray,bufferLength){
+        super();
         this.canvasCtx      = canvasCtx;
         this.canvasPlayer   = canvasPlayer;
         this.dataArray      = dataArray;
@@ -17,7 +23,7 @@ export default class Spectrum {
     inTheCricleSpectrum(){
         let { width, height } = this.canvasPlayer;
         this.canvasCtx.clearRect(0, 0, width, height);
-        this.canvasCtx.globalAlpha = 0.5;
+        this.canvasCtx.globalAlpha = this.globalAlpha;
 
         let [x,y,r,deg] = [width / 2, height / 2, 180, 2];//绘制的中心点
 

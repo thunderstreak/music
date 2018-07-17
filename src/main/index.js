@@ -18,8 +18,8 @@ if (process.env.NODE_ENV !== 'development') {
     global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
-let mainWindow
-const winURL = process.env.NODE_ENV === 'development' ? `http://localhost:9080` : `file://${__dirname}/index.html`
+let mainWindow;
+const winURL = process.env.NODE_ENV === 'development' ? `http://localhost:9080` : `file://${__dirname}/index.html`;
 
 let appTray = null;
 function createWindow() {
@@ -45,7 +45,7 @@ function createWindow() {
         // icon            : './player.png',
         backgroundColor : '#36383b',//如果你的应用没有白色背景，那么一定要在 BrowserWindow 选项中明确声明。这并不会阻止应用加载时的纯色方块，但至少它不会半路改变颜色：
         show            : false,//在所有资源加载完成前隐藏窗口。在开始前，确保隐藏掉浏览器窗口：
-    })
+    });
 
     // 在所有东西都加载完成时，显示窗口并聚焦在上面提醒用户,这里推荐使用 BrowserWindow 的 "ready-to-show" 事件实现，或者用 webContents 的 'did-finish-load' 事件。
     mainWindow.on('ready-to-show', () => {
@@ -53,12 +53,12 @@ function createWindow() {
         mainWindow.focus();
     });
 
-    mainWindow.setMenu(null)
-    mainWindow.loadURL(winURL)
+    mainWindow.setMenu(null);
+    mainWindow.loadURL(winURL);
 
     mainWindow.on('closed', () => {
         mainWindow = null
-    })
+    });
 
     //前期为了调试方面，默认打开控制台
     if(process.env.NODE_ENV === 'development'){
@@ -182,7 +182,7 @@ checkUpdate((res) => {
     let $ = cheerio.load(res);
     let online = JSON.parse($('.type-json>table').text());
     console.log(diffVer(config.version,online.version));
-})
+});
 
 
 app.on('ready', () => {
@@ -192,19 +192,19 @@ app.on('ready', () => {
     updateHandle();
     // 立即下载更新然后在退出的时候安装
     // autoUpdater.checkForUpdatesAndNotify();
-})
+});
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
     }
-})
+});
 
 app.on('activate', () => {
     if (mainWindow === null) {
         createWindow();
     }
-})
+});
 // 关闭窗口
 ipcMain.on('window-close', e => {
     // mainWindow.close();

@@ -11,12 +11,13 @@ export default {
         msg:'reptile'
     }),
     created(){
-        
+
     },
     mounted(){
 
     },
     methods:{
+
 
     }
 }

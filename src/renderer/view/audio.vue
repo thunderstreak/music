@@ -20,7 +20,7 @@
         <div class="hero-play-audio">
             <img class="hero-play-audios" ref="albumImgEle" @click.stop="playPaused" draggable="false" :src="currentPlaySong.albumisrc ? currentPlaySong.albumisrc : placeholderImg" alt="">
             <div class="hero-play-album-name">
-                {{currentPlaySong.singername}}</br>{{currentPlaySong.songname}}
+                {{currentPlaySong.singername}}<br/>{{currentPlaySong.songname}}
             </div>
         </div>
         <SwitchRouter></SwitchRouter>
@@ -70,8 +70,8 @@
                     <transition name="slide-collect">
                         <div class="hero-play-controls-more" v-show="isShowCollect">
                             <div class="hero-play-controls-more-tab">
-                                <span class="tab-list" :class="[collectType == 'likes' ? 'activate' : '']" @click.stop="toggleList('likes')">Likes</span>
-                                <span class="tab-list" :class="[collectType == 'hates' ? 'activate' : '']" @click.stop="toggleList('hates')">Hates</span>
+                                <span class="tab-list" :class="[collectType === 'likes' ? 'activate' : '']" @click.stop="toggleList('likes')">Likes</span>
+                                <span class="tab-list" :class="[collectType === 'hates' ? 'activate' : '']" @click.stop="toggleList('hates')">Hates</span>
                             </div>
                             <!-- <transition-group name="slide-left" tag="ul" class="hero-play-controls-more-list"> -->
                                 <ul class="hero-play-controls-more-list">
@@ -79,7 +79,7 @@
                                         <span class="list-play" @click.stop="selectPlaySong(item)">{{item.singername}}-{{item.songname}}</span>
                                         <span class="list-removed" @click.stop="removedCollect(item)"></span>
                                     </li>
-                                    <li class="like-or-hate-nodata" v-show="collectList.length == 0">No Data</li>
+                                    <li class="like-or-hate-nodata" v-show="collectList.length === 0">No Data</li>
                                 </ul>
                             <!-- </transition-group> -->
                         </div>
@@ -131,7 +131,7 @@ export default {
         currentLyric    :'',//播放歌曲的当前歌词
 
         currSongIndex   :0,//当前播放歌曲的下标
-        acceptSonglist  :[],//播放完成后存储的列表
+        endSonglist     :[],//播放完成后存储的列表
         songDuration    :0,//歌曲总时长
         currPlayTime    :0,//当前歌曲播放时间
         albumRotateDeg  :0,//专辑图片旋转度
@@ -226,19 +226,19 @@ export default {
         // 隐藏收藏列表
         document.addEventListener('click', () => {
             this.isShowCollect ? this.isShowCollect = false : '';
-        })
+        });
 
         // 监听ArrowRight方向键切换下一首歌曲
         document.addEventListener('keydown',(e)=>{
             if(e.keyCode === 39){
                 this.playNext();
             }
-        })
+        });
 
         // 接受主进程事件通知，渲染歌词
         ipcRenderer.on('ipcMainSongLyric',(event,lyric) => {
             this.parseLyric(lyric);//解析歌词
-        })
+        });
 
         // 检查是否有更新
         ipcRenderer.send("checkForUpdate");
@@ -247,7 +247,7 @@ export default {
         ipcRenderer.on("message", (event, msg) => {
             console.log(msg);
 
-            if(msg.type == 'updating'){
+            if(msg.type === 'updating'){
                 // 检查到最新版本
                 this.$dialog.alert({
                     title   : '123',
@@ -304,7 +304,7 @@ export default {
             this.$API.qq.qqMusicLsitAPI().then((res)=>{
                 let data = res.data;
                 let songlist = data.songlist;
-                for (var i = 0; i < songlist.length; i++) {
+                for (let i = 0; i < songlist.length; i++) {
                     let data = songlist[i].data;
                     if(data.songmid){
                         this.playSonglist.push(songInfo.SetSongPlayInfo(data));// 设置播放歌曲信息
@@ -318,7 +318,7 @@ export default {
         // 解析歌词
         parseLyric(lyric){
             this.playSongLyric = [];
-            if(lyric.length == 0){
+            if(lyric.length === 0){
                 this.currentLyric = '当前暂无歌词显示';
                 return
             }
@@ -346,9 +346,9 @@ export default {
             // 旋转专辑图片
             this.albumStartRotate();
 
-            if(playType == 'order'){
+            if(playType === 'order'){
                 this.currSongIndex = 0;
-            }else if(playType == 'random'){
+            }else if(playType === 'random'){
                 // 设置随机播放第一首歌
                 this.currSongIndex  = Math.floor(Math.random() * this.playSonglist.length);
             }
@@ -361,9 +361,9 @@ export default {
                 let tempsong = this.playSonglist[this.currSongIndex];
                 this.tableData.find({ songid: tempsong.songid }, (err,doc) => {
                     // console.log(doc);
-                    if(doc.length != 0){
+                    if(doc.length !== 0){
                         // 如果不是喜欢的歌曲则跳过播放
-                        if(doc[0].isLike == false){
+                        if(doc[0].isLike === false){
                             this.isLike = false;
                             this.playSonglist.splice(0,1);
                         }else{
@@ -376,7 +376,7 @@ export default {
             }
             console.log(this.currentPlaySong);
             // 判断歌曲是否需要付费才能播放
-            if(this.currentPlaySong.payplay == 1){
+            if(this.currentPlaySong.payplay === 1){
                 console.log(this.currentPlaySong.songname + '：该歌曲需要付费播放');
                 /*let options = {
                     type    : 'warning',
@@ -400,7 +400,7 @@ export default {
             this.AudioPlayer.play();
 
             this.AudioPlayer.ontimeupdate = () => {
-                if(this.AudioPlayer.readyState == 4){
+                if(this.AudioPlayer.readyState === 4){
                     // 如果歌曲已缓冲100%
                     // if(this.AudioBufferedVal == 100){
                     //     return;
@@ -415,14 +415,14 @@ export default {
                     // console.log(this.AudioPlayer.currentTime);
 
                     // 显示当前歌词
-                    for (var i = 0; i < this.playSongLyric.length; i++) {
-                        if(this.playSongLyric[i].lyricTime == this.currPlayTime){
+                    for (let i = 0; i < this.playSongLyric.length; i++) {
+                        if(this.playSongLyric[i].lyricTime === this.currPlayTime){
                             this.currentLyric = this.playSongLyric[i].lyric;
                             break;
                         }
                     }
                 }
-            }
+            };
 
             // this.changeBackgroundColor();//随机改变背景颜色
 
@@ -444,7 +444,7 @@ export default {
 
         // 下一首
         playNext(){
-            this.acceptSonglist.push(this.playSonglist[0]);
+            this.endSonglist.push(this.playSonglist[0]);
             this.playSonglist.splice(0,1);
             this.albumEndRotate();//清除专辑图片动画
             this.startPlay();//开始播放
@@ -453,13 +453,13 @@ export default {
             this.currentLyric = '';//清空当前歌词
 
             // 歌曲付费播放提示是否显示，如果显示就在切换歌曲时隐藏
-            if(this.dialogInfoObj.show == true){
+            if(this.dialogInfoObj.show === true){
                 this.dialogInfoObj.toggle(false);
             }
 
             //根据查询的数据标记是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
             this.tableData.find({ songmid : this.currentPlaySong.songmid }, (err,doc) => {
-                this.isLike = doc.length != 0 ? true : false;
+                this.isLike = doc.length !== 0 ? true : false;
             })
         },
 
@@ -480,7 +480,7 @@ export default {
             this.setRangeProgress();
             // 设置音量大小
             this.AudioPlayer.volume = this.audioRangeVal / 100;
-            if(this.audioRangeVal == 0){
+            if(this.audioRangeVal === 0){
                 this.isVoice = true;
             }else{
                 this.isVoice = false;
@@ -520,7 +520,7 @@ export default {
             //标记这首歌曲不喜欢
             this.tableData.insert(songdata, (err, newDoc) => {
                 this.collectList.push(newDoc)
-            })
+            });
             this.playNext();//下一首歌
         },
 
@@ -530,9 +530,9 @@ export default {
             if(this.isShowCollect){
 
                 let type;
-                if(this.collectType == 'likes'){
+                if(this.collectType === 'likes'){
                     type = true;
-                }else if(this.collectType == 'hates'){
+                }else if(this.collectType === 'hates'){
                     type = false;
                 }
 
@@ -547,8 +547,8 @@ export default {
         // 移除收藏
         removedCollect(item){
             let collectList = this.collectList;
-            for (var i = 0; i < collectList.length; i++) {
-                if(collectList[i].songid == item.songid){
+            for (let i = 0; i < collectList.length; i++) {
+                if(collectList[i].songid === item.songid){
                     collectList.splice(i,1);
                     break;
                 }
@@ -562,12 +562,12 @@ export default {
         // 切换歌曲
         toggleList(type){
             this.collectType = type;
-            if(type == 'likes'){
+            if(type === 'likes'){
                 this.tableData.find({ isLike: true }, (err, docs) => {
                     this.collectList = [];
                     docs.forEach(item => this.collectList.push(item));
                 });
-            }else if(type == 'hates'){
+            }else if(type === 'hates'){
                 this.tableData.find({ isLike: false }, (err, docs) => {
                     this.collectList = [];
                     docs.forEach(item => this.collectList.push(item));
@@ -610,9 +610,9 @@ export default {
             this.isPlay = true;//是否播放状态为播放
 
             // 拖动进度条显示当前歌词
-            let playSongLyric = this.playSongLyric
+            let playSongLyric = this.playSongLyric;
             let currPlayTime = parseInt(this.AudioPlayer.currentTime);
-            for (var i = 0; i < playSongLyric.length; i++) {
+            for (let i = 0; i < playSongLyric.length; i++) {
                 if(playSongLyric[i].lyricTime <= currPlayTime && currPlayTime <= playSongLyric[i + 1].lyricTime){
                     this.currentLyric = playSongLyric[i].lyric;
                     break;
@@ -658,7 +658,7 @@ export default {
             //根据查询的数据重置是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
             this.tableData.find({ songmid : data.songmid }, (err,doc) => {
                 // console.log(doc);
-                if(doc.length != 0){
+                if(doc.length !== 0){
                     doc[0].isLike ? this.isLike = true : this.isLike = false;
                 }else{
                     this.isLike = false;
