@@ -81,7 +81,7 @@ export function qqMusicLyricAPI(songId){
     };
     return new Promise((resolve,reject) => {
         request(options, (error, response, body) => {
-            if(!error && response.statusCode == 200){
+            if(!error && response.statusCode === 200){
                 // 解码歌词
                 let data = JSON.parse(body.match(/\{(.+?)\}/g)[0]);
                 let decodelyric = Base64.Base64.decode(data.lyric);

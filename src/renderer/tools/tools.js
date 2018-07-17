@@ -36,7 +36,7 @@ const libs={
         for(let i = 0;i < arr.length-1;i++){
             for(let j = 0;j < arr.length-i-1;j++){
                 if(arr[j] > arr[j+1]){
-                    var temporary = arr[j];
+                    let temporary = arr[j];
                     arr[j] = arr[j+1];
                     arr[j+1] = temporary;
                 }
@@ -55,7 +55,7 @@ const libs={
         let pivotIdx = Math.floor(arr.length / 2);
         let pivot = arr.splice(pivotIdx,1)[0];
 
-        let [left,right] = [[],[]]
+        let [left,right] = [[],[]];
 
         for(let i = 0;i < arr.length;i++){
             if(arr[i] < pivot){
@@ -100,7 +100,7 @@ const libs={
         let bes = 0;
         while(bes <= len){
             let m = Math.floor((len + bes) / 2);
-            if(data[m] == item){
+            if(data[m] === item){
                 return m;
             }
             if(item > data[m]){
@@ -119,7 +119,7 @@ const libs={
     */
 
     clone:(arg) => {
-        let o = (arg.constructor === Array && arg instanceof Array && Object.prototype.toString.call((arg)) == '[object Array]' ) ? [] : {};
+        let o = (arg.constructor === Array && arg instanceof Array && Object.prototype.toString.call((arg)) === '[object Array]' ) ? [] : {};
         for(let e in arg){
             o[e] = arg.typeof === 'object' ? arg.clone() : arg[e];
         }
@@ -140,7 +140,7 @@ const libs={
         if(!canvasParentEle && !canvasSelf && !isTrueOrFalse){
             console.error('arguments not meeting expectations');
             return
-        };
+        }
 
         let canvasParent = document.getElementById(canvasParentEle);
         let canvas = document.getElementById(canvasSelf);
@@ -157,22 +157,22 @@ const libs={
         canvas.width = CanvasWidth*2;
         canvas.height = CanvasHeight*2;
         // canvas.style.width为canvas.width的一半用于避免绘制后出现模糊不清晰
-        canvas.style.width = canvas.width/2+'px';
-        canvas.style.height = canvas.height/2+'px';
+        canvas.style.width = canvas.width / 2+'px';
+        canvas.style.height = canvas.height / 2+'px';
 
         let res;// 绘制百分比所需的半径
-        let lineWidth = CanvasWidth/12.5;// 绘制圆弧线宽
+        let lineWidth = CanvasWidth / 12.5;// 绘制圆弧线宽
         let setData={
-            x:canvas.width/2,
-            y:canvas.height/2,
-            r:(canvas.width-lineWidth-2)/2// 减2控制绘制的圆弧与canvas的边界紧密贴合，防止出现canvas边界出现模糊
-        }
+            x:canvas.width / 2,
+            y:canvas.height / 2,
+            r:(canvas.width - lineWidth - 2) / 2// 减2控制绘制的圆弧与canvas的边界紧密贴合，防止出现canvas边界出现模糊
+        };
 
         let ctx = canvas.getContext('2d');
             ctx.lineCap="round";
             // 绘制底圆
             ctx.beginPath();
-            if(isTrueOrFalse==true){
+            if(isTrueOrFalse === true){
                 ctx.arc(
                     setData.x,
                     setData.y,
@@ -181,13 +181,13 @@ const libs={
                     2.2*Math.PI,//结束角
                     false//False = 顺时针，true = 逆时针。
                 );//绘制圆弧进度条所需的半径总共1.5PI
-            }else if(isTrueOrFalse==false){
+            }else if(isTrueOrFalse === false){
                 ctx.arc(
                     setData.x,
                     setData.y,
                     setData.r,
-                    0*Math.PI,//开始角
-                    2*Math.PI,//结束角
+                    0 * Math.PI,//开始角
+                    2 * Math.PI,//结束角
                     false//False = 顺时针，true = 逆时针。
                 );//绘制圆弧进度条所需的半径总共1.5PI
             }
@@ -196,15 +196,15 @@ const libs={
             ctx.stroke();
             ctx.closePath();
 
-            if(porgress>100 || porgress==0){return}
+            if(porgress > 100 || porgress === 0){return}
             // 绘制进度圆
             ctx.beginPath();
             ctx.arc(
                 setData.x,
                 setData.y,
                 setData.r,
-                0.8*Math.PI,//开始角
-                (0.8+porgress)*Math.PI,//结束角
+                0.8 * Math.PI,//开始角
+                (0.8 + porgress) * Math.PI,//结束角
                 false
             );
             ctx.strokeStyle = progrColor || '#ff9331';
@@ -220,14 +220,14 @@ const libs={
     */
 
     Fetch:(promise,type)=>{
-        if(!promise && typeof promise !== 'object' && JSON.stringify(promise) != '{}') return 'arguments error!';
+        if(!promise && typeof promise !== 'object' && JSON.stringify(promise) !== '{}') return 'arguments error!';
         return new Promise((resolve,reject) => {
             fetch(promise).then((response) => {
-                if(response.status == 200){
+                if(response.status === 200){
                     // console.log(response.headers.get('Content-Type'));
                     // console.log(response.headers.get('Date'));
                     // resolve(response.json());
-                    (type && type == 'json') ? resolve(response.json()) : resolve(response);
+                    (type && type === 'json') ? resolve(response.json()) : resolve(response);
                 }else{
                     reject(response);
                 }
@@ -290,11 +290,11 @@ const libs={
         let max = [(year + sizeDate) , month , day];
         let min = [(year - sizeDate) , month , day];
 
-        if(strDate == 'cur'){
+        if(strDate === 'cur'){
             return cur;
-        }else if(strDate == 'max'){
+        }else if(strDate === 'max'){
             return max;
-        }else if(strDate == 'min'){
+        }else if(strDate === 'min'){
             return min;
         }else{
             return year + splice1 + month + splice1 + day + " " + hours + splice2 + minutes + splice2 + seconds;
@@ -311,7 +311,7 @@ const libs={
     getDaysInMonth:(year,month) => {
         //parseInt(number,type)这个函数后面如果不跟第2个参数来表示进制的话，默认是10进制。
         month = parseInt(month,10);
-        var temp = new Date(year,month,0);
+        let temp = new Date(year,month,0);
         return temp.getDate();
     },
 
@@ -411,7 +411,7 @@ const libs={
             if(el.offsetHeight < el.scrollHeight)
                 evt._isScroller = true;
             });
-        }
+        };
 
         overscroll(document.querySelector(className));
         document.body.addEventListener('touchmove', function(evt) {
@@ -498,7 +498,7 @@ const libs={
     },
     addClass: (obj, cls) => {
         let obj_class = obj.className; //获取 class 内容.
-        let blank = (obj_class != '') ? ' ' : ''; //判断获取到的 class 是否为空, 如果不为空在前面加个'空格'.
+        let blank = (obj_class !== '') ? ' ' : ''; //判断获取到的 class 是否为空, 如果不为空在前面加个'空格'.
         let added = obj_class + blank + cls; //组合原来的 class 和需要添加的 class.
         obj.className = added; //替换原来的 class.
     },
@@ -514,7 +514,7 @@ const libs={
         let obj_class_lst = obj_class.split(/\s+/); //通过split空字符将cls转换成数组.
         let x = 0;
         for (x in obj_class_lst) {
-            if (obj_class_lst[x] == cls) { //循环数组, 判断是否包含cls
+            if (obj_class_lst[x] === cls) { //循环数组, 判断是否包含cls
                 return true;
             }
         }
@@ -538,7 +538,7 @@ const libs={
                     };
        })();
     }
-}
+};
 
 // module.exports = libs;
 export default libs;

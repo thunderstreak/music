@@ -102,8 +102,6 @@
 <script>
 import { ipcRenderer,remote } from 'electron';
 import placeholderImg from '../assets/person_300.png';
-import * as analyser from '../tools/analyser';
-import * as spectrum from '../tools/spectrum';
 import * as songInfo from '../tools/songInfo';
 import Spectra from '../class/Spectra';
 
@@ -173,6 +171,9 @@ export default {
         // 初始化本地数据库
         this.tableData = this.$db.tableData;
         // this.tableData.remove({},{ multi: true },(err, numRemoved) => {});
+        this.tableData.find({},(err,doc)=>{
+            console.log(doc)
+        })
     },
     mounted(){
         this.albumImgEle       = this.$refs.albumImgEle;
@@ -279,6 +280,7 @@ export default {
 
     },
     methods: {
+        // 获取歌词时间
         getTime(str){
             let minutes = parseInt(str.split(':')[0]);
             let seconds = parseInt(str.split(':')[1].split('.')[0]);
@@ -286,6 +288,7 @@ export default {
             // console.log(minutes,seconds,ms,Math.floor(((minutes * 60) + seconds + (ms / 100))));
             return Math.floor(((minutes * 60) + seconds + (ms / 100)));
         },
+
         // 播放
         playPaused(){
             if(this.AudioPlayer.paused){
@@ -442,12 +445,15 @@ export default {
             this.albumEndRotate();//专辑旋转暂停
         },
 
-        // 下一首
-        playNext(){
+        /**
+         * 下一首
+         * @param playType(String) [播放类型]
+         */
+        playNext(playType){
             this.endSonglist.push(this.playSonglist[0]);
             this.playSonglist.splice(0,1);
             this.albumEndRotate();//清除专辑图片动画
-            this.startPlay();//开始播放
+            this.startPlay('order');//开始播放
             this.AudioBufferedVal = 1;//默认缓冲值从1开始
             this.playSongLyric = [];//清空当前歌词组
             this.currentLyric = '';//清空当前歌词
@@ -649,7 +655,8 @@ export default {
 
         // 选中播放歌曲
         selectPlaySong(data){
-
+            // this.playSonglist = this.collectList;
+            // console.log(data,this.collectList,this.playSonglist)
             this.isShowCollect ? this.isShowCollect = false : '';
 
             this.albumEndRotate();//清除专辑图片动画
@@ -719,40 +726,40 @@ export default {
 <style lang="css">
 
 .slide-collect-enter-active {
-  transition: all .25s ease;
+    transition: all .25s ease;
 }
 .slide-collect-leave-active {
-  transition: all .25s ease;
+    transition: all .25s ease;
 }
 .slide-collect-enter, .slide-collect-leave-to
 /* .slide-collect-leave-active for below version 2.1.8 */ {
-  transform: translateY(10px);
-  opacity: 0;
+    transform: translateY(10px);
+    opacity: 0;
 }
 
 .slide-slide-left-enter-active {
-  transition: all .25s ease;
+    transition: all .25s ease;
 }
 .slide-slide-left-leave-active {
-  transition: all .25s ease;
+    transition: all .25s ease;
 }
 .slide-slide-left-enter, .slide-slide-left-leave-to
 /* .slide-slide-left-leave-active for below version 2.1.8 */ {
-  transform: translateX(10px);
-  opacity: 0;
+    transform: translateX(10px);
+    opacity: 0;
 }
 
 /* 可以设置不同的进入和离开动画 */
 /* 设置持续时间和动画函数 */
 .slide-fade-enter-active {
-  transition: all .3s ease;
+    transition: all .3s ease;
 }
 .slide-fade-leave-active {
-  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+    transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
 }
 .slide-fade-enter, .slide-fade-leave-to
 /* .slide-fade-leave-active for below version 2.1.8 */ {
-  transform: translateX(10px);
-  opacity: 0;
+    transform: translateX(10px);
+    opacity: 0;
 }
 </style>
