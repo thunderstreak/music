@@ -230,7 +230,7 @@ export default {
         });
 
         // 监听ArrowRight方向键切换下一首歌曲
-        document.addEventListener('keydown',(e)=>{
+        document.addEventListener('keydown',(e) => {
             if(e.keyCode === 39){
                 this.playNext();
             }
@@ -373,7 +373,7 @@ export default {
                             this.isLike = true;
                         }
                     }
-                })
+                });
                 this.currentPlaySong = tempsong;//当前播放的歌曲详细信息
                 this.AudioPlayer.src = tempsong.src;//当前播放歌曲的src
             }

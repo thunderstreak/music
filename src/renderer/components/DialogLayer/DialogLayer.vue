@@ -4,28 +4,28 @@
 
             <div class="dialogLayer-box">
 
-                <div class="" v-if="type == 'alert'">
+                <div class="" v-if="type === 'alert'">
                     <h2 class="dialogLayer-tit">{{title}}</h2>
                     <p class="dialogLayer-content">{{message}}</p>
                 </div>
 
-                <div class="" v-if="type == 'toast' || type == 'msg'">
-                    <p class="dialogLayer-content toast" :class="[type == 'msg' ? 'msg' : '']">{{message}}</p>
+                <div class="" v-if="type === 'toast' || type === 'msg'">
+                    <p class="dialogLayer-content toast" :class="[type === 'msg' ? 'msg' : '']">{{message}}</p>
                 </div>
 
-                <div class="" v-if="type == 'confirm'">
+                <div class="" v-if="type === 'confirm'">
                     <h2 class="dialogLayer-tit">{{title}}</h2>
                     <p class="dialogLayer-content">
                         <input v-focus="type" ref='ipt' type="text" v-model='ipt' name="" value="">
                     </p>
                 </div>
 
-                <div class="dialogLayer-btn" v-if="type != 'toast' && type != 'msg'">
+                <div class="dialogLayer-btn" v-if="type !== 'toast' && type !== 'msg'">
                     <span v-if="leftbtn" class="dialogLayer-close" @click='dialogLayerClose'>{{leftbtn ? leftbtn : '取消'}}</span>
                     <span v-if="rightbtn" class="dialogLayer-enter" @click='dialogLayerEnter'>{{rightbtn ? rightbtn : '确定'}}</span>
                 </div>
 
-                <div class="dialogLayer-btn" v-if="type == 'msg'">
+                <div class="dialogLayer-btn" v-if="type === 'msg'">
                     <span class="dialogLayer-close" @click='dialogLayerClose'>{{leftbtn ? leftbtn : '取消'}}</span>
                     <span class="dialogLayer-msg" @click="dialogLayerEnter">确定</span>
                 </div>
@@ -65,7 +65,7 @@ export default {
         // 确定按钮
         dialogLayerEnter() {
             this.isshow = true;
-            if (this.type == 'confirm') {
+            if (this.type === 'confirm') {
                 this.callback(this.ipt);
             } else {
                 this.callback(true);

@@ -44,31 +44,31 @@ export default {
                 let data        = res.data.data;
                 this.searchList = data.song.list;
                 this.isHttp     = false;
-                if(data.song.list.length != 0){
+                if(data.song.list.length !== 0){
                     this.isShowList = true;//显示搜索结果列表
                 }
-            }).catch((res) => {
+            }).catch(res => {
                 this.isHttp     = false;
             })
         },
         // 搜索音乐
         searchMusics(eventType){
-            if(eventType == 'blur'){
+            if(eventType === 'blur'){
                 setTimeout(()=>{
                     this.isShowList = false;
                 },250);
-                return
-            }else if(eventType == 'input'){
-                if(this.searchVal == ''){
+                return false;
+            }else if(eventType === 'input'){
+                if(this.searchVal === ''){
                     return
                 }
-                if(this.isHttp == false){
+                if(this.isHttp === false){
                     this.isHttp = true;
                     this.timeout = setTimeout(() => {
                         this.searchApi();
                     }, 500)
                 }
-            }else if(eventType == 'change'){
+            }else if(eventType === 'change'){
                 this.searchApi();
             }
 
@@ -85,9 +85,9 @@ export default {
 
         // 操作窗口
         operantWindow(type){
-            if(type == 'hide'){
+            if(type === 'hide'){
                 ipcRenderer.send('window-min');
-            }else if(type == 'closed'){
+            }else if(type === 'closed'){
                 ipcRenderer.send('window-close');
             }
         }
