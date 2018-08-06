@@ -18,7 +18,7 @@ ipcMain.on('ipcRendererSongLyric',(event,data) => {
         }
     };
     request(options,(error, response, body) => {
-        if(!error && response.statusCode == 200){
+        if(!error && response.statusCode === 200){
 
             // 解码歌词
             let data        = JSON.parse(body.match(/\{(.+?)\}/g)[0]);
