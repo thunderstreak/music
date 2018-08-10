@@ -103,7 +103,7 @@ function createWindow() {
     let count = 0,timer = null;
     timer = setInterval(() => {
         count ++;
-        appTray.setImage(path.join(assetsDir, (count % 2 == 0) ? 'Player.ico' : 'Player1.ico'));
+        appTray.setImage(path.join(assetsDir, (count % 2 === 0) ? 'Player.ico' : 'Player1.ico'));
     }, 600);
 
     //单点击 1.主窗口显示隐藏切换 2.清除闪烁

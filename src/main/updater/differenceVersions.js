@@ -16,7 +16,8 @@ export default function diffVer(v1, v2) {
         1:{msg:'版本一致',      status:1},
         2:{msg:'本地版本的其中一个版本号段小于线上版本', status:2},
         3:{msg:'线上版本的其中一个版本号段大于本地版本', status:3},
-    }
+    };
+
     return new Promise((resolve, reject) => {
         const vs1 = v1.toString().split('.');
         const vs2 = v2.toString().split('.');

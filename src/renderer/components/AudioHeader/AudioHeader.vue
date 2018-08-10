@@ -9,6 +9,7 @@
                     <ul class="hero-gesture-search-res" v-show="isShowList">
                         <li class="res-list" v-for="item in searchList" @click.stop="selectPlaySong(item)">
                             {{item.singer[0].name}}-{{item.songname}}
+                            <!--{{item.fsinger}}-{{item.fsong}}-->
                         </li>
                     </ul>
                 </transition>
@@ -20,7 +21,7 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, remote } from 'electron';
 export default {
     name:'AudioHeader',
     data:()=>({
@@ -44,6 +45,7 @@ export default {
                 let data        = res.data.data;
                 this.searchList = data.song.list;
                 this.isHttp     = false;
+                console.log(this.searchList);
                 if(data.song.list.length !== 0){
                     this.isShowList = true;//显示搜索结果列表
                 }
@@ -51,9 +53,16 @@ export default {
                 this.isHttp     = false;
             })
         },
+        serachSong(){
+            // 向主进程发送搜索歌曲请求事件
+            ipcRenderer.send('ipcRendererSongSearch', this.searchVal);
+        },
         // 搜索音乐
         searchMusics(eventType){
             if(eventType === 'blur'){
+                if(this.searchVal === ''){
+                    return
+                }
                 setTimeout(()=>{
                     this.isShowList = false;
                 },250);
@@ -65,11 +74,14 @@ export default {
                 if(this.isHttp === false){
                     this.isHttp = true;
                     this.timeout = setTimeout(() => {
-                        this.searchApi();
+                        this.searchApi();//搜索
                     }, 500)
                 }
             }else if(eventType === 'change'){
-                this.searchApi();
+                if(this.searchVal === ''){
+                    return
+                }
+                this.searchApi();//搜索
             }
 
         },
@@ -78,8 +90,12 @@ export default {
         selectPlaySong(data){
             console.log(data);
             this.searchVal = `${data.singer[0].name}-${data.songname}`;
+            // this.searchVal  = `${data.fsinger}-${data.fsong}`;
             this.isShowList = false;//隐藏搜索列表
-
+            // data.songmid    = data.singerid;
+            // data.singername = data.fsinger;
+            // data.pay = {};
+            // data.pay.payplay = 0;
             this.$emit('AduioHeaderSelectPlaySong',data);//通知父组件播放歌曲
         },
 

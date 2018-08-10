@@ -11,7 +11,7 @@ export function SongPlayData(songData,isLike){
     let data = {
         isLike   : isLike,//是否喜欢
         timestamp: tool.getFormDate('format')
-    }
+    };
     for (let variable in songData) {
         if (songData.hasOwnProperty(variable)) {
             data[variable] = songData[variable];
