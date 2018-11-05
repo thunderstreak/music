@@ -47,6 +47,7 @@
             <!-- 播放控制 -->
             <div class="hero-play-controls">
                 <div class="hero-play-controls-left">
+                    <div class="hero-play-controls-playprev" title="上一首" @click.stop="playPrev"></div>
                     <!-- 暂停，播放 -->
                     <div class="hero-play-controls-playpaused" :class="[isPlay ? 'pused' : 'play']" @click.stop="playPaused" :title="[isPlay ? '暂停' : '播放']"></div>
                     <!-- 播放下一首 -->
@@ -144,6 +145,7 @@ export default {
         AudioBufferedVal:1,//audio 以缓冲的百分比
 
         tableData       :'',//本地数据库
+        songData        :'',//所有歌曲数据库
 
         canvasPlayer    :'',//canvas
         canvasCtx       :'',//canvas ctx
@@ -169,11 +171,18 @@ export default {
 
         // this.$db.chartData.loadDatabase();
         // 初始化本地数据库
-        this.tableData = this.$db.tableData;
+        this.tableData = this.$db.tableData;//收藏列表
+        this.songData = this.$db.songData;//所有歌曲数据库
         // this.tableData.remove({},{ multi: true },(err, numRemoved) => {});
-        this.tableData.find({},(err,doc)=>{
-            console.log(doc)
-        })
+
+        // 查询所有收藏列表
+        // this.tableData.find({},(err,doc)=>{
+        //     console.log(doc)
+        // });
+        // 查询所有歌曲列表
+        // this.songData.find({},(err,doc)=>{
+        //     console.log(doc);
+        // })
     },
     mounted(){
         this.albumImgEle       = this.$refs.albumImgEle;
@@ -222,7 +231,7 @@ export default {
         this.SpectraClass = new Spectra(this.canvasCtx,this.canvasPlayer,this.dataArray,this.bufferLength);
 
         // 绘制频谱
-        this.canvasDraw();
+        // this.canvasDraw();
 
         // 隐藏收藏列表
         document.addEventListener('click', () => {
@@ -377,6 +386,15 @@ export default {
                 this.currentPlaySong = tempsong;//当前播放的歌曲详细信息
                 this.AudioPlayer.src = tempsong.src;//当前播放歌曲的src
             }
+
+            // 查询所有歌曲列表是否存在类似的歌曲，如果存在跳过保存
+            this.songData.find({ songid: this.currentPlaySong.songid },( err, doc ) => {
+                if(doc.length === 0){
+                    let songdata = songInfo.SetSongPlayInfo(this.currentPlaySong);
+                    this.songData.insert(songdata);//保存当前歌曲信息
+                }
+            });
+
             console.log(this.currentPlaySong);
             // 判断歌曲是否需要付费才能播放
             if(this.currentPlaySong.payplay === 1){
@@ -445,13 +463,28 @@ export default {
             this.albumEndRotate();//专辑旋转暂停
         },
 
+        // 上一首
+        playPrev(){
+            let playSong = this.endSonglist.length !== 0 ? this.endSonglist[this.endSonglist.length - 1] : false;
+            console.log(this.endSonglist);
+            if(playSong){
+                this.endPlay();
+                this.startPlay('random',playSong);
+            }
+        },
+
         /**
          * 下一首
          * @param playType(String) [播放类型]
          */
         playNext(playType){
-            this.endSonglist.push(this.playSonglist[0]);
-            this.playSonglist.splice(0,1);
+            for (let i = 0; i < this.endSonglist.length; i++) {
+                if(this.endSonglist[i].songid !== this.playSonglist[0].songid){
+                    this.endSonglist.push(this.playSonglist[0]);
+                    this.playSonglist.splice(0,1);
+                }
+            }
+
             this.albumEndRotate();//清除专辑图片动画
             this.startPlay('order');//开始播放
             this.AudioBufferedVal = 1;//默认缓冲值从1开始

@@ -26,7 +26,7 @@ export default class Spectrum extends BaseSpectrum{
         this.canvasCtx.globalAlpha = this.globalAlpha;
 
         let [x,y,r,deg] = [width / 2, height / 2, 180, 2];//绘制的中心点
-        
+
         //画线条
         for (let i = 0; i < this.dataArray.length; i++) {
             let value = this.dataArray[i] / 10;//<===获取数据

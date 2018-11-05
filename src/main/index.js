@@ -126,7 +126,7 @@ const shouldQuit = app.makeSingleInstance((commandLine, workingDirectory) => {
         }
         mainWindow.focus()
     }
-})
+});
 if (shouldQuit) {
     app.quit()
 }
@@ -183,7 +183,6 @@ checkUpdate((res) => {
     let online = JSON.parse($('.type-json>table').text());
     console.log(diffVer(config.version,online.version));
 });
-
 
 app.on('ready', () => {
     // 创建主窗口

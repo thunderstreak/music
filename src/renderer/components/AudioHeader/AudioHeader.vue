@@ -8,7 +8,7 @@
                 <transition name="slide-fade">
                     <ul class="hero-gesture-search-res" v-show="isShowList">
                         <li class="res-list" v-for="item in searchList" @click.stop="selectPlaySong(item)">
-                            {{item.singer[0].name}}-{{item.songname}}
+                            {{item.singer.length !== 0 ? item.singer[0].name : item.singername}}-{{item.songname}}
                             <!--{{item.fsinger}}-{{item.fsong}}-->
                         </li>
                     </ul>
@@ -31,9 +31,11 @@ export default {
         isShowList      :false,//是否显示播放列表
         isHttp          :false,
         timeout         :'',
+        songData        :'',//所有本地歌曲列表
     }),
     created(){
-
+        // 初始化本地歌曲列表
+        this.songData = this.$db.songData;
     },
     mounted(){
 
@@ -41,17 +43,28 @@ export default {
     methods:{
         // API
         searchApi(){
-            this.$API.qq.qqMusicSearchAPI(this.searchVal).then((res)=>{
-                let data        = res.data.data;
-                this.searchList = data.song.list;
-                this.isHttp     = false;
-                console.log(this.searchList);
-                if(data.song.list.length !== 0){
+            // 查询本地歌曲列表数据
+            let reg = new RegExp(this.searchVal);
+            this.songData.find({'$or':[{'singername':{$regex:reg}},{'songname':{$regex:reg}}]},(err,doc) => {
+                // console.log(doc);
+                if(doc.length !== 0){
+                    this.searchList = doc;
                     this.isShowList = true;//显示搜索结果列表
+                }
+            });
+            /*this.$API.qq.qqMusicSearchAPI(this.searchVal).then((res)=>{
+                let { data, code } = res.data;
+                if(code !== 0){
+                    this.searchList = data.song.list;
+                    console.log(this.searchList);
+                    this.isHttp     = false;
+                    if(data.song.list.length !== 0){
+                        this.isShowList = true;//显示搜索结果列表
+                    }
                 }
             }).catch(res => {
                 this.isHttp     = false;
-            })
+            })*/
         },
         serachSong(){
             // 向主进程发送搜索歌曲请求事件

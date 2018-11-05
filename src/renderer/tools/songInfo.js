@@ -29,6 +29,7 @@ export function SetSongPlayInfo(data){
     return {
         src         :`http://ws.stream.qqmusic.qq.com/C100${data.songmid}.m4a?fromtag=0&guid=126548448`,//歌曲地址
         singername  :data.singername || data.singer.map(res => res.name).join('-'),//歌手名称
+        singer      :data.singer,//歌手
         songname    :data.songname,//歌曲名称
         songorig    :data.songorig,
         songmid     :data.songmid,

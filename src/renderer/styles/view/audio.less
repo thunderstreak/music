@@ -182,9 +182,10 @@
             .lessBoxFlexSB();
 
             .hero-play-controls-left{
+                display: flex;
                 >div{
                     height: 20px;
-                    display: inline-block;
+                    //display: inline-block;
                     cursor: pointer;
                     background: url('../../assets/sprite_radio_play.png') no-repeat center;
                 }
@@ -199,7 +200,12 @@
                 .pused{
                     background-position: 0 -20px;
                 }
-
+                .hero-play-controls-playprev{
+                    transform: rotate(180deg);
+                    background-position: 0 -40px;
+                    width: 15px;
+                    margin-right: 18px;
+                }
                 .hero-play-controls-playnext{
                     background-position: 0 -40px;
                     width: 15px;
