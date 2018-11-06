@@ -4,7 +4,12 @@
         <!-- 手势区域 -->
         <div class="hero-gesture-box">
             <div class="hero-gesture-search">
-                <input class="hero-gesture-search-ipt" :class="[isShowList ? 'border-ipt' : '']" type="text" name="" value="" v-model="searchVal" @change.stop="searchMusics('change')"  @blur.stop="searchMusics('blur')" @input.stop="searchMusics('input')" placeholder="搜索歌曲/歌手">
+                <input class="hero-gesture-search-ipt" type="text" name="" value="" v-model="searchVal"
+                       :class="[isShowList ? 'border-ipt' : '']"
+                       @change.stop="searchMusics('change')"
+                       @blur.stop="searchMusics('blur')"
+                       @input.stop="searchMusics('input')"
+                       placeholder="搜索歌曲/歌手">
                 <transition name="slide-fade">
                     <ul class="hero-gesture-search-res" v-show="isShowList">
                         <li class="res-list" v-for="item in searchList" @click.stop="selectPlaySong(item)">
@@ -73,11 +78,16 @@ export default {
         },
         // 搜索音乐
         searchMusics(eventType){
-            // console.log(eventType);
+            console.log(eventType);
             if(eventType === 'blur'){
                 setTimeout(()=>{
                     this.isShowList = false;
-                },250);
+                },200);
+
+                if(this.searchVal === ''){
+                    return
+                }
+
                 return false;
             }else if(eventType === 'input'){
                 if(this.searchVal === ''){
@@ -92,6 +102,7 @@ export default {
                 }*/
             }else if(eventType === 'change'){
                 if(this.searchVal === ''){
+                    this.isShowList = false;
                     return
                 }
                 this.searchApi();//搜索
@@ -125,15 +136,16 @@ export default {
 </script>
 
 <style lang="css">
-.slide-fade-enter-active {
-  transition: all .25s ease;
+.slide-fade-enter-active{
+    transition: all .25s ease;
 }
-.slide-fade-leave-active {
-  transition: all .25s ease;
+.slide-fade-leave-active{
+    transition: all .25s ease;
 }
 .slide-fade-enter, .slide-fade-leave-to
 /* .slide-fade-leave-active for below version 2.1.8 */ {
-  transform: translateY(10px);
-  opacity: 0;
+    transform:scaleX(0.5);
+    /*transform: translateY(10px);*/
+    opacity: 0;
 }
 </style>

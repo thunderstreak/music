@@ -483,7 +483,7 @@
         playNext(playType){
             this.savePlayendSong();//保存已播放过的歌曲
             this.albumEndRotate();//清除专辑图片动画
-            this.startPlay('order');//开始播放
+            this.startPlay('random');//开始播放
             this.AudioBufferedVal = 1;//默认缓冲值从1开始
             this.playSongLyric = [];//清空当前歌词组
             this.currentLyric = '';//清空当前歌词
