@@ -1,4 +1,4 @@
-import {app, BrowserWindow, globalShortcut, screen, ipcMain, Tray, Menu, shell} from 'electron'
+import {app, BrowserWindow, nativeImage, globalShortcut, screen, ipcMain, Tray, Menu, shell} from 'electron'
 import { autoUpdater } from "electron-updater"
 import path from 'path'
 import cheerio from 'cheerio'
@@ -18,8 +18,8 @@ if (process.env.NODE_ENV !== 'development') {
     global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
-let mainWindow
-const winURL = process.env.NODE_ENV === 'development' ? `http://localhost:9080` : `file://${__dirname}/index.html`
+let mainWindow;
+const winURL = process.env.NODE_ENV === 'development' ? `http://localhost:9080` : `file://${__dirname}/index.html`;
 
 let appTray = null;
 function createWindow() {
@@ -45,7 +45,7 @@ function createWindow() {
         // icon            : './player.png',
         backgroundColor : '#36383b',//如果你的应用没有白色背景，那么一定要在 BrowserWindow 选项中明确声明。这并不会阻止应用加载时的纯色方块，但至少它不会半路改变颜色：
         show            : false,//在所有资源加载完成前隐藏窗口。在开始前，确保隐藏掉浏览器窗口：
-    })
+    });
 
     // 在所有东西都加载完成时，显示窗口并聚焦在上面提醒用户,这里推荐使用 BrowserWindow 的 "ready-to-show" 事件实现，或者用 webContents 的 'did-finish-load' 事件。
     mainWindow.on('ready-to-show', () => {
@@ -53,12 +53,12 @@ function createWindow() {
         mainWindow.focus();
     });
 
-    mainWindow.setMenu(null)
-    mainWindow.loadURL(winURL)
+    mainWindow.setMenu(null);
+    mainWindow.loadURL(winURL);
 
     mainWindow.on('closed', () => {
         mainWindow = null
-    })
+    });
 
     //前期为了调试方面，默认打开控制台
     if(process.env.NODE_ENV === 'development'){
@@ -86,8 +86,8 @@ function createWindow() {
     ];
 
     //系统托盘图标目录
-    let assetsDir = path.resolve(__dirname, '../assets');
-    appTray = new Tray(path.join(assetsDir, 'Player.ico'));
+    let assetsDir = path.resolve(__dirname, '../assets/');
+    appTray = new Tray(nativeImage.createFromPath(path.join(assetsDir, 'Player.png')));
 
     //图标的上下文菜单
     const contextMenu = Menu.buildFromTemplate(trayMenuTemplate);
@@ -103,18 +103,19 @@ function createWindow() {
     let count = 0,timer = null;
     timer = setInterval(() => {
         count ++;
-        appTray.setImage(path.join(assetsDir, (count % 2 == 0) ? 'Player.ico' : 'Player1.ico'));
+        appTray.setImage(nativeImage.createFromPath(path.join(assetsDir, (count % 2 === 0) ? 'Player.png' : 'Player1.ico')));
     }, 600);
 
     //单点击 1.主窗口显示隐藏切换 2.清除闪烁
     appTray.on("click", () => {
         if(timer){
             clearInterval(timer);
-            appTray.setImage(path.join(assetsDir, 'Player.ico'));
+            appTray.setImage(nativeImage.createFromPath(path.join(assetsDir, 'Player.ico')));
             //主窗口显示隐藏切换
             mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
         }
-    })
+    });
+
 }
 
 
@@ -126,7 +127,7 @@ const shouldQuit = app.makeSingleInstance((commandLine, workingDirectory) => {
         }
         mainWindow.focus()
     }
-})
+});
 if (shouldQuit) {
     app.quit()
 }
@@ -182,8 +183,7 @@ checkUpdate((res) => {
     let $ = cheerio.load(res);
     let online = JSON.parse($('.type-json>table').text());
     console.log(diffVer(config.version,online.version));
-})
-
+});
 
 app.on('ready', () => {
     // 创建主窗口
@@ -192,19 +192,19 @@ app.on('ready', () => {
     updateHandle();
     // 立即下载更新然后在退出的时候安装
     // autoUpdater.checkForUpdatesAndNotify();
-})
+});
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
     }
-})
+});
 
 app.on('activate', () => {
     if (mainWindow === null) {
         createWindow();
     }
-})
+});
 // 关闭窗口
 ipcMain.on('window-close', e => {
     // mainWindow.close();

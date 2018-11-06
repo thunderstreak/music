@@ -30,7 +30,7 @@ export default {
         },
         closed(e){
             // console.log(e.target.className);
-            if(e.target.className.indexOf('MaskLayer') != -1){
+            if(e.target.className.indexOf('MaskLayer') !== -1){
                 this.toggle(false);
                 this.$emit('AcceptResultShow',false);
             }

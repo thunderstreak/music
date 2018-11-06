@@ -20,7 +20,7 @@
         <div class="hero-play-audio">
             <img class="hero-play-audios" ref="albumImgEle" @click.stop="playPaused" draggable="false" :src="currentPlaySong.albumisrc ? currentPlaySong.albumisrc : placeholderImg" alt="">
             <div class="hero-play-album-name">
-                {{currentPlaySong.singername}}</br>{{currentPlaySong.songname}}
+                {{currentPlaySong.singername}}<br/>{{currentPlaySong.songname}}
             </div>
         </div>
         <SwitchRouter></SwitchRouter>
@@ -47,6 +47,7 @@
             <!-- 播放控制 -->
             <div class="hero-play-controls">
                 <div class="hero-play-controls-left">
+                    <div class="hero-play-controls-playprev" title="上一首" @click.stop="playPrev"></div>
                     <!-- 暂停，播放 -->
                     <div class="hero-play-controls-playpaused" :class="[isPlay ? 'pused' : 'play']" @click.stop="playPaused" :title="[isPlay ? '暂停' : '播放']"></div>
                     <!-- 播放下一首 -->
@@ -70,8 +71,8 @@
                     <transition name="slide-collect">
                         <div class="hero-play-controls-more" v-show="isShowCollect">
                             <div class="hero-play-controls-more-tab">
-                                <span class="tab-list" :class="[collectType == 'likes' ? 'activate' : '']" @click.stop="toggleList('likes')">Likes</span>
-                                <span class="tab-list" :class="[collectType == 'hates' ? 'activate' : '']" @click.stop="toggleList('hates')">Hates</span>
+                                <span class="tab-list" :class="[collectType === 'likes' ? 'activate' : '']" @click.stop="toggleList('likes')">Likes</span>
+                                <span class="tab-list" :class="[collectType === 'hates' ? 'activate' : '']" @click.stop="toggleList('hates')">Hates</span>
                             </div>
                             <!-- <transition-group name="slide-left" tag="ul" class="hero-play-controls-more-list"> -->
                                 <ul class="hero-play-controls-more-list">
@@ -79,7 +80,7 @@
                                         <span class="list-play" @click.stop="selectPlaySong(item)">{{item.singername}}-{{item.songname}}</span>
                                         <span class="list-removed" @click.stop="removedCollect(item)"></span>
                                     </li>
-                                    <li class="like-or-hate-nodata" v-show="collectList.length == 0">No Data</li>
+                                    <li class="like-or-hate-nodata" v-show="collectList.length === 0">No Data</li>
                                 </ul>
                             <!-- </transition-group> -->
                         </div>
@@ -100,14 +101,12 @@
 </template>
 
 <script>
-import { ipcRenderer,remote } from 'electron';
-import placeholderImg from '../assets/person_300.png';
-import * as analyser from '../tools/analyser';
-import * as spectrum from '../tools/spectrum';
-import * as songInfo from '../tools/songInfo';
-import Spectra from '../class/Spectra';
+    import {ipcRenderer, remote} from 'electron';
+    import placeholderImg from '../assets/person_300.png';
+    import * as songInfo from '../tools/songInfo';
+    import Spectra from '../class/Spectra';
 
-export default {
+    export default {
     name: 'AudioPlayer',
     data: () => ({
         currentPlaySong :'',//当前播放音乐对象
@@ -131,10 +130,11 @@ export default {
         currentLyric    :'',//播放歌曲的当前歌词
 
         currSongIndex   :0,//当前播放歌曲的下标
-        acceptSonglist  :[],//播放完成后存储的列表
+        endSonglist     :[],//播放完成后存储的列表
         songDuration    :0,//歌曲总时长
         currPlayTime    :0,//当前歌曲播放时间
         albumRotateDeg  :0,//专辑图片旋转度
+        prevSongIndex   :0,//上一首歌曲下标
 
         timeInterval    :'',//
         albumInterval   :'',//专辑
@@ -146,6 +146,7 @@ export default {
         AudioBufferedVal:1,//audio 以缓冲的百分比
 
         tableData       :'',//本地数据库
+        songData        :'',//所有歌曲数据库
 
         canvasPlayer    :'',//canvas
         canvasCtx       :'',//canvas ctx
@@ -171,8 +172,18 @@ export default {
 
         // this.$db.chartData.loadDatabase();
         // 初始化本地数据库
-        this.tableData = this.$db.tableData;
+        this.tableData = this.$db.tableData;//收藏列表
+        this.songData = this.$db.songData;//所有歌曲数据库
         // this.tableData.remove({},{ multi: true },(err, numRemoved) => {});
+
+        // 查询所有收藏列表
+        // this.tableData.find({},(err,doc)=>{
+        //     console.log(doc)
+        // });
+        // 查询所有歌曲列表
+        // this.songData.find({},(err,doc)=>{
+        //     console.log(doc);
+        // })
     },
     mounted(){
         this.albumImgEle       = this.$refs.albumImgEle;
@@ -221,24 +232,24 @@ export default {
         this.SpectraClass = new Spectra(this.canvasCtx,this.canvasPlayer,this.dataArray,this.bufferLength);
 
         // 绘制频谱
-        this.canvasDraw();
+        // this.canvasDraw();
 
         // 隐藏收藏列表
         document.addEventListener('click', () => {
             this.isShowCollect ? this.isShowCollect = false : '';
-        })
+        });
 
         // 监听ArrowRight方向键切换下一首歌曲
-        document.addEventListener('keydown',(e)=>{
+        document.addEventListener('keydown',(e) => {
             if(e.keyCode === 39){
                 this.playNext();
             }
-        })
+        });
 
         // 接受主进程事件通知，渲染歌词
         ipcRenderer.on('ipcMainSongLyric',(event,lyric) => {
             this.parseLyric(lyric);//解析歌词
-        })
+        });
 
         // 检查是否有更新
         ipcRenderer.send("checkForUpdate");
@@ -247,7 +258,7 @@ export default {
         ipcRenderer.on("message", (event, msg) => {
             console.log(msg);
 
-            if(msg.type == 'updating'){
+            if(msg.type === 'updating'){
                 // 检查到最新版本
                 this.$dialog.alert({
                     title   : '123',
@@ -279,6 +290,7 @@ export default {
 
     },
     methods: {
+        // 获取歌词时间
         getTime(str){
             let minutes = parseInt(str.split(':')[0]);
             let seconds = parseInt(str.split(':')[1].split('.')[0]);
@@ -286,6 +298,7 @@ export default {
             // console.log(minutes,seconds,ms,Math.floor(((minutes * 60) + seconds + (ms / 100))));
             return Math.floor(((minutes * 60) + seconds + (ms / 100)));
         },
+
         // 播放
         playPaused(){
             if(this.AudioPlayer.paused){
@@ -304,7 +317,7 @@ export default {
             this.$API.qq.qqMusicLsitAPI().then((res)=>{
                 let data = res.data;
                 let songlist = data.songlist;
-                for (var i = 0; i < songlist.length; i++) {
+                for (let i = 0; i < songlist.length; i++) {
                     let data = songlist[i].data;
                     if(data.songmid){
                         this.playSonglist.push(songInfo.SetSongPlayInfo(data));// 设置播放歌曲信息
@@ -318,7 +331,7 @@ export default {
         // 解析歌词
         parseLyric(lyric){
             this.playSongLyric = [];
-            if(lyric.length == 0){
+            if(lyric.length === 0){
                 this.currentLyric = '当前暂无歌词显示';
                 return
             }
@@ -346,9 +359,9 @@ export default {
             // 旋转专辑图片
             this.albumStartRotate();
 
-            if(playType == 'order'){
+            if(playType === 'order'){
                 this.currSongIndex = 0;
-            }else if(playType == 'random'){
+            }else if(playType === 'random'){
                 // 设置随机播放第一首歌
                 this.currSongIndex  = Math.floor(Math.random() * this.playSonglist.length);
             }
@@ -361,22 +374,31 @@ export default {
                 let tempsong = this.playSonglist[this.currSongIndex];
                 this.tableData.find({ songid: tempsong.songid }, (err,doc) => {
                     // console.log(doc);
-                    if(doc.length != 0){
+                    if(doc.length !== 0){
                         // 如果不是喜欢的歌曲则跳过播放
-                        if(doc[0].isLike == false){
+                        if(doc[0].isLike === false){
                             this.isLike = false;
                             this.playSonglist.splice(0,1);
                         }else{
                             this.isLike = true;
                         }
                     }
-                })
+                });
                 this.currentPlaySong = tempsong;//当前播放的歌曲详细信息
                 this.AudioPlayer.src = tempsong.src;//当前播放歌曲的src
             }
-            console.log(this.currentPlaySong);
+
+            // 查询所有歌曲列表是否存在类似的歌曲，如果存在跳过保存
+            this.songData.find({ songid: this.currentPlaySong.songid },( err, doc ) => {
+                if(doc.length === 0){
+                    let songdata = songInfo.SetSongPlayInfo(this.currentPlaySong);
+                    this.songData.insert(songdata);//保存当前歌曲信息
+                }
+            });
+
+            console.log(this.currentPlaySong.songname);
             // 判断歌曲是否需要付费才能播放
-            if(this.currentPlaySong.payplay == 1){
+            if(this.currentPlaySong.payplay === 1){
                 console.log(this.currentPlaySong.songname + '：该歌曲需要付费播放');
                 /*let options = {
                     type    : 'warning',
@@ -400,7 +422,7 @@ export default {
             this.AudioPlayer.play();
 
             this.AudioPlayer.ontimeupdate = () => {
-                if(this.AudioPlayer.readyState == 4){
+                if(this.AudioPlayer.readyState === 4){
                     // 如果歌曲已缓冲100%
                     // if(this.AudioBufferedVal == 100){
                     //     return;
@@ -415,14 +437,14 @@ export default {
                     // console.log(this.AudioPlayer.currentTime);
 
                     // 显示当前歌词
-                    for (var i = 0; i < this.playSongLyric.length; i++) {
-                        if(this.playSongLyric[i].lyricTime == this.currPlayTime){
+                    for (let i = 0; i < this.playSongLyric.length; i++) {
+                        if(this.playSongLyric[i].lyricTime === this.currPlayTime){
                             this.currentLyric = this.playSongLyric[i].lyric;
                             break;
                         }
                     }
                 }
-            }
+            };
 
             // this.changeBackgroundColor();//随机改变背景颜色
 
@@ -442,25 +464,65 @@ export default {
             this.albumEndRotate();//专辑旋转暂停
         },
 
-        // 下一首
-        playNext(){
-            this.acceptSonglist.push(this.playSonglist[0]);
-            this.playSonglist.splice(0,1);
+        // 上一首
+        playPrev(){
+            let idx = (this.endSonglist.length - this.prevSongIndex) - 1;
+            let prevSongIdx = idx <= 0 ? 0 : idx;
+            let playSong = this.endSonglist.length !== 0 ? this.endSonglist[prevSongIdx] : false;
+            this.prevSongIndex += 1;//上一首歌曲的下标
+            if(playSong){
+                this.endPlay();
+                this.startPlay('random',playSong);
+            }
+        },
+
+        /**
+         * 下一首
+         * @param playType(String) [播放类型]
+         */
+        playNext(playType){
+            this.savePlayendSong();//保存已播放过的歌曲
             this.albumEndRotate();//清除专辑图片动画
-            this.startPlay();//开始播放
+            this.startPlay('random');//开始播放
             this.AudioBufferedVal = 1;//默认缓冲值从1开始
             this.playSongLyric = [];//清空当前歌词组
             this.currentLyric = '';//清空当前歌词
+            this.prevSongIndex = 0;//重置上一首歌下标
 
             // 歌曲付费播放提示是否显示，如果显示就在切换歌曲时隐藏
-            if(this.dialogInfoObj.show == true){
+            if(this.dialogInfoObj.show === true){
                 this.dialogInfoObj.toggle(false);
             }
 
             //根据查询的数据标记是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
             this.tableData.find({ songmid : this.currentPlaySong.songmid }, (err,doc) => {
-                this.isLike = doc.length != 0 ? true : false;
+                this.isLike = !!doc.length;//doc.length !== 0 ? true : false;
             })
+        },
+
+        // 保存已播放过的歌曲
+        savePlayendSong(){
+            if(this.endSonglist.length !== 0){
+                let flag = false;
+                for (let i = 0; i <= this.endSonglist.length - 1; i++) {
+                    // 当播放过的歌曲列表里面没有一条记录对应当前播放歌曲的id时且为最后一条记录时把当前歌曲保存到播放过的列表
+                    if( this.endSonglist[i].songid === this.playSonglist[this.currSongIndex].songid ){
+                        flag = false;
+                        break
+                    }else if(this.endSonglist[i].songid !== this.playSonglist[this.currSongIndex].songid && i === this.endSonglist.length - 1){
+                        flag = true
+                    }else{
+                        flag = false;
+                    }
+                }
+                if(flag){
+                    this.endSonglist.push(this.playSonglist[this.currSongIndex]);
+                    this.playSonglist.splice(this.currSongIndex,1);
+                }
+            }else{
+                this.endSonglist.push(this.playSonglist[this.currSongIndex]);
+                this.playSonglist.splice(this.currSongIndex,1);
+            }
         },
 
         // 开启关闭声音
@@ -480,7 +542,7 @@ export default {
             this.setRangeProgress();
             // 设置音量大小
             this.AudioPlayer.volume = this.audioRangeVal / 100;
-            if(this.audioRangeVal == 0){
+            if(this.audioRangeVal === 0){
                 this.isVoice = true;
             }else{
                 this.isVoice = false;
@@ -520,7 +582,7 @@ export default {
             //标记这首歌曲不喜欢
             this.tableData.insert(songdata, (err, newDoc) => {
                 this.collectList.push(newDoc)
-            })
+            });
             this.playNext();//下一首歌
         },
 
@@ -530,9 +592,9 @@ export default {
             if(this.isShowCollect){
 
                 let type;
-                if(this.collectType == 'likes'){
+                if(this.collectType === 'likes'){
                     type = true;
-                }else if(this.collectType == 'hates'){
+                }else if(this.collectType === 'hates'){
                     type = false;
                 }
 
@@ -547,8 +609,8 @@ export default {
         // 移除收藏
         removedCollect(item){
             let collectList = this.collectList;
-            for (var i = 0; i < collectList.length; i++) {
-                if(collectList[i].songid == item.songid){
+            for (let i = 0; i < collectList.length; i++) {
+                if(collectList[i].songid === item.songid){
                     collectList.splice(i,1);
                     break;
                 }
@@ -562,12 +624,12 @@ export default {
         // 切换歌曲
         toggleList(type){
             this.collectType = type;
-            if(type == 'likes'){
+            if(type === 'likes'){
                 this.tableData.find({ isLike: true }, (err, docs) => {
                     this.collectList = [];
                     docs.forEach(item => this.collectList.push(item));
                 });
-            }else if(type == 'hates'){
+            }else if(type === 'hates'){
                 this.tableData.find({ isLike: false }, (err, docs) => {
                     this.collectList = [];
                     docs.forEach(item => this.collectList.push(item));
@@ -610,9 +672,9 @@ export default {
             this.isPlay = true;//是否播放状态为播放
 
             // 拖动进度条显示当前歌词
-            let playSongLyric = this.playSongLyric
+            let playSongLyric = this.playSongLyric;
             let currPlayTime = parseInt(this.AudioPlayer.currentTime);
-            for (var i = 0; i < playSongLyric.length; i++) {
+            for (let i = 0; i < playSongLyric.length; i++) {
                 if(playSongLyric[i].lyricTime <= currPlayTime && currPlayTime <= playSongLyric[i + 1].lyricTime){
                     this.currentLyric = playSongLyric[i].lyric;
                     break;
@@ -649,7 +711,8 @@ export default {
 
         // 选中播放歌曲
         selectPlaySong(data){
-
+            // this.playSonglist = this.collectList;
+            // console.log(data,this.collectList,this.playSonglist)
             this.isShowCollect ? this.isShowCollect = false : '';
 
             this.albumEndRotate();//清除专辑图片动画
@@ -658,7 +721,7 @@ export default {
             //根据查询的数据重置是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
             this.tableData.find({ songmid : data.songmid }, (err,doc) => {
                 // console.log(doc);
-                if(doc.length != 0){
+                if(doc.length !== 0){
                     doc[0].isLike ? this.isLike = true : this.isLike = false;
                 }else{
                     this.isLike = false;
@@ -719,40 +782,40 @@ export default {
 <style lang="css">
 
 .slide-collect-enter-active {
-  transition: all .25s ease;
+    transition: all .25s ease;
 }
 .slide-collect-leave-active {
-  transition: all .25s ease;
+    transition: all .25s ease;
 }
 .slide-collect-enter, .slide-collect-leave-to
 /* .slide-collect-leave-active for below version 2.1.8 */ {
-  transform: translateY(10px);
-  opacity: 0;
+    transform: translateY(10px);
+    opacity: 0;
 }
 
 .slide-slide-left-enter-active {
-  transition: all .25s ease;
+    transition: all .25s ease;
 }
 .slide-slide-left-leave-active {
-  transition: all .25s ease;
+    transition: all .25s ease;
 }
 .slide-slide-left-enter, .slide-slide-left-leave-to
 /* .slide-slide-left-leave-active for below version 2.1.8 */ {
-  transform: translateX(10px);
-  opacity: 0;
+    transform: translateX(10px);
+    opacity: 0;
 }
 
 /* 可以设置不同的进入和离开动画 */
 /* 设置持续时间和动画函数 */
 .slide-fade-enter-active {
-  transition: all .3s ease;
+    transition: all .3s ease;
 }
 .slide-fade-leave-active {
-  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+    transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
 }
 .slide-fade-enter, .slide-fade-leave-to
 /* .slide-fade-leave-active for below version 2.1.8 */ {
-  transform: translateX(10px);
-  opacity: 0;
+    transform: translateX(10px);
+    opacity: 0;
 }
 </style>

@@ -7,7 +7,14 @@ import Base64 from 'js-base64';
  * @return {[type]}           [description]
  */
 export function qqMusicSearchAPI(searchStr){
-    return axios({
+    /**
+     * http://s.music.qq.com/fcgi-bin/music_search_new_platform?t=0& amp;n={2}
+     * &aggr=1&cr=1&loginUin={3}
+     * &format=json&inCharset=GB2312&outCharset=utf-8&notice=0&platform=jqminiframe.json&needNewCode=0&p={1}
+     * &catZhida=0&remoteplace=sizer.newclient.next_song&w={0}
+     * {0}=需要搜索的歌曲或歌手 {1}=查询的页码数 {2}=当前页的返回数量 {3}=默认为0,是登录的QQ号ID
+     * */
+    let requestParamsAPI_A = {
         url     :'https://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp',
         method  :'GET',
         params  :{
@@ -33,7 +40,29 @@ export function qqMusicSearchAPI(searchStr){
             remoteplace :'txt.mqq.all',
             _           :new Date().getTime()
         }
-    })
+    };
+    let requestParamsAPI_B = {
+        url     : 'http://s.music.qq.com/fcgi-bin/music_search_new_platform',
+        method  : 'GET',
+        params  : {
+            t           : 0,
+            " amp;n"    : 10,
+            aggr        : 1,
+            cr          : 1,
+            loginUin    : 0,
+            format      : 'json',
+            inCharset   : 'GB2312',
+            outCharset  : 'utf-8',
+            notice      : 0,
+            platform    : 'jqminiframe.json',
+            needNewCode : 0,
+            p           : 1,
+            catZhida    : 0,
+            remoteplace : 'sizer.newclient.next_song',
+            w           : searchStr,
+        }
+    };
+    return axios(requestParamsAPI_A)
 }
 
 /**
@@ -81,7 +110,7 @@ export function qqMusicLyricAPI(songId){
     };
     return new Promise((resolve,reject) => {
         request(options, (error, response, body) => {
-            if(!error && response.statusCode == 200){
+            if(!error && response.statusCode === 200){
                 // 解码歌词
                 let data = JSON.parse(body.match(/\{(.+?)\}/g)[0]);
                 let decodelyric = Base64.Base64.decode(data.lyric);
