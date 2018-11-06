@@ -101,12 +101,12 @@
 </template>
 
 <script>
-import { ipcRenderer,remote } from 'electron';
-import placeholderImg from '../assets/person_300.png';
-import * as songInfo from '../tools/songInfo';
-import Spectra from '../class/Spectra';
+    import {ipcRenderer, remote} from 'electron';
+    import placeholderImg from '../assets/person_300.png';
+    import * as songInfo from '../tools/songInfo';
+    import Spectra from '../class/Spectra';
 
-export default {
+    export default {
     name: 'AudioPlayer',
     data: () => ({
         currentPlaySong :'',//当前播放音乐对象
@@ -134,6 +134,7 @@ export default {
         songDuration    :0,//歌曲总时长
         currPlayTime    :0,//当前歌曲播放时间
         albumRotateDeg  :0,//专辑图片旋转度
+        prevSongIndex   :0,//上一首歌曲下标
 
         timeInterval    :'',//
         albumInterval   :'',//专辑
@@ -395,7 +396,7 @@ export default {
                 }
             });
 
-            console.log(this.currentPlaySong);
+            console.log(this.currentPlaySong.songname);
             // 判断歌曲是否需要付费才能播放
             if(this.currentPlaySong.payplay === 1){
                 console.log(this.currentPlaySong.songname + '：该歌曲需要付费播放');
@@ -465,8 +466,10 @@ export default {
 
         // 上一首
         playPrev(){
-            let playSong = this.endSonglist.length !== 0 ? this.endSonglist[this.endSonglist.length - 1] : false;
-            console.log(this.endSonglist);
+            let idx = (this.endSonglist.length - this.prevSongIndex) - 1;
+            let prevSongIdx = idx <= 0 ? 0 : idx;
+            let playSong = this.endSonglist.length !== 0 ? this.endSonglist[prevSongIdx] : false;
+            this.prevSongIndex += 1;//上一首歌曲的下标
             if(playSong){
                 this.endPlay();
                 this.startPlay('random',playSong);
@@ -478,18 +481,13 @@ export default {
          * @param playType(String) [播放类型]
          */
         playNext(playType){
-            for (let i = 0; i < this.endSonglist.length; i++) {
-                if(this.endSonglist[i].songid !== this.playSonglist[0].songid){
-                    this.endSonglist.push(this.playSonglist[0]);
-                    this.playSonglist.splice(0,1);
-                }
-            }
-
+            this.savePlayendSong();//保存已播放过的歌曲
             this.albumEndRotate();//清除专辑图片动画
             this.startPlay('order');//开始播放
             this.AudioBufferedVal = 1;//默认缓冲值从1开始
             this.playSongLyric = [];//清空当前歌词组
             this.currentLyric = '';//清空当前歌词
+            this.prevSongIndex = 0;//重置上一首歌下标
 
             // 歌曲付费播放提示是否显示，如果显示就在切换歌曲时隐藏
             if(this.dialogInfoObj.show === true){
@@ -498,8 +496,33 @@ export default {
 
             //根据查询的数据标记是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
             this.tableData.find({ songmid : this.currentPlaySong.songmid }, (err,doc) => {
-                this.isLike = doc.length !== 0 ? true : false;
+                this.isLike = !!doc.length;//doc.length !== 0 ? true : false;
             })
+        },
+
+        // 保存已播放过的歌曲
+        savePlayendSong(){
+            if(this.endSonglist.length !== 0){
+                let flag = false;
+                for (let i = 0; i <= this.endSonglist.length - 1; i++) {
+                    // 当播放过的歌曲列表里面没有一条记录对应当前播放歌曲的id时且为最后一条记录时把当前歌曲保存到播放过的列表
+                    if( this.endSonglist[i].songid === this.playSonglist[this.currSongIndex].songid ){
+                        flag = false;
+                        break
+                    }else if(this.endSonglist[i].songid !== this.playSonglist[this.currSongIndex].songid && i === this.endSonglist.length - 1){
+                        flag = true
+                    }else{
+                        flag = false;
+                    }
+                }
+                if(flag){
+                    this.endSonglist.push(this.playSonglist[this.currSongIndex]);
+                    this.playSonglist.splice(this.currSongIndex,1);
+                }
+            }else{
+                this.endSonglist.push(this.playSonglist[this.currSongIndex]);
+                this.playSonglist.splice(this.currSongIndex,1);
+            }
         },
 
         // 开启关闭声音

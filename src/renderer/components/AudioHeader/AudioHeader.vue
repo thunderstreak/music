@@ -46,8 +46,9 @@ export default {
             // 查询本地歌曲列表数据
             let reg = new RegExp(this.searchVal);
             this.songData.find({'$or':[{'singername':{$regex:reg}},{'songname':{$regex:reg}}]},(err,doc) => {
-                // console.log(doc);
+                console.log(doc);
                 if(doc.length !== 0){
+                    this.isHttp     = false;
                     this.searchList = doc;
                     this.isShowList = true;//显示搜索结果列表
                 }
@@ -72,10 +73,8 @@ export default {
         },
         // 搜索音乐
         searchMusics(eventType){
+            // console.log(eventType);
             if(eventType === 'blur'){
-                if(this.searchVal === ''){
-                    return
-                }
                 setTimeout(()=>{
                     this.isShowList = false;
                 },250);
@@ -84,12 +83,13 @@ export default {
                 if(this.searchVal === ''){
                     return
                 }
-                if(this.isHttp === false){
+                this.$tool.debounce(this.searchApi(),500);
+                /*if(this.isHttp === false){
                     this.isHttp = true;
                     this.timeout = setTimeout(() => {
                         this.searchApi();//搜索
                     }, 500)
-                }
+                }*/
             }else if(eventType === 'change'){
                 if(this.searchVal === ''){
                     return
@@ -101,7 +101,7 @@ export default {
 
         // 选中播放歌曲
         selectPlaySong(data){
-            console.log(data);
+            // console.log(data);
             this.searchVal = `${data.singer[0].name}-${data.songname}`;
             // this.searchVal  = `${data.fsinger}-${data.fsong}`;
             this.isShowList = false;//隐藏搜索列表

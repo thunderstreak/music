@@ -1,4 +1,4 @@
-import {app, BrowserWindow, globalShortcut, screen, ipcMain, Tray, Menu, shell} from 'electron'
+import {app, BrowserWindow, nativeImage, globalShortcut, screen, ipcMain, Tray, Menu, shell} from 'electron'
 import { autoUpdater } from "electron-updater"
 import path from 'path'
 import cheerio from 'cheerio'
@@ -86,8 +86,8 @@ function createWindow() {
     ];
 
     //系统托盘图标目录
-    let assetsDir = path.resolve(__dirname, '../assets');
-    appTray = new Tray(path.join(assetsDir, 'Player.ico'));
+    let assetsDir = path.resolve(__dirname, '../assets/');
+    appTray = new Tray(nativeImage.createFromPath(path.join(assetsDir, 'Player.png')));
 
     //图标的上下文菜单
     const contextMenu = Menu.buildFromTemplate(trayMenuTemplate);
@@ -103,18 +103,19 @@ function createWindow() {
     let count = 0,timer = null;
     timer = setInterval(() => {
         count ++;
-        appTray.setImage(path.join(assetsDir, (count % 2 === 0) ? 'Player.ico' : 'Player1.ico'));
+        appTray.setImage(nativeImage.createFromPath(path.join(assetsDir, (count % 2 === 0) ? 'Player.png' : 'Player1.ico')));
     }, 600);
 
     //单点击 1.主窗口显示隐藏切换 2.清除闪烁
     appTray.on("click", () => {
         if(timer){
             clearInterval(timer);
-            appTray.setImage(path.join(assetsDir, 'Player.ico'));
+            appTray.setImage(nativeImage.createFromPath(path.join(assetsDir, 'Player.ico')));
             //主窗口显示隐藏切换
             mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
         }
-    })
+    });
+
 }
 
 
