@@ -145,7 +145,7 @@
         AudioPlayer     :'',//new audio 播放器对象
         AudioBufferedVal:1,//audio 以缓冲的百分比
 
-        tableData       :'',//本地数据库
+        collectData     :'',//本地收藏数据库
         songData        :'',//所有歌曲数据库
 
         canvasPlayer    :'',//canvas
@@ -172,12 +172,12 @@
 
         // this.$db.chartData.loadDatabase();
         // 初始化本地数据库
-        this.tableData = this.$db.tableData;//收藏列表
+        this.collectData = this.$db.collectData;//收藏列表
         this.songData = this.$db.songData;//所有歌曲数据库
-        // this.tableData.remove({},{ multi: true },(err, numRemoved) => {});
+        // this.collectData.remove({},{ multi: true },(err, numRemoved) => {});
 
         // 查询所有收藏列表
-        // this.tableData.find({},(err,doc)=>{
+        // this.collectData.find({},(err,doc)=>{
         //     console.log(doc)
         // });
         // 查询所有歌曲列表
@@ -372,7 +372,7 @@
             }else{
                 // 如果没有指定播放的歌曲先查询数据库里面是否存在记录，如果存在记录再判断是否标记为是否喜欢，如果不喜欢则跳过播放
                 let tempsong = this.playSonglist[this.currSongIndex];
-                this.tableData.find({ songid: tempsong.songid }, (err,doc) => {
+                this.collectData.find({ songid: tempsong.songid }, (err,doc) => {
                     // console.log(doc);
                     if(doc.length !== 0){
                         // 如果不是喜欢的歌曲则跳过播放
@@ -495,7 +495,7 @@
             }
 
             //根据查询的数据标记是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
-            this.tableData.find({ songmid : this.currentPlaySong.songmid }, (err,doc) => {
+            this.collectData.find({ songmid : this.currentPlaySong.songmid }, (err,doc) => {
                 this.isLike = !!doc.length;//doc.length !== 0 ? true : false;
             })
         },
@@ -562,12 +562,12 @@
             if(this.isLike){
 
                 // 存储喜欢的歌曲的信息到db
-                this.tableData.insert(songdata, (err, newDoc) => {
+                this.collectData.insert(songdata, (err, newDoc) => {
                     // 设置喜欢的歌曲
                     this.collectList.push(songdata);
                     console.log(newDoc)
                 })
-                // this.tableData.find({}, (err, docs) => { console.log(docs) })
+                // this.collectData.find({}, (err, docs) => { console.log(docs) })
             }else{
                 this.removedCollect(songdata);
             }
@@ -580,7 +580,7 @@
             let songdata = songInfo.SongPlayData(this.currentPlaySong,false);
 
             //标记这首歌曲不喜欢
-            this.tableData.insert(songdata, (err, newDoc) => {
+            this.collectData.insert(songdata, (err, newDoc) => {
                 this.collectList.push(newDoc)
             });
             this.playNext();//下一首歌
@@ -598,8 +598,8 @@
                     type = false;
                 }
 
-                // 默认查询喜欢的
-                this.tableData.find({ isLike: type }, (err, docs) => {
+                // 默认查询喜欢的,根据添加的时间排序
+                this.collectData.find({ isLike: type, now: { $exists: true }}).sort({ now: -1 }).exec((err, docs) => {
                     this.collectList = [];
                     docs.forEach(item => this.collectList.push(item));
                 });
@@ -616,7 +616,7 @@
                 }
             }
             // 删除一条记录
-            this.tableData.remove({ songid: item.songid }, {}, (err, numRemoved) => {
+            this.collectData.remove({ songid: item.songid }, {}, (err, numRemoved) => {
               console.log(numRemoved);
             });
         },
@@ -624,16 +624,14 @@
         // 切换歌曲
         toggleList(type){
             this.collectType = type;
+            this.collectList = [];
             if(type === 'likes'){
-                this.tableData.find({ isLike: true }, (err, docs) => {
-                    this.collectList = [];
+                this.collectData.find({ isLike: true }, (err, docs) => {
                     docs.forEach(item => this.collectList.push(item));
                 });
             }else if(type === 'hates'){
-                this.tableData.find({ isLike: false }, (err, docs) => {
-                    this.collectList = [];
+                this.collectData.find({ isLike: false }, (err, docs) => {
                     docs.forEach(item => this.collectList.push(item));
-                    // console.log(docs);
                 });
             }
         },
@@ -719,7 +717,7 @@
             this.startPlay('order',data);
 
             //根据查询的数据重置是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
-            this.tableData.find({ songmid : data.songmid }, (err,doc) => {
+            this.collectData.find({ songmid : data.songmid }, (err,doc) => {
                 // console.log(doc);
                 if(doc.length !== 0){
                     doc[0].isLike ? this.isLike = true : this.isLike = false;

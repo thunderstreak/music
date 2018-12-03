@@ -1,7 +1,7 @@
 {
   "name": "Player",
   "version": "0.2.1",
-  "author": "yanbin <821470904@qq.com>",
+  "author": "Yanbin <821470904@qq.com>",
   "description": "An electron-vue project",
   "license": null,
   "main": "./dist/electron/main.js",
