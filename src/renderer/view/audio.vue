@@ -176,14 +176,29 @@
         this.songData = this.$db.songData;//所有歌曲数据库
         // this.collectData.remove({},{ multi: true },(err, numRemoved) => {});
 
-        // 查询所有收藏列表
-        // this.collectData.find({},(err,doc)=>{
-        //     console.log(doc)
-        // });
-        // 查询所有歌曲列表
-        // this.songData.find({},(err,doc)=>{
-        //     console.log(doc);
-        // })
+        /*this.collectData.find({ timestamp: { $exists: true } }, (err,docs) => {
+            docs.forEach((item) => {
+                let now = new Date(item.timestamp).getTime();
+                this.collectData.update(
+                    {"_id":item._id},
+                    {$set:{"now": now}},
+                    {},
+                    (err, numAffected, affectedDocuments) => {
+                        console.log(err,numAffected, affectedDocuments);
+                    }
+                )
+            });
+        });*/
+
+        // 转换所有有timestamp的时间戳=> now fileds
+        /*this.collectData.find({timestamp:{ $exists: true }}, (err,docs) => {
+
+            for (let i = 0; i < docs.length; i++) {
+                let now = new Date(docs[i].timestamp).getTime();
+                docs[i].now = now;
+            }
+            console.log(JSON.stringify(docs));
+        });*/
     },
     mounted(){
         this.albumImgEle       = this.$refs.albumImgEle;
@@ -393,6 +408,20 @@
                 if(doc.length === 0){
                     let songdata = songInfo.SetSongPlayInfo(this.currentPlaySong);
                     this.songData.insert(songdata);//保存当前歌曲信息
+                }else{
+                    // 用当前时间更新没有保存时间戳的歌曲
+                    if(!doc[0].now){
+                        let now = Date.now();
+                        this.songData.update(
+                            { songid: this.currentPlaySong.songid },
+                            // { $inc: { now: now } },
+                            { $set: { 'now' : now } },
+                            {},
+                            (err, numAffected, affectedDocuments) => {
+                                console.log(err,numAffected, affectedDocuments);
+                            }
+                        )
+                    }
                 }
             });
 
@@ -599,8 +628,9 @@
                 }
 
                 // 默认查询喜欢的,根据添加的时间排序
-                this.collectData.find({ isLike: type, now: { $exists: true }}).sort({ now: -1 }).exec((err, docs) => {
+                this.collectData.find({ isLike: type}).sort({ now: -1 }).exec((err, docs) => {
                     this.collectList = [];
+                    console.log(docs);
                     docs.forEach(item => this.collectList.push(item));
                 });
             }
@@ -625,15 +655,19 @@
         toggleList(type){
             this.collectType = type;
             this.collectList = [];
+
+            let isLike;
             if(type === 'likes'){
-                this.collectData.find({ isLike: true }, (err, docs) => {
-                    docs.forEach(item => this.collectList.push(item));
-                });
+                isLike = true;
             }else if(type === 'hates'){
-                this.collectData.find({ isLike: false }, (err, docs) => {
-                    docs.forEach(item => this.collectList.push(item));
-                });
+                isLike = false;
             }
+
+            // 默认查询喜欢的,根据添加的时间排序
+            this.collectData.find({ isLike: isLike}).sort({ now: -1 }).exec((err, docs) => {
+                this.collectList = [];
+                docs.forEach(item => this.collectList.push(item));
+            });
         },
 
         // 监听播放完成
