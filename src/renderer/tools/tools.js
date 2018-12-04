@@ -128,13 +128,11 @@ const libs = {
         return o;
     },
 
-    /* deepCopy深拷贝
+    /*
+     * deepCopy深拷贝
      */
     deepCopy: (arg) => {
-        let obj = {};
-        obj = JSON.parse(JSON.stringify(arg));
-
-        return obj;
+        return JSON.parse(JSON.stringify(arg));
     },
 
     /**
@@ -169,7 +167,6 @@ const libs = {
         canvas.style.width = canvas.width / 2 + 'px';
         canvas.style.height = canvas.height / 2 + 'px';
 
-        let res;// 绘制百分比所需的半径
         let lineWidth = CanvasWidth / 12.5;// 绘制圆弧线宽
         let setData = {
             x: canvas.width / 2,
@@ -195,7 +192,7 @@ const libs = {
                 setData.x,
                 setData.y,
                 setData.r,
-                0 * Math.PI,//开始角
+                0,//开始角
                 2 * Math.PI,//结束角
                 false//False = 顺时针，true = 逆时针。
             );//绘制圆弧进度条所需的半径总共1.5PI
@@ -616,7 +613,6 @@ const libs = {
      *
      */
     getBMapLocation: (callback) => {
-        let point = new BMap.Point();
         let geolocation = new BMap.Geolocation();
         geolocation.getCurrentPosition(function (r) {
             if (this.getStatus() === BMAP_STATUS_SUCCESS) {

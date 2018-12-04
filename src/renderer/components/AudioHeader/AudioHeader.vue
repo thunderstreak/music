@@ -56,6 +56,10 @@ export default {
                     this.isHttp     = false;
                     this.searchList = doc;
                     this.isShowList = true;//显示搜索结果列表
+                } else {
+                    this.isHttp     = true;
+                    this.searchList = [];
+                    this.isShowList = false;//显示搜索结果列表
                 }
             });
             /*this.$API.qq.qqMusicSearchAPI(this.searchVal).then((res)=>{
@@ -140,7 +144,7 @@ export default {
     transition: all .25s ease;
 }
 .slide-fade-leave-active{
-    transition: all .25s ease;
+    transition: all .20s ease;
 }
 .slide-fade-enter, .slide-fade-leave-to
 /* .slide-fade-leave-active for below version 2.1.8 */ {
