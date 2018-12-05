@@ -77,7 +77,7 @@
                             <!-- <transition-group name="slide-left" tag="ul" class="hero-play-controls-more-list"> -->
                                 <ul class="hero-play-controls-more-list">
                                     <li class="like-or-hate-list" v-for="item in collectList" :key="item.id">
-                                        <span class="list-play" @click.stop="selectPlaySong(item)">{{item.singername}}-{{item.songname}}</span>
+                                        <span class="list-play" @click.stop="selectPlaySong(item,$event)">{{item.singername}}-{{item.songname}}</span>
                                         <span class="list-removed" @click.stop="removedCollect(item)"></span>
                                     </li>
                                     <li class="like-or-hate-nodata" v-show="collectList.length === 0">No Data</li>
@@ -630,7 +630,6 @@
                 // 默认查询喜欢的,根据添加的时间排序
                 this.collectData.find({ isLike: type}).sort({ now: -1 }).exec((err, docs) => {
                     this.collectList = [];
-                    console.log(docs);
                     docs.forEach(item => this.collectList.push(item));
                 });
             }
@@ -742,7 +741,8 @@
         },
 
         // 选中播放歌曲
-        selectPlaySong(data){
+        selectPlaySong(data,event){
+            event && event.stopPropagation();
             // this.playSonglist = this.collectList;
             // console.log(data,this.collectList,this.playSonglist)
             this.isShowCollect ? this.isShowCollect = false : '';
