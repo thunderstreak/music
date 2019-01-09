@@ -14,8 +14,9 @@ export function qqMusicSearchAPI(searchStr){
      * &catZhida=0&remoteplace=sizer.newclient.next_song&w={0}
      * {0}=需要搜索的歌曲或歌手 {1}=查询的页码数 {2}=当前页的返回数量 {3}=默认为0,是登录的QQ号ID
      * */
+    // https://c.y.qq.com/soso/fcgi-bin/client_search_cp?ct=24&qqmusic_ver=1298&new_json=1&remoteplace=txt.yqq.song&searchid=63366293973884427&t=0&aggr=1&cr=1&catZhida=1&lossless=0&flag_qc=0&p=1&n=20&w=%E6%9D%8E%E8%8D%A3%E6%B5%A9&g_tk=940106057&loginUin=821470904&hostUin=0&format=json&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq.json&ct=24&needNewCode=0
     let requestParamsAPI_A = {
-        url     :'https://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp',
+        url     :'https://c.y.qq.com/soso/fcgi-bin/client_search_cp',
         method  :'GET',
         params  :{
             g_tk        :'5381',

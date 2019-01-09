@@ -41,6 +41,7 @@ export default {
     created(){
         // 初始化本地歌曲列表
         this.songData = this.$db.songData;
+        this.searchMusics = this.$tool.debounce(this.searchMusics,500);
     },
     mounted(){
 
@@ -49,7 +50,7 @@ export default {
         // API
         searchApi(){
             // 查询本地歌曲列表数据
-            let reg = new RegExp(this.searchVal);
+            /*let reg = new RegExp(this.searchVal);
             this.songData.find({'$or':[{'singername':{$regex:reg}},{'songname':{$regex:reg}}]},(err,doc) => {
                 console.log(doc);
                 if(doc.length !== 0){
@@ -61,10 +62,10 @@ export default {
                     this.searchList = [];
                     this.isShowList = false;//显示搜索结果列表
                 }
-            });
-            /*this.$API.qq.qqMusicSearchAPI(this.searchVal).then((res)=>{
+            });*/
+            this.$API.qq.qqMusicSearchAPI(this.searchVal).then((res)=>{
                 let { data, code } = res.data;
-                if(code !== 0){
+                if(code === 0){
                     this.searchList = data.song.list;
                     console.log(this.searchList);
                     this.isHttp     = false;
@@ -74,7 +75,7 @@ export default {
                 }
             }).catch(res => {
                 this.isHttp     = false;
-            })*/
+            })
         },
         serachSong(){
             // 向主进程发送搜索歌曲请求事件
@@ -97,13 +98,8 @@ export default {
                 if(this.searchVal === ''){
                     return
                 }
-                this.$tool.debounce(this.searchApi(),500);
-                /*if(this.isHttp === false){
-                    this.isHttp = true;
-                    this.timeout = setTimeout(() => {
-                        this.searchApi();//搜索
-                    }, 500)
-                }*/
+                // this.$tool.debounce(this.searchApi(),500);
+                this.searchApi();
             }else if(eventType === 'change'){
                 if(this.searchVal === ''){
                     this.isShowList = false;
