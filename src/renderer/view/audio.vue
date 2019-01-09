@@ -91,7 +91,7 @@
 
         <MaskLayer ref="dialogInfoObj">
             <div class="dialog-info">
-                <div class="dialog-info-tit">该歌曲需要付费播放</div>
+                <div class="dialog-info-tit">{{dialogInfoMsg}}</div>
                 <div class="dialog-info-btn" @click.stop="playNext">播放下一首</div>
                 <div class="dialog-info-closed"></div>
             </div>
@@ -163,7 +163,7 @@
         collectType     :'likes',//收藏列表默认显示
 
         dialogInfoObj   :'',//提示层layer
-
+        dialogInfoMsg   :'',//提示信息
         SpectraClass    :'',//频谱构造函数
     }),
     created(){
@@ -224,6 +224,7 @@
         this.getMusics();//获取音乐列表
         this.playEnd();//监听播放完成
         this.playTime();//获取当前播放时长
+        this.playError();//监听播放异常
         this.setRangeProgress();// 设置拖动条颜色
 
         // 创建音频源连接的播放节点分析器
@@ -428,7 +429,8 @@
             console.log(this.currentPlaySong.songname);
             // 判断歌曲是否需要付费才能播放
             if(this.currentPlaySong.payplay === 1){
-                console.log(this.currentPlaySong.songname + '：该歌曲需要付费播放');
+                console.log(this.currentPlaySong.songname);
+                this.dialogInfoMsg = '该歌曲需要付费播放';
                 /*let options = {
                     type    : 'warning',
                     title   : '提示',
@@ -571,11 +573,7 @@
             this.setRangeProgress();
             // 设置音量大小
             this.AudioPlayer.volume = this.audioRangeVal / 100;
-            if(this.audioRangeVal === 0){
-                this.isVoice = true;
-            }else{
-                this.isVoice = false;
-            }
+            this.audioRangeVal === 0 ? this.isVoice = true : this.isVoice = false;
         },
 
         // 设置拖动音量条颜色
@@ -682,6 +680,14 @@
             this.AudioPlayer.addEventListener("canplay", () => {
                 this.songDuration = parseInt(this.AudioPlayer.duration);
             });
+        },
+
+        // 播放异常
+        playError(){
+            this.AudioPlayer.addEventListener('error', (e) => {
+                this.dialogInfoMsg = '该歌曲暂时无法播放';
+                this.$refs.dialogInfoObj.toggle(true);
+            })
         },
 
         // 调整播放进度
