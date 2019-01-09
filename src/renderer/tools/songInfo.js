@@ -26,9 +26,12 @@ export function SongPlayData(songData,isLike){
  * @return {[type]}         [description]
  */
 export function SetSongPlayInfo(data){
+    const musicUrl = {
+        url1:`http://113.96.98.143/amobile.music.tc.qq.com/C100${data.songmid}.m4a?guid=8099385826&vkey=2D4FDF06D32502E914CE819BD8BEBF47ECD5EB56CA958F16E2EC8A75F4EB829DDAFE1CE8742E01DCD001435E7D43EFFBC7840F83ABD78382&uin=1720&fromtag=66`,
+        url2:`http://ws.stream.qqmusic.qq.com/C100${data.songmid}.m4a?fromtag=0&guid=126548448`
+    };
     return {
-        // src         :`http://ws.stream.qqmusic.qq.com/C100${data.songmid}.m4a?fromtag=0&guid=126548448`,//歌曲地址
-        src         :`http://113.105.141.12/amobile.music.tc.qq.com/C100${data.songmid}.m4a?guid=2758568936&vkey=BCC537E4C006836EB559E16B47F8E8D5CD7E894ACBD38B433A46D3504E421C7C0A2E2FF0D7944C4E67D0367AE75D5FAC2F27E3F688C35934&uin=1720&fromtag=66`,//歌曲地址
+        src         :musicUrl.url1,//歌曲地址
         singername  :data.singername || data.singer.map(res => res.name).join('-'),//歌手名称
         singer      :data.singer,//歌手
         songname    :data.songname,//歌曲名称
