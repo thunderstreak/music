@@ -39,7 +39,8 @@ export function SetSongPlayInfo(data){
         songmid     :data.songmid,
         songid      :data.songid,//歌曲id
         pay         :data.pay,
-        payplay     :(data.pay.payplay == 1 && data.pay.payalbumprice != 0) ? true : false,//是否需要购买才能播放
+        payplay     :(data.pay.payplay === 1 && data.pay.payalbumprice !== 0) ? true : false,//是否需要购买才能播放
+        now         :Date.now(),//创建时间
 
         albumisrc   :`http://imgcache.qq.com/music/photo/album_300/${data.albumid%100}/300_albumpic_${data.albumid}_0.jpg`,//专辑封面
         albumid     :data.albumid,//专辑id

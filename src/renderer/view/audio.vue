@@ -77,7 +77,7 @@
                             <!-- <transition-group name="slide-left" tag="ul" class="hero-play-controls-more-list"> -->
                                 <ul class="hero-play-controls-more-list">
                                     <li class="like-or-hate-list" v-for="item in collectList" :key="item.id">
-                                        <span class="list-play" @click.stop="selectPlaySong(item)">{{item.singername}}-{{item.songname}}</span>
+                                        <span class="list-play" @click.stop="selectPlaySong(item,$event)">{{item.singername}}-{{item.songname}}</span>
                                         <span class="list-removed" @click.stop="removedCollect(item)"></span>
                                     </li>
                                     <li class="like-or-hate-nodata" v-show="collectList.length === 0">No Data</li>
@@ -91,7 +91,7 @@
 
         <MaskLayer ref="dialogInfoObj">
             <div class="dialog-info">
-                <div class="dialog-info-tit">该歌曲需要付费播放</div>
+                <div class="dialog-info-tit">{{dialogInfoMsg}}</div>
                 <div class="dialog-info-btn" @click.stop="playNext">播放下一首</div>
                 <div class="dialog-info-closed"></div>
             </div>
@@ -145,7 +145,7 @@
         AudioPlayer     :'',//new audio 播放器对象
         AudioBufferedVal:1,//audio 以缓冲的百分比
 
-        tableData       :'',//本地数据库
+        collectData     :'',//本地收藏数据库
         songData        :'',//所有歌曲数据库
 
         canvasPlayer    :'',//canvas
@@ -163,7 +163,7 @@
         collectType     :'likes',//收藏列表默认显示
 
         dialogInfoObj   :'',//提示层layer
-
+        dialogInfoMsg   :'',//提示信息
         SpectraClass    :'',//频谱构造函数
     }),
     created(){
@@ -172,18 +172,33 @@
 
         // this.$db.chartData.loadDatabase();
         // 初始化本地数据库
-        this.tableData = this.$db.tableData;//收藏列表
+        this.collectData = this.$db.collectData;//收藏列表
         this.songData = this.$db.songData;//所有歌曲数据库
-        // this.tableData.remove({},{ multi: true },(err, numRemoved) => {});
+        // this.collectData.remove({},{ multi: true },(err, numRemoved) => {});
 
-        // 查询所有收藏列表
-        // this.tableData.find({},(err,doc)=>{
-        //     console.log(doc)
-        // });
-        // 查询所有歌曲列表
-        // this.songData.find({},(err,doc)=>{
-        //     console.log(doc);
-        // })
+        /*this.collectData.find({ timestamp: { $exists: true } }, (err,docs) => {
+            docs.forEach((item) => {
+                let now = new Date(item.timestamp).getTime();
+                this.collectData.update(
+                    {"_id":item._id},
+                    {$set:{"now": now}},
+                    {},
+                    (err, numAffected, affectedDocuments) => {
+                        console.log(err,numAffected, affectedDocuments);
+                    }
+                )
+            });
+        });*/
+
+        // 转换所有有timestamp的时间戳=> now fileds
+        /*this.collectData.find({timestamp:{ $exists: true }}, (err,docs) => {
+
+            for (let i = 0; i < docs.length; i++) {
+                let now = new Date(docs[i].timestamp).getTime();
+                docs[i].now = now;
+            }
+            console.log(JSON.stringify(docs));
+        });*/
     },
     mounted(){
         this.albumImgEle       = this.$refs.albumImgEle;
@@ -209,6 +224,7 @@
         this.getMusics();//获取音乐列表
         this.playEnd();//监听播放完成
         this.playTime();//获取当前播放时长
+        this.playError();//监听播放异常
         this.setRangeProgress();// 设置拖动条颜色
 
         // 创建音频源连接的播放节点分析器
@@ -372,7 +388,7 @@
             }else{
                 // 如果没有指定播放的歌曲先查询数据库里面是否存在记录，如果存在记录再判断是否标记为是否喜欢，如果不喜欢则跳过播放
                 let tempsong = this.playSonglist[this.currSongIndex];
-                this.tableData.find({ songid: tempsong.songid }, (err,doc) => {
+                this.collectData.find({ songid: tempsong.songid }, (err,doc) => {
                     // console.log(doc);
                     if(doc.length !== 0){
                         // 如果不是喜欢的歌曲则跳过播放
@@ -393,13 +409,28 @@
                 if(doc.length === 0){
                     let songdata = songInfo.SetSongPlayInfo(this.currentPlaySong);
                     this.songData.insert(songdata);//保存当前歌曲信息
+                }else{
+                    // 用当前时间更新没有保存时间戳的歌曲
+                    if(!doc[0].now){
+                        let now = Date.now();
+                        this.songData.update(
+                            { songid: this.currentPlaySong.songid },
+                            // { $inc: { now: now } },
+                            { $set: { 'now' : now } },
+                            {},
+                            (err, numAffected, affectedDocuments) => {
+                                console.log(err,numAffected, affectedDocuments);
+                            }
+                        )
+                    }
                 }
             });
 
             console.log(this.currentPlaySong.songname);
             // 判断歌曲是否需要付费才能播放
             if(this.currentPlaySong.payplay === 1){
-                console.log(this.currentPlaySong.songname + '：该歌曲需要付费播放');
+                console.log(this.currentPlaySong.songname);
+                this.dialogInfoMsg = '该歌曲需要付费播放';
                 /*let options = {
                     type    : 'warning',
                     title   : '提示',
@@ -495,7 +526,7 @@
             }
 
             //根据查询的数据标记是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
-            this.tableData.find({ songmid : this.currentPlaySong.songmid }, (err,doc) => {
+            this.collectData.find({ songmid : this.currentPlaySong.songmid }, (err,doc) => {
                 this.isLike = !!doc.length;//doc.length !== 0 ? true : false;
             })
         },
@@ -542,11 +573,7 @@
             this.setRangeProgress();
             // 设置音量大小
             this.AudioPlayer.volume = this.audioRangeVal / 100;
-            if(this.audioRangeVal === 0){
-                this.isVoice = true;
-            }else{
-                this.isVoice = false;
-            }
+            this.audioRangeVal === 0 ? this.isVoice = true : this.isVoice = false;
         },
 
         // 设置拖动音量条颜色
@@ -562,12 +589,12 @@
             if(this.isLike){
 
                 // 存储喜欢的歌曲的信息到db
-                this.tableData.insert(songdata, (err, newDoc) => {
+                this.collectData.insert(songdata, (err, newDoc) => {
                     // 设置喜欢的歌曲
                     this.collectList.push(songdata);
                     console.log(newDoc)
                 })
-                // this.tableData.find({}, (err, docs) => { console.log(docs) })
+                // this.collectData.find({}, (err, docs) => { console.log(docs) })
             }else{
                 this.removedCollect(songdata);
             }
@@ -580,7 +607,7 @@
             let songdata = songInfo.SongPlayData(this.currentPlaySong,false);
 
             //标记这首歌曲不喜欢
-            this.tableData.insert(songdata, (err, newDoc) => {
+            this.collectData.insert(songdata, (err, newDoc) => {
                 this.collectList.push(newDoc)
             });
             this.playNext();//下一首歌
@@ -598,8 +625,8 @@
                     type = false;
                 }
 
-                // 默认查询喜欢的
-                this.tableData.find({ isLike: type }, (err, docs) => {
+                // 默认查询喜欢的,根据添加的时间排序
+                this.collectData.find({ isLike: type}).sort({ now: -1 }).exec((err, docs) => {
                     this.collectList = [];
                     docs.forEach(item => this.collectList.push(item));
                 });
@@ -616,7 +643,7 @@
                 }
             }
             // 删除一条记录
-            this.tableData.remove({ songid: item.songid }, {}, (err, numRemoved) => {
+            this.collectData.remove({ songid: item.songid }, {}, (err, numRemoved) => {
               console.log(numRemoved);
             });
         },
@@ -624,18 +651,20 @@
         // 切换歌曲
         toggleList(type){
             this.collectType = type;
+            this.collectList = [];
+
+            let isLike;
             if(type === 'likes'){
-                this.tableData.find({ isLike: true }, (err, docs) => {
-                    this.collectList = [];
-                    docs.forEach(item => this.collectList.push(item));
-                });
+                isLike = true;
             }else if(type === 'hates'){
-                this.tableData.find({ isLike: false }, (err, docs) => {
-                    this.collectList = [];
-                    docs.forEach(item => this.collectList.push(item));
-                    // console.log(docs);
-                });
+                isLike = false;
             }
+
+            // 默认查询喜欢的,根据添加的时间排序
+            this.collectData.find({ isLike: isLike}).sort({ now: -1 }).exec((err, docs) => {
+                this.collectList = [];
+                docs.forEach(item => this.collectList.push(item));
+            });
         },
 
         // 监听播放完成
@@ -651,6 +680,14 @@
             this.AudioPlayer.addEventListener("canplay", () => {
                 this.songDuration = parseInt(this.AudioPlayer.duration);
             });
+        },
+
+        // 播放异常
+        playError(){
+            this.AudioPlayer.addEventListener('error', (e) => {
+                this.dialogInfoMsg = '该歌曲暂时无法播放';
+                this.$refs.dialogInfoObj.toggle(true);
+            })
         },
 
         // 调整播放进度
@@ -710,7 +747,8 @@
         },
 
         // 选中播放歌曲
-        selectPlaySong(data){
+        selectPlaySong(data,event){
+            event && event.stopPropagation();
             // this.playSonglist = this.collectList;
             // console.log(data,this.collectList,this.playSonglist)
             this.isShowCollect ? this.isShowCollect = false : '';
@@ -719,7 +757,7 @@
             this.startPlay('order',data);
 
             //根据查询的数据重置是否喜欢，需要在播放歌曲之前重新查询这首歌是否被标记成已喜欢
-            this.tableData.find({ songmid : data.songmid }, (err,doc) => {
+            this.collectData.find({ songmid : data.songmid }, (err,doc) => {
                 // console.log(doc);
                 if(doc.length !== 0){
                     doc[0].isLike ? this.isLike = true : this.isLike = false;

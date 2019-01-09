@@ -1,9 +1,9 @@
-version: 0.2.0
+version: 0.2.5
 files:
-  - url: Player_setup_0.2.0.exe
-    sha512: olvpJpXDhAQFkpNX/fHv0QunxRTbUSA3MMQ014Np2BqvS7P+rMP9Yg20usiOP1B1uVqYTyFMf+DgkoZBfSisPw==
-    size: 37502064
-path: Player_setup_0.2.0.exe
-sha512: olvpJpXDhAQFkpNX/fHv0QunxRTbUSA3MMQ014Np2BqvS7P+rMP9Yg20usiOP1B1uVqYTyFMf+DgkoZBfSisPw==
-sha2: d21a6c3a7de236d84252a227af4a50633623580eafcceb7985b25989e5df219d
-releaseDate: '2018-11-06T03:45:52.158Z'
+  - url: Player_setup_0.2.5.exe
+    sha512: a4UO6K5iDDQCwRI9fMFChhRFelIPezq4JWk8pgiDRpXAeJ7ZvpD04w6Ke5akSsR0Wq62q3PBqOjoxZ9zB+pGjA==
+    size: 37502351
+path: Player_setup_0.2.5.exe
+sha512: a4UO6K5iDDQCwRI9fMFChhRFelIPezq4JWk8pgiDRpXAeJ7ZvpD04w6Ke5akSsR0Wq62q3PBqOjoxZ9zB+pGjA==
+sha2: 0f25977c527a59591a8ee171c1d882acfeb207b30c16e779a716bb6e66f32e76
+releaseDate: '2018-12-03T09:41:53.654Z'
