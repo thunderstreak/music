@@ -77,7 +77,7 @@
                             <!-- <transition-group name="slide-left" tag="ul" class="hero-play-controls-more-list"> -->
                                 <ul class="hero-play-controls-more-list">
                                     <li class="like-or-hate-list" v-for="item in collectList" :key="item.id">
-                                        <span class="list-play" @click.stop="selectPlaySong(item)">{{item.singername}}-{{item.songname}}</span>
+                                        <span class="list-play" @click.stop="selectPlaySong(item,$event)">{{item.singername}}-{{item.songname}}</span>
                                         <span class="list-removed" @click.stop="removedCollect(item)"></span>
                                     </li>
                                     <li class="like-or-hate-nodata" v-show="collectList.length === 0">No Data</li>
@@ -91,7 +91,7 @@
 
         <MaskLayer ref="dialogInfoObj">
             <div class="dialog-info">
-                <div class="dialog-info-tit">该歌曲需要付费播放</div>
+                <div class="dialog-info-tit">{{dialogInfoMsg}}</div>
                 <div class="dialog-info-btn" @click.stop="playNext">播放下一首</div>
                 <div class="dialog-info-closed"></div>
             </div>
@@ -163,7 +163,7 @@
         collectType     :'likes',//收藏列表默认显示
 
         dialogInfoObj   :'',//提示层layer
-
+        dialogInfoMsg   :'',//提示信息
         SpectraClass    :'',//频谱构造函数
     }),
     created(){
@@ -224,6 +224,7 @@
         this.getMusics();//获取音乐列表
         this.playEnd();//监听播放完成
         this.playTime();//获取当前播放时长
+        this.playError();//监听播放异常
         this.setRangeProgress();// 设置拖动条颜色
 
         // 创建音频源连接的播放节点分析器
@@ -428,7 +429,8 @@
             console.log(this.currentPlaySong.songname);
             // 判断歌曲是否需要付费才能播放
             if(this.currentPlaySong.payplay === 1){
-                console.log(this.currentPlaySong.songname + '：该歌曲需要付费播放');
+                console.log(this.currentPlaySong.songname);
+                this.dialogInfoMsg = '该歌曲需要付费播放';
                 /*let options = {
                     type    : 'warning',
                     title   : '提示',
@@ -571,11 +573,7 @@
             this.setRangeProgress();
             // 设置音量大小
             this.AudioPlayer.volume = this.audioRangeVal / 100;
-            if(this.audioRangeVal === 0){
-                this.isVoice = true;
-            }else{
-                this.isVoice = false;
-            }
+            this.audioRangeVal === 0 ? this.isVoice = true : this.isVoice = false;
         },
 
         // 设置拖动音量条颜色
@@ -630,7 +628,6 @@
                 // 默认查询喜欢的,根据添加的时间排序
                 this.collectData.find({ isLike: type}).sort({ now: -1 }).exec((err, docs) => {
                     this.collectList = [];
-                    console.log(docs);
                     docs.forEach(item => this.collectList.push(item));
                 });
             }
@@ -683,6 +680,14 @@
             this.AudioPlayer.addEventListener("canplay", () => {
                 this.songDuration = parseInt(this.AudioPlayer.duration);
             });
+        },
+
+        // 播放异常
+        playError(){
+            this.AudioPlayer.addEventListener('error', (e) => {
+                this.dialogInfoMsg = '该歌曲暂时无法播放';
+                this.$refs.dialogInfoObj.toggle(true);
+            })
         },
 
         // 调整播放进度
@@ -742,7 +747,8 @@
         },
 
         // 选中播放歌曲
-        selectPlaySong(data){
+        selectPlaySong(data,event){
+            event && event.stopPropagation();
             // this.playSonglist = this.collectList;
             // console.log(data,this.collectList,this.playSonglist)
             this.isShowCollect ? this.isShowCollect = false : '';
