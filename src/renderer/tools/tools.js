@@ -16,15 +16,13 @@ const libs = {
         return res;
     },
     unique2: (arr) => {
-        let [tempObj, newArray] = [{}, []];
-
-        for (let i = 0; i < arr.length; i++) {
-            if (!tempObj[arr[i]]) {
-                tempObj[arr[i]] = arr[i];
-                newArray.push(arr[i]);
+        let newArr = [];
+        for (let i = 0; i < arr.length; i ++ ) {
+            if (newArr.indexOf(arr[i]) === -1) {
+                newArr.push(arr[i])
             }
         }
-        return newArray;
+        return newArr
     },
 
     /**
@@ -45,10 +43,34 @@ const libs = {
     },
 
     /**
-     *快速排序
-     *@param:arr(Array)
-     */
+    * 选择排序
+    * @param:arr(Array)
+    * */
+    selectSort: function(arr){
+        let len = arr.length;
+        let temp;
+        let minIndex;
 
+        for (let i = 0; i < len - 1; i++) {
+            minIndex = i;
+            for (let j = i + 1; j < len; j++) {
+                if(arr[j] < arr[minIndex]){//对比找到最小值
+                    minIndex = j;//保存最小值的索引
+                }
+            }
+            temp = arr[i];
+            arr[i] = arr[minIndex];
+            arr[minIndex] = temp;
+        }
+
+        return arr
+    },
+
+
+    /**
+    * 快速排序
+    * @param:arr(Array)
+    * */
     quickSort: function (arr) {
 
         if (arr.length <= 1) {
@@ -70,10 +92,9 @@ const libs = {
     },
 
     /**
-     *插入排序
-     *@param:arr(Array)
-     */
-
+    * 插入排序
+    * @param:arr(Array)
+    * */
     insertSort: (arr) => {
         let j, step, key;
         for (let i = 0; i < arr.length; i++) {
@@ -92,10 +113,10 @@ const libs = {
     },
 
     /**
-     *二分查找
-     *@param:data(Array)
-     *@param:item(Number)
-     */
+    * 二分查找
+    * @param:data(Array)
+    * @param:item(Number)
+    * */
 
     binarySearch: (data, item) => {
         let len = data.length - 1;
