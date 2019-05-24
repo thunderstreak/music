@@ -73,7 +73,7 @@ export default {
                         this.isShowList = true;//显示搜索结果列表
                     }
                 }
-            }).catch(res => {
+            }).catch(() => {
                 this.isHttp     = false;
             })
         },

@@ -142,7 +142,7 @@
         bgcolorVal      :'',//背景颜色值
         heroBoxEle      :'',//主体背景元素
 
-        AudioPlayer     :'',//new audio 播放器对象
+        AudioPlayer     :{},//new audio 播放器对象
         AudioBufferedVal:1,//audio 以缓冲的百分比
 
         collectData     :'',//本地收藏数据库
@@ -402,6 +402,8 @@
                 });
                 this.currentPlaySong = tempsong;//当前播放的歌曲详细信息
                 this.AudioPlayer.src = tempsong.src;//当前播放歌曲的src
+
+                ipcRenderer.send('ipcRendererSongMedia', this.currentPlaySong.songmid);
             }
 
             // 查询所有歌曲列表是否存在类似的歌曲，如果存在跳过保存
@@ -684,7 +686,7 @@
 
         // 播放异常
         playError(){
-            this.AudioPlayer.addEventListener('error', (e) => {
+            this.AudioPlayer.addEventListener('error', () => {
                 this.dialogInfoMsg = '该歌曲暂时无法播放';
                 this.$refs.dialogInfoObj.toggle(true);
             })
@@ -695,7 +697,7 @@
             //停止播放
             this.endPlay();
             // 获取计算点击位置的进度条百分比值
-            let {target,offsetX} = e;
+            let { offsetX } = e;
             let progressTotal = this.$tool.getEelUnit(this.audioParentEle,'width');
             let percentage = (offsetX / progressTotal);
 
@@ -737,8 +739,7 @@
         // 转换分秒时间
         transformTime(time){
             let second = parseInt(isNaN(time) ? 0 : time);//秒数
-            let temp = second;
-            let minute = parseInt(temp / 60);
+            let minute = parseInt(second / 60);
             if(second % 60 < 10){
                 return `${minute}:0${second % 60}`;
             }else{
