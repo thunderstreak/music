@@ -1,6 +1,6 @@
 <template lang="html">
     <div class="hero-box" ref="heroBoxEle">
-        <AudioHeader @AduioHeaderSelectPlaySong="selectPlaySong"></AudioHeader>
+        <AudioHeader @AudioHeaderSelectPlaySong="selectPlaySong"></AudioHeader>
         <!-- 中心旋转图片 -->
         <div class="hero-logo" aria-hidden="true">
             <div class="hero-logo-circles">
@@ -248,7 +248,7 @@
         this.SpectraClass = new Spectra(this.canvasCtx,this.canvasPlayer,this.dataArray,this.bufferLength);
 
         // 绘制频谱
-        // this.canvasDraw();
+        this.canvasDraw();
 
         // 隐藏收藏列表
         document.addEventListener('click', () => {
@@ -331,8 +331,9 @@
         // 获取音乐列表
         getMusics(){
             this.$API.qq.qqMusicLsitAPI().then((res)=>{
-                let data = res.data;
-                let songlist = data.songlist;
+                const { data: { songlist } } = res;
+                // let data = res.data;
+                // let songlist = data.songlist;
                 for (let i = 0; i < songlist.length; i++) {
                     let data = songlist[i].data;
                     if(data.songmid){
