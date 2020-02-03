@@ -3,8 +3,7 @@ import request from 'request';
 import Base64 from 'js-base64';
 
 // 接受ipcRenderer事件
-ipcMain.on('ipcRendererSongLyric',(event,data) => {
-    let songId = data;
+ipcMain.on('ipcRendererSongLyric',(event,songId) => {
     let url = "https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg?callback=MusicJsonCallback_lrc&pcachetime=1494070301711&songmid="+songId+"&g_tk=5381&jsonpCallback=MusicJsonCallback_lrc&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8¬ice=0&platform=yqq&needNewCode=0";
     let options = {
         url: url,

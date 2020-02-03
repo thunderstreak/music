@@ -20,8 +20,8 @@
                 </transition>
             </div>
         </div>
-        <div class="hero-gesture-hide hero-gesture-base" @click.stop="operantWindow('hide')" title="隐藏"></div>
-        <div class="hero-gesture-closed hero-gesture-base" @click.stop="operantWindow('closed')" title="关闭"></div>
+        <div class="hero-gesture-hide hero-gesture-base" @click.stop="operatorWindow('hide')" title="隐藏"></div>
+        <div class="hero-gesture-closed hero-gesture-base" @click.stop="operatorWindow('closed')" title="关闭"></div>
     </section>
 </template>
 
@@ -64,16 +64,16 @@ export default {
                 }
             });*/
             this.$API.qq.qqMusicSearchAPI(this.searchVal).then((res)=>{
-                let { data, code } = res.data;
+                const { data: { song }, code } = res.data;
                 if(code === 0){
-                    this.searchList = data.song.list;
+                    this.searchList = song.list;
                     console.log(this.searchList);
                     this.isHttp     = false;
-                    if(data.song.list.length !== 0){
+                    if(song.list.length !== 0){
                         this.isShowList = true;//显示搜索结果列表
                     }
                 }
-            }).catch(res => {
+            }).catch(() => {
                 this.isHttp     = false;
             })
         },
@@ -119,11 +119,11 @@ export default {
             // data.singername = data.fsinger;
             // data.pay = {};
             // data.pay.payplay = 0;
-            this.$emit('AduioHeaderSelectPlaySong',data);//通知父组件播放歌曲
+            this.$emit('AudioHeaderSelectPlaySong',data);//通知父组件播放歌曲
         },
 
         // 操作窗口
-        operantWindow(type){
+        operatorWindow(type){
             if(type === 'hide'){
                 ipcRenderer.send('window-min');
             }else if(type === 'closed'){

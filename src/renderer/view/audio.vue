@@ -1,6 +1,6 @@
 <template lang="html">
     <div class="hero-box" ref="heroBoxEle">
-        <AudioHeader @AduioHeaderSelectPlaySong="selectPlaySong"></AudioHeader>
+        <AudioHeader @AudioHeaderSelectPlaySong="selectPlaySong"></AudioHeader>
         <!-- 中心旋转图片 -->
         <div class="hero-logo" aria-hidden="true">
             <div class="hero-logo-circles">
@@ -142,7 +142,7 @@
         bgcolorVal      :'',//背景颜色值
         heroBoxEle      :'',//主体背景元素
 
-        AudioPlayer     :'',//new audio 播放器对象
+        AudioPlayer     :{},//new audio 播放器对象
         AudioBufferedVal:1,//audio 以缓冲的百分比
 
         collectData     :'',//本地收藏数据库
@@ -248,7 +248,7 @@
         this.SpectraClass = new Spectra(this.canvasCtx,this.canvasPlayer,this.dataArray,this.bufferLength);
 
         // 绘制频谱
-        // this.canvasDraw();
+        this.canvasDraw();
 
         // 隐藏收藏列表
         document.addEventListener('click', () => {
@@ -331,8 +331,9 @@
         // 获取音乐列表
         getMusics(){
             this.$API.qq.qqMusicLsitAPI().then((res)=>{
-                let data = res.data;
-                let songlist = data.songlist;
+                const { data: { songlist } } = res;
+                // let data = res.data;
+                // let songlist = data.songlist;
                 for (let i = 0; i < songlist.length; i++) {
                     let data = songlist[i].data;
                     if(data.songmid){
@@ -402,6 +403,8 @@
                 });
                 this.currentPlaySong = tempsong;//当前播放的歌曲详细信息
                 this.AudioPlayer.src = tempsong.src;//当前播放歌曲的src
+
+                ipcRenderer.send('ipcRendererSongMedia', this.currentPlaySong.songmid);
             }
 
             // 查询所有歌曲列表是否存在类似的歌曲，如果存在跳过保存
@@ -684,7 +687,7 @@
 
         // 播放异常
         playError(){
-            this.AudioPlayer.addEventListener('error', (e) => {
+            this.AudioPlayer.addEventListener('error', () => {
                 this.dialogInfoMsg = '该歌曲暂时无法播放';
                 this.$refs.dialogInfoObj.toggle(true);
             })
@@ -695,7 +698,7 @@
             //停止播放
             this.endPlay();
             // 获取计算点击位置的进度条百分比值
-            let {target,offsetX} = e;
+            let { offsetX } = e;
             let progressTotal = this.$tool.getEelUnit(this.audioParentEle,'width');
             let percentage = (offsetX / progressTotal);
 
@@ -737,8 +740,7 @@
         // 转换分秒时间
         transformTime(time){
             let second = parseInt(isNaN(time) ? 0 : time);//秒数
-            let temp = second;
-            let minute = parseInt(temp / 60);
+            let minute = parseInt(second / 60);
             if(second % 60 < 10){
                 return `${minute}:0${second % 60}`;
             }else{
