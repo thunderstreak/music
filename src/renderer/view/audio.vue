@@ -174,6 +174,7 @@
         // 初始化本地数据库
         this.collectData = this.$db.collectData;//收藏列表
         this.songData = this.$db.songData;//所有歌曲数据库
+        this.collectData.find({}, (err, docs) => { console.log(docs) })
         // this.collectData.remove({},{ multi: true },(err, numRemoved) => {});
 
         /*this.collectData.find({ timestamp: { $exists: true } }, (err,docs) => {
@@ -332,13 +333,10 @@
         getMusics(){
             this.$API.qq.qqMusicLsitAPI().then((res)=>{
                 const { data: { songlist } } = res;
-                // let data = res.data;
-                // let songlist = data.songlist;
                 for (let i = 0; i < songlist.length; i++) {
                     let data = songlist[i].data;
                     if(data.songmid){
                         this.playSonglist.push(songInfo.SetSongPlayInfo(data));// 设置播放歌曲信息
-                        // this.playSonglist.push(songInfo.songPlayInfo(data));
                     }
                 }
                 this.startPlay();//开始播放
@@ -385,10 +383,13 @@
             // 如果有指定播放的歌曲
             if(playSong){
                 this.currentPlaySong = songInfo.SetSongPlayInfo(playSong);// 设置播放歌曲信息
-                this.AudioPlayer.src = this.currentPlaySong.src;//当前播放歌曲的src
+                this.$API.qq.qqMusicGetPlaySrc(playSong.songmid).then(src => {
+                    this.AudioPlayer.src = src;
+                    this.currentPlaySong.src = src;//当前播放歌曲的src
+                })
             }else{
                 // 如果没有指定播放的歌曲先查询数据库里面是否存在记录，如果存在记录再判断是否标记为是否喜欢，如果不喜欢则跳过播放
-                let tempsong = this.playSonglist[this.currSongIndex];
+                const tempsong = this.playSonglist[this.currSongIndex];
                 this.collectData.find({ songid: tempsong.songid }, (err,doc) => {
                     // console.log(doc);
                     if(doc.length !== 0){
@@ -402,7 +403,8 @@
                     }
                 });
                 this.currentPlaySong = tempsong;//当前播放的歌曲详细信息
-                this.AudioPlayer.src = tempsong.src;//当前播放歌曲的src
+                this.$API.qq.qqMusicGetPlaySrc(tempsong.songmid).then(src => this.AudioPlayer.src = src);
+                // this.AudioPlayer.src = tempsong.src;//当前播放歌曲的src
 
                 ipcRenderer.send('ipcRendererSongMedia', this.currentPlaySong.songmid);
             }

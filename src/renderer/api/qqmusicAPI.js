@@ -129,5 +129,46 @@ export function qqMusicLyricAPI(songId){
             }
         });
     })
+}
 
+
+/**
+ * [qqMusicGetPlaySrc description]
+ * @param  {[type]} songId [description]
+ * @return {[type]}        [description]
+ */
+export function qqMusicGetPlaySrc(songId) {
+    const urlParams = {
+        "req_0":{
+            "module":"vkey.GetVkeyServer",
+            "method":"CgiGetVkey",
+            "param":{
+                "guid":"358840384",
+                "songmid":[songId],
+                "songtype":[0],
+                "uin":"1443481947",
+                "loginflag":1,
+                "platform":"20"
+            }
+        },
+        "comm":{
+            "uin":"18585073516",
+            "format":"json",
+            "ct":24,
+            "cv":0
+        }
+    };
+    return axios({
+        url: 'https://u.y.qq.com/cgi-bin/musicu.fcg',
+        method: 'get',
+        params: {
+            format: 'json',
+            data: urlParams
+        }
+    }).then(({ data = {} }) => {
+        const { req_0: { data: { sip = [], midurlinfo = [] } } } = data;
+        const [url1, url2] = sip;
+        const { purl } = midurlinfo[0];
+        return `${url1}${purl}`;
+    })
 }
