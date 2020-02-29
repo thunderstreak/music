@@ -5,12 +5,14 @@ import AudioPanel   from './AudioPanel/AudioPanel';//音频控制面板
 import SwitchRouter from './SwitchRouter/SwitchRouter';//路由切换
 import MaskLayer    from './MaskLayer/MaskLayer';//弹出层
 import DialogLayer  from './DialogLayer/DialogLayer';//对话框
+import VideoHeader  from './VideoHeader/VideoHeader';//视频头部
 
 const components = [
     AudioHeader,
     AudioPanel,
     SwitchRouter,
     MaskLayer,
+    VideoHeader
 ];
 
 // 注册全局组件

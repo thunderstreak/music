@@ -10,11 +10,11 @@
                        @blur.stop="searchMusics('blur')"
                        @input.stop="searchMusics('input')"
                        @focus.stop="searchMusics('focus')"
-                       placeholder="搜索歌曲/歌手">
+                       placeholder="搜索MV">
                 <transition name="slide-fade">
                     <ul class="hero-gesture-search-res" v-show="isShowList">
                         <li class="res-list" v-for="item in searchList" @click.stop="selectPlaySong(item)">
-                            {{item.singer.length !== 0 ? item.singer[0].name : item.singername}}-{{item.songname}}
+                            {{`${item.singername} - ${item.mvdesc}`}}
                         </li>
                     </ul>
                 </transition>
@@ -28,20 +28,22 @@
 <script>
 import { ipcRenderer, remote } from 'electron';
 export default {
-    name:'AudioHeader',
+    name:'VideoHeader',
     data:()=>({
-        msg             :'AudioHeader',
         searchVal       :'',//搜索字段
         searchList      :[],//查询到歌曲的结果列表
         isShowList      :false,//是否显示播放列表
         isHttp          :false,
         timeout         :'',
-        songData        :'',//所有本地歌曲列表
+        mvData          :'',//所有本地歌曲列表
     }),
     created(){
         // 初始化本地歌曲列表
-        this.songData = this.$db.songData;
-        this.searchMusics = this.$tool.debounce(this.searchMusics,500);
+        this.mvData = this.$db.mvData;
+        this.searchMusics = this.$tool.debounce(this.searchMusics,1000);
+        this.$API.qq.qqMusicMvListAPI().then(res => {
+            this.searchList.push(...res)
+        })
     },
     mounted(){
 
@@ -49,45 +51,33 @@ export default {
     methods:{
         // API
         searchApi(){
-            // 查询本地歌曲列表数据
-            /*let reg = new RegExp(this.searchVal);
-            this.songData.find({'$or':[{'singername':{$regex:reg}},{'songname':{$regex:reg}}]},(err,doc) => {
-                console.log(doc);
-                if(doc.length !== 0){
-                    this.isHttp     = false;
-                    this.searchList = doc;
-                    this.isShowList = true;//显示搜索结果列表
-                } else {
-                    this.isHttp     = true;
-                    this.searchList = [];
-                    this.isShowList = false;//显示搜索结果列表
-                }
-            });*/
-            this.$API.qq.qqMusicSearchAPI(this.searchVal).then((res)=>{
-                const { data: { song }, code } = res.data;
-                if(code === 0){
-                    this.searchList = song.list;
-                    console.log(this.searchList);
-                    this.isHttp     = false;
-                    if(song.list.length !== 0){
-                        this.isShowList = true;//显示搜索结果列表
-                    }
-                }
+            this.$API.qq.qqMusicMvInfoAPI(this.searchVal).then((res)=>{
+                console.log(res)
+                this.isHttp = false;
+                // const { data: { song }, code } = res.data;
+                // if(code === 0){
+                //     this.searchList = song.list;
+                //     console.log(this.searchList);
+                //     this.isHttp     = false;
+                //     if(song.list.length !== 0){
+                //         this.isShowList = true;//显示搜索结果列表
+                //     }
+                // }
             }).catch(() => {
-                this.isHttp     = false;
+                this.isHttp = false;
             })
         },
         searchSong(){
             // 向主进程发送搜索歌曲请求事件
-            ipcRenderer.send('ipcRendererSongSearch', this.searchVal);
+            // ipcRenderer.send('ipcRendererSongSearch', this.searchVal);
         },
         // 搜索音乐
         searchMusics(eventType){
             console.log(eventType);
-            if(this.searchVal === ''){
-                this.isShowList = false;
-                return
-            }
+            // if(this.searchVal === ''){
+            //     this.isShowList = false;
+            //     return
+            // }
 
             switch (eventType) {
                 case 'blur':
@@ -111,9 +101,9 @@ export default {
 
         // 选中播放歌曲
         selectPlaySong(data){
-            this.searchVal = `${data.singer[0].name}-${data.songname}`;
+            this.searchVal = `${data.singername} - ${data.mvdesc}`;
             this.isShowList = false;//隐藏搜索列表
-            this.$emit('AudioHeaderSelectPlaySong',data);//通知父组件播放歌曲
+            this.$emit('VideoHeaderSelectPlay', data);//通知父组件播放歌曲
         },
 
         // 操作窗口

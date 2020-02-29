@@ -331,7 +331,7 @@
 
         // 获取音乐列表
         getMusics(){
-            this.$API.qq.qqMusicLsitAPI().then((res)=>{
+            this.$API.qq.qqMusicListAPI().then((res)=>{
                 const { data: { songlist = [] } } = res;
                 this.playSongList.push(...songlist.map(({ data }) => songInfo.SetSongPlayInfo(data)));// 设置播放歌曲信息
                 this.startPlay();//开始播放
@@ -379,7 +379,7 @@
             // 如果有指定播放的歌曲
             if(playSong){
                 this.currentPlaySong = songInfo.SetSongPlayInfo(playSong);// 设置播放歌曲信息
-                this.AudioPlayer.src = this.currentPlaySong.src = await this.$API.qq.qqMusicGetPlaySrc(playSong.songmid);//当前播放歌曲的src
+                this.AudioPlayer.src = this.currentPlaySong.src = await this.$API.qq.qqMusicGetPlaySrcAPI(playSong.songmid);//当前播放歌曲的src
             }else{
                 // 如果没有指定播放的歌曲先查询数据库里面是否存在记录，如果存在记录再判断是否标记为是否喜欢，如果不喜欢则跳过播放
                 const tempSong = this.playSongList[this.currSongIndex];
@@ -396,7 +396,7 @@
                     }
                 });
                 this.currentPlaySong = tempSong;//当前播放的歌曲详细信息
-                this.AudioPlayer.src = await this.$API.qq.qqMusicGetPlaySrc(tempSong.songmid);//当前播放歌曲的src
+                this.AudioPlayer.src = await this.$API.qq.qqMusicGetPlaySrcAPI(tempSong.songmid);//当前播放歌曲的src
 
                 ipcRenderer.send('ipcRendererSongMedia', this.currentPlaySong.songmid);
             }

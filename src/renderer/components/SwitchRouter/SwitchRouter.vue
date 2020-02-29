@@ -1,7 +1,7 @@
 <template lang="html">
     <section class="switch-router">
-        <div class="switch-router-left" @click="SwitchRouter('audio')"></div>
-        <div class="switch-router-right" @click="SwitchRouter('video')"></div>
+        <div class="switch-router-left" @click="switchRouter('audio')"></div>
+        <div class="switch-router-right" @click="switchRouter('video')"></div>
     </section>
 </template>
 
@@ -15,7 +15,7 @@ export default {
     created(){
     },
     methods:{
-        SwitchRouter(type){
+        switchRouter(type){
             console.log(this.$route.name);
             this.routerName = this.$route.name;
             this.$router.push({name:type});
