@@ -20,8 +20,8 @@
                 </transition>
             </div>
         </div>
-        <div class="hero-gesture-hide hero-gesture-base" @click.stop="operatorWindow('hide')" title="隐藏"></div>
-        <div class="hero-gesture-closed hero-gesture-base" @click.stop="operatorWindow('closed')" title="关闭"></div>
+        <div class="hero-gesture-hide hero-gesture-base" @click.stop="operatorWindow('min')" title="隐藏"></div>
+        <div class="hero-gesture-closed hero-gesture-base" @click.stop="operatorWindow('close')" title="关闭"></div>
     </section>
 </template>
 
@@ -111,24 +111,14 @@ export default {
 
         // 选中播放歌曲
         selectPlaySong(data){
-            // console.log(data);
             this.searchVal = `${data.singer[0].name}-${data.songname}`;
-            // this.searchVal  = `${data.fsinger}-${data.fsong}`;
             this.isShowList = false;//隐藏搜索列表
-            // data.songmid    = data.singerid;
-            // data.singername = data.fsinger;
-            // data.pay = {};
-            // data.pay.payplay = 0;
             this.$emit('AudioHeaderSelectPlaySong',data);//通知父组件播放歌曲
         },
 
         // 操作窗口
         operatorWindow(type){
-            if(type === 'hide'){
-                ipcRenderer.send('window-min');
-            }else if(type === 'closed'){
-                ipcRenderer.send('window-close');
-            }
+            ipcRenderer.send(`window-${type}`);
         }
     }
 }

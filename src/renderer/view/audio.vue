@@ -1,19 +1,19 @@
 <template lang="html">
     <div class="hero-box" ref="heroBoxEle">
-        <AudioHeader @AudioHeaderSelectPlaySong="selectPlaySong"></AudioHeader>
+        <AudioHeader @AudioHeaderSelectPlaySong="selectPlaySong"/>
         <!-- 中心旋转图片 -->
         <div class="hero-logo" aria-hidden="true">
             <div class="hero-logo-circles">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-red-semi.svg">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-red.svg">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-orange.svg">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-orange.svg">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-yellow-semi.svg">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-yellow.svg">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-green-semi.svg">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-green.svg">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-blue-semi.svg">
-                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-blue.svg">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-red-semi.svg" alt="">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-red.svg" alt="">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-orange.svg" alt="">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-orange.svg" alt="">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-yellow-semi.svg" alt="">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-yellow.svg" alt="">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-green-semi.svg" alt="">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-green.svg" alt="">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-blue-semi.svg" alt="">
+                <img draggable="false" class="hero-logo-circle" src="~@/assets/images/index-portal-blue.svg" alt="">
             </div>
         </div>
         <!-- 中心专辑图片 -->
@@ -23,7 +23,7 @@
                 {{currentPlaySong.singername}}<br/>{{currentPlaySong.songname}}
             </div>
         </div>
-        <SwitchRouter></SwitchRouter>
+        <SwitchRouter/>
         <!-- <AudioPanel></AudioPanel> -->
 
         <div class="hero-play-panel">
@@ -78,7 +78,7 @@
                                 <ul class="hero-play-controls-more-list">
                                     <li class="like-or-hate-list" v-for="item in collectList" :key="item.id">
                                         <span class="list-play" @click.stop="selectPlaySong(item,$event)">{{item.singername}}-{{item.songname}}</span>
-                                        <span class="list-removed" @click.stop="removedCollect(item)"></span>
+                                        <span class="list-removed" @click.stop="removedCollect(item)"/>
                                     </li>
                                     <li class="like-or-hate-nodata" v-show="collectList.length === 0">No Data</li>
                                 </ul>
@@ -96,12 +96,12 @@
                 <div class="dialog-info-closed"></div>
             </div>
         </MaskLayer>
-        <canvas ref="canvasPlayer" class="hero-play-canvas"></canvas>
+        <canvas ref="canvasPlayer" class="hero-play-canvas"/>
     </div>
 </template>
 
 <script>
-    import {ipcRenderer, remote} from 'electron';
+    import { ipcRenderer, remote } from 'electron';
     import placeholderImg from '../assets/person_300.png';
     import * as songInfo from '../tools/songInfo';
     import Spectra from '../class/Spectra';
@@ -125,12 +125,12 @@
         defaultVolume   :0.5,//默认音量值
 
         collectList     :[],//标记喜欢的歌曲列表
-        playSonglist    :[],//播放列表
+        playSongList    :[],//播放列表
         playSongLyric   :[],//播放歌曲的歌词
         currentLyric    :'',//播放歌曲的当前歌词
 
         currSongIndex   :0,//当前播放歌曲的下标
-        endSonglist     :[],//播放完成后存储的列表
+        endSongList     :[],//播放完成后存储的列表
         songDuration    :0,//歌曲总时长
         currPlayTime    :0,//当前歌曲播放时间
         albumRotateDeg  :0,//专辑图片旋转度
@@ -138,8 +138,8 @@
 
         timeInterval    :'',//
         albumInterval   :'',//专辑
-        bgcolorInterval :'',//
-        bgcolorVal      :'',//背景颜色值
+        bgColorInterval :'',//
+        bgColorVal      :'',//背景颜色值
         heroBoxEle      :'',//主体背景元素
 
         AudioPlayer     :{},//new audio 播放器对象
@@ -332,13 +332,8 @@
         // 获取音乐列表
         getMusics(){
             this.$API.qq.qqMusicLsitAPI().then((res)=>{
-                const { data: { songlist } } = res;
-                for (let i = 0; i < songlist.length; i++) {
-                    let data = songlist[i].data;
-                    if(data.songmid){
-                        this.playSonglist.push(songInfo.SetSongPlayInfo(data));// 设置播放歌曲信息
-                    }
-                }
+                const { data: { songlist = [] } } = res;
+                this.playSongList.push(...songlist.map(({ data }) => songInfo.SetSongPlayInfo(data)));// 设置播放歌曲信息
                 this.startPlay();//开始播放
             })
         },
@@ -368,7 +363,8 @@
          * @param  {String} [playType='order'] [order:'顺序播放',random:'随机播放',loop:'循环播放']
          * @param  {[type]} playSong           [需要播放的歌曲对象]
          */
-        startPlay(playType = 'random',playSong){
+        async startPlay(playType = 'random', playSong){
+            console.log(1)
             this.isPlay = true;
             this.audioProgressEle.style.width = `0%`;
             // 旋转专辑图片
@@ -378,33 +374,29 @@
                 this.currSongIndex = 0;
             }else if(playType === 'random'){
                 // 设置随机播放第一首歌
-                this.currSongIndex  = Math.floor(Math.random() * this.playSonglist.length);
+                this.currSongIndex  = Math.floor(Math.random() * this.playSongList.length);
             }
             // 如果有指定播放的歌曲
             if(playSong){
                 this.currentPlaySong = songInfo.SetSongPlayInfo(playSong);// 设置播放歌曲信息
-                this.$API.qq.qqMusicGetPlaySrc(playSong.songmid).then(src => {
-                    this.AudioPlayer.src = src;
-                    this.currentPlaySong.src = src;//当前播放歌曲的src
-                })
+                this.AudioPlayer.src = this.currentPlaySong.src = await this.$API.qq.qqMusicGetPlaySrc(playSong.songmid);//当前播放歌曲的src
             }else{
                 // 如果没有指定播放的歌曲先查询数据库里面是否存在记录，如果存在记录再判断是否标记为是否喜欢，如果不喜欢则跳过播放
-                const tempsong = this.playSonglist[this.currSongIndex];
-                this.collectData.find({ songid: tempsong.songid }, (err,doc) => {
-                    // console.log(doc);
+                const tempSong = this.playSongList[this.currSongIndex];
+                console.log(tempSong)
+                this.collectData.find({ songid: tempSong.songid }, (err,doc) => {
                     if(doc.length !== 0){
                         // 如果不是喜欢的歌曲则跳过播放
-                        if(doc[0].isLike === false){
+                        if(!doc[0].isLike){
                             this.isLike = false;
-                            this.playSonglist.splice(0,1);
+                            this.playSongList.splice(0,1);
                         }else{
                             this.isLike = true;
                         }
                     }
                 });
-                this.currentPlaySong = tempsong;//当前播放的歌曲详细信息
-                this.$API.qq.qqMusicGetPlaySrc(tempsong.songmid).then(src => this.AudioPlayer.src = src);
-                // this.AudioPlayer.src = tempsong.src;//当前播放歌曲的src
+                this.currentPlaySong = tempSong;//当前播放的歌曲详细信息
+                this.AudioPlayer.src = await this.$API.qq.qqMusicGetPlaySrc(tempSong.songmid);//当前播放歌曲的src
 
                 ipcRenderer.send('ipcRendererSongMedia', this.currentPlaySong.songmid);
             }
@@ -412,8 +404,8 @@
             // 查询所有歌曲列表是否存在类似的歌曲，如果存在跳过保存
             this.songData.find({ songid: this.currentPlaySong.songid },( err, doc ) => {
                 if(doc.length === 0){
-                    let songdata = songInfo.SetSongPlayInfo(this.currentPlaySong);
-                    this.songData.insert(songdata);//保存当前歌曲信息
+                    const songData = songInfo.SetSongPlayInfo(this.currentPlaySong);
+                    this.songData.insert(songData);//保存当前歌曲信息
                 }else{
                     // 用当前时间更新没有保存时间戳的歌曲
                     if(!doc[0].now){
@@ -486,9 +478,6 @@
 
             // 向主进程发送事件，获取歌词
             ipcRenderer.send('ipcRendererSongLyric', this.currentPlaySong.songmid);
-            /*this.$API.qq.qqMusicLyricAPI(this.currentPlaySong.songmid).then((res) => {
-                this.parseLyric(res);//解析歌词
-            })*/
         },
 
         // 停止播放
@@ -502,9 +491,9 @@
 
         // 上一首
         playPrev(){
-            let idx = (this.endSonglist.length - this.prevSongIndex) - 1;
+            let idx = (this.endSongList.length - this.prevSongIndex) - 1;
             let prevSongIdx = idx <= 0 ? 0 : idx;
-            let playSong = this.endSonglist.length !== 0 ? this.endSonglist[prevSongIdx] : false;
+            let playSong = this.endSongList.length !== 0 ? this.endSongList[prevSongIdx] : false;
             this.prevSongIndex += 1;//上一首歌曲的下标
             if(playSong){
                 this.endPlay();
@@ -517,7 +506,7 @@
          * @param playType(String) [播放类型]
          */
         playNext(playType){
-            this.savePlayendSong();//保存已播放过的歌曲
+            this.savePlayEndSong();//保存已播放过的歌曲
             this.albumEndRotate();//清除专辑图片动画
             this.startPlay('random');//开始播放
             this.AudioBufferedVal = 1;//默认缓冲值从1开始
@@ -537,27 +526,27 @@
         },
 
         // 保存已播放过的歌曲
-        savePlayendSong(){
-            if(this.endSonglist.length !== 0){
+        savePlayEndSong(){
+            if(this.endSongList.length !== 0){
                 let flag = false;
-                for (let i = 0; i <= this.endSonglist.length - 1; i++) {
+                for (let i = 0; i <= this.endSongList.length - 1; i++) {
                     // 当播放过的歌曲列表里面没有一条记录对应当前播放歌曲的id时且为最后一条记录时把当前歌曲保存到播放过的列表
-                    if( this.endSonglist[i].songid === this.playSonglist[this.currSongIndex].songid ){
+                    if( this.endSongList[i].songid === this.playSongList[this.currSongIndex].songid ){
                         flag = false;
                         break
-                    }else if(this.endSonglist[i].songid !== this.playSonglist[this.currSongIndex].songid && i === this.endSonglist.length - 1){
+                    }else if(this.endSongList[i].songid !== this.playSongList[this.currSongIndex].songid && i === this.endSongList.length - 1){
                         flag = true
                     }else{
                         flag = false;
                     }
                 }
                 if(flag){
-                    this.endSonglist.push(this.playSonglist[this.currSongIndex]);
-                    this.playSonglist.splice(this.currSongIndex,1);
+                    this.endSongList.push(this.playSongList[this.currSongIndex]);
+                    this.playSongList.splice(this.currSongIndex,1);
                 }
             }else{
-                this.endSonglist.push(this.playSonglist[this.currSongIndex]);
-                this.playSonglist.splice(this.currSongIndex,1);
+                this.endSongList.push(this.playSongList[this.currSongIndex]);
+                this.playSongList.splice(this.currSongIndex,1);
             }
         },
 
@@ -589,19 +578,18 @@
         // 设置歌曲喜欢
         audioLike(){
             this.isLike = !this.isLike;
-            let songdata = songInfo.SongPlayData(this.currentPlaySong,this.isLike);
+            const songData = songInfo.SongPlayData(this.currentPlaySong,this.isLike);
             // 只有喜欢的歌曲才会被添加到db
             if(this.isLike){
-
                 // 存储喜欢的歌曲的信息到db
-                this.collectData.insert(songdata, (err, newDoc) => {
+                this.collectData.insert(songData, (err, newDoc) => {
                     // 设置喜欢的歌曲
-                    this.collectList.push(songdata);
+                    this.collectList.push(songData);
                     console.log(newDoc)
                 })
                 // this.collectData.find({}, (err, docs) => { console.log(docs) })
             }else{
-                this.removedCollect(songdata);
+                this.removedCollect(songData);
             }
         },
 
@@ -609,10 +597,9 @@
         audioHate(){
             console.log(this.currentPlaySong);
             // 设置讨厌的歌曲
-            let songdata = songInfo.SongPlayData(this.currentPlaySong,false);
-
+            const songData = songInfo.SongPlayData(this.currentPlaySong,false);
             //标记这首歌曲不喜欢
-            this.collectData.insert(songdata, (err, newDoc) => {
+            this.collectData.insert(songData, (err, newDoc) => {
                 this.collectList.push(newDoc)
             });
             this.playNext();//下一首歌
@@ -640,13 +627,7 @@
 
         // 移除收藏
         removedCollect(item){
-            let collectList = this.collectList;
-            for (let i = 0; i < collectList.length; i++) {
-                if(collectList[i].songid === item.songid){
-                    collectList.splice(i,1);
-                    break;
-                }
-            }
+            this.collectList = this.collectList.filter(x => x.songid !== item.songid);
             // 删除一条记录
             this.collectData.remove({ songid: item.songid }, {}, (err, numRemoved) => {
               console.log(numRemoved);
@@ -674,10 +655,8 @@
 
         // 监听播放完成
         playEnd(){
-            // 监听播放完成
-            this.AudioPlayer.addEventListener('ended', () => {
-                this.playNext();//播放下一首
-            }, false);
+            // 监听播放完成 播放下一首
+            this.AudioPlayer.addEventListener('ended', this.playNext, false);
         },
 
         // 返回播放时长
@@ -689,6 +668,7 @@
 
         // 播放异常
         playError(){
+            // 当播放的歌曲的地址无法识别或者没有权限
             this.AudioPlayer.addEventListener('error', () => {
                 this.dialogInfoMsg = '该歌曲暂时无法播放';
                 this.$refs.dialogInfoObj.toggle(true);
@@ -700,9 +680,9 @@
             //停止播放
             this.endPlay();
             // 获取计算点击位置的进度条百分比值
-            let { offsetX } = e;
-            let progressTotal = this.$tool.getEelUnit(this.audioParentEle,'width');
-            let percentage = (offsetX / progressTotal);
+            const { offsetX } = e;
+            const progressTotal = this.$tool.getEelUnit(this.audioParentEle,'width');
+            const percentage = (offsetX / progressTotal);
 
             // 设置播放进度条显示
             this.audioProgressEle.style.width = `${parseFloat(percentage) * 100}%`;
@@ -753,8 +733,8 @@
         // 选中播放歌曲
         selectPlaySong(data,event){
             event && event.stopPropagation();
-            // this.playSonglist = this.collectList;
-            // console.log(data,this.collectList,this.playSonglist)
+            // this.playSongList = this.collectList;
+            // console.log(data,this.collectList,this.playSongList)
             this.isShowCollect ? this.isShowCollect = false : '';
 
             this.albumEndRotate();//清除专辑图片动画
@@ -801,8 +781,7 @@
 
             this.analyser.getByteFrequencyData(this.dataArray);//获取频域数据
 
-            // spectrum.inTheCricleSpectrum(this.canvasCtx,this.canvasPlayer,this.dataArray,this.bufferLength);
-            this.SpectraClass.inTheCricleSpectrum();
+            this.SpectraClass.inTheCircleSpectrum();
         },
     },
     beforeDestroyed(){

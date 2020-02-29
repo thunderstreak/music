@@ -20,7 +20,7 @@ export default class Spectrum extends BaseSpectrum{
     }
 
     // 环形频谱
-    inTheCricleSpectrum(){
+    inTheCircleSpectrum(){
         let { width, height } = this.canvasPlayer;
         this.canvasCtx.clearRect(0, 0, width, height);
         this.canvasCtx.globalAlpha = this.globalAlpha;

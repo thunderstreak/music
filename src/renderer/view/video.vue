@@ -1,6 +1,6 @@
 <template lang="html">
     <section class="video">
-        <SwitchRouter></SwitchRouter>
+        <SwitchRouter/>
         <video ref="VideoPlayer" width="100%" height="90%" controls :src="url">
             <!--<source :src="url">-->
         </video>
