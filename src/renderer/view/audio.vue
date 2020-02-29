@@ -23,7 +23,7 @@
                 {{currentPlaySong.singername}}<br/>{{currentPlaySong.songname}}
             </div>
         </div>
-        <SwitchRouter/>
+        <!--<SwitchRouter/>-->
         <!-- <AudioPanel></AudioPanel> -->
 
         <div class="hero-play-panel">
@@ -249,7 +249,7 @@
         this.SpectraClass = new Spectra(this.canvasCtx,this.canvasPlayer,this.dataArray,this.bufferLength);
 
         // 绘制频谱
-        this.canvasDraw();
+        // this.canvasDraw();
 
         // 隐藏收藏列表
         document.addEventListener('click', () => {
@@ -301,7 +301,6 @@
             // ipcRenderer.send("updateNow");
             console.log(downloaded);
         });
-
     },
     computed:{
 
@@ -364,7 +363,6 @@
          * @param  {[type]} playSong           [需要播放的歌曲对象]
          */
         async startPlay(playType = 'random', playSong){
-            console.log(1)
             this.isPlay = true;
             this.audioProgressEle.style.width = `0%`;
             // 旋转专辑图片
@@ -383,7 +381,6 @@
             }else{
                 // 如果没有指定播放的歌曲先查询数据库里面是否存在记录，如果存在记录再判断是否标记为是否喜欢，如果不喜欢则跳过播放
                 const tempSong = this.playSongList[this.currSongIndex];
-                console.log(tempSong)
                 this.collectData.find({ songid: tempSong.songid }, (err,doc) => {
                     if(doc.length !== 0){
                         // 如果不是喜欢的歌曲则跳过播放
@@ -799,44 +796,3 @@
     }
 }
 </script>
-
-<style lang="css">
-
-.slide-collect-enter-active {
-    transition: all .25s ease;
-}
-.slide-collect-leave-active {
-    transition: all .25s ease;
-}
-.slide-collect-enter, .slide-collect-leave-to
-/* .slide-collect-leave-active for below version 2.1.8 */ {
-    transform: translateY(10px);
-    opacity: 0;
-}
-
-.slide-slide-left-enter-active {
-    transition: all .25s ease;
-}
-.slide-slide-left-leave-active {
-    transition: all .25s ease;
-}
-.slide-slide-left-enter, .slide-slide-left-leave-to
-/* .slide-slide-left-leave-active for below version 2.1.8 */ {
-    transform: translateX(10px);
-    opacity: 0;
-}
-
-/* 可以设置不同的进入和离开动画 */
-/* 设置持续时间和动画函数 */
-.slide-fade-enter-active {
-    transition: all .3s ease;
-}
-.slide-fade-leave-active {
-    transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
-}
-.slide-fade-enter, .slide-fade-leave-to
-/* .slide-fade-leave-active for below version 2.1.8 */ {
-    transform: translateX(10px);
-    opacity: 0;
-}
-</style>

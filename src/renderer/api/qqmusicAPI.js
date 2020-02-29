@@ -36,7 +36,7 @@ export function qqMusicSearchAPI(searchStr){
             sem         :'1',
             aggr        :'0',
             perpage     :'10',
-            n           :'20',
+            n           :'50',
             p           :'1',
             remoteplace :'txt.mqq.all',
             _           :new Date().getTime()
@@ -165,14 +165,36 @@ export function qqMusicGetPlaySrcAPI(songId) {
             format: 'json',
             data: urlParams
         }
-    }).then(({ data = {} }) => {
+    }).then(async ({ data = {} }) => {
         const { req_0: { data: { sip = [], midurlinfo = [] } } } = data;
         const [url1, url2] = sip;
         const { purl } = midurlinfo[0];
-        return `${url1}${purl}`;
+        if (purl) {
+            return `${url1}${purl}`;
+        } else {
+            return qqMusicGetSongSrc(songId)
+        }
     })
 }
 
+export function qqMusicGetSongSrc(songId) {
+    const guid = '126548448';
+    return axios({
+        url: 'https://c.y.qq.com/base/fcgi-bin/fcg_music_express_mobile3.fcg',
+        method: 'get',
+        params: {
+            cid: `205361747`,
+            filename: `C400${songId}.m4a`,
+            format: `json205361747`,
+            guid,
+            platform: `yqq`,
+            songmid: `${songId}`,
+        }
+    }).then(({ data: { data: { items } } }) => {
+        const { filename, songmid, subcode, vkey } = items[0];
+        return `${filename}?guid=${guid}&vkey=${vkey}&uin=0&fromtag=66`
+    })
+}
 
 export function qqMusicMvInfoAPI(mvId) {
     const data = {

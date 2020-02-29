@@ -92,20 +92,20 @@ export default {
             switch (eventType) {
                 case 'blur':
                     this.isShowList = false;
-                    return false;
+                    return;
                 case 'focus':
                     if(this.searchList.length){
                         this.isShowList = true;
                     }
-                    return false;
+                    return;
                 case 'input':
                     this.searchApi();
-                    return false;
+                    return;
                 case 'change':
                     this.searchApi();
-                    return false;
+                    return;
                 default:
-                    return false;
+                    return;
             }
         },
 
