@@ -36,7 +36,7 @@ export function qqMusicSearchAPI(searchStr){
             sem         :'1',
             aggr        :'0',
             perpage     :'10',
-            n           :'20',
+            n           :'50',
             p           :'1',
             remoteplace :'txt.mqq.all',
             _           :new Date().getTime()
@@ -67,10 +67,10 @@ export function qqMusicSearchAPI(searchStr){
 }
 
 /**
- * [qqMusicLsitAPI description]
+ * [qqMusicListAPI description]
  * @return {[type]} [description]
  */
-export function qqMusicLsitAPI(){
+export function qqMusicListAPI(){
     return axios({
         url     :'https://c.y.qq.com/v8/fcg-bin/fcg_v8_toplist_cp.fcg',
         method  :'get',
@@ -129,5 +129,189 @@ export function qqMusicLyricAPI(songId){
             }
         });
     })
+}
 
+
+/**
+ * [qqMusicGetPlaySrcAPI description]
+ * @param  {[type]} songId [description]
+ * @return {[type]}        [description]
+ */
+export function qqMusicGetPlaySrcAPI(songId) {
+    const urlParams = {
+        "req_0":{
+            "module":"vkey.GetVkeyServer",
+            "method":"CgiGetVkey",
+            "param":{
+                "guid":"358840384",
+                "songmid":[songId],
+                "songtype":[0],
+                "uin":"1443481947",
+                "loginflag":1,
+                "platform":"20"
+            }
+        },
+        "comm":{
+            "uin":"18585073516",
+            "format":"json",
+            "ct":24,
+            "cv":0
+        }
+    };
+    return axios({
+        url: 'https://u.y.qq.com/cgi-bin/musicu.fcg',
+        method: 'get',
+        params: {
+            format: 'json',
+            data: urlParams
+        }
+    }).then(async ({ data = {} }) => {
+        const { req_0: { data: { sip = [], midurlinfo = [] } } } = data;
+        const [url1, url2] = sip;
+        const { purl } = midurlinfo[0];
+        if (purl) {
+            return `${url1}${purl}`;
+        } else {
+            return qqMusicGetSongSrc(songId)
+        }
+    })
+}
+
+export function qqMusicGetSongSrc(songId) {
+    const guid = '126548448';
+    return axios({
+        url: 'https://c.y.qq.com/base/fcgi-bin/fcg_music_express_mobile3.fcg',
+        method: 'get',
+        params: {
+            cid: `205361747`,
+            filename: `C400${songId}.m4a`,
+            format: `json205361747`,
+            guid,
+            platform: `yqq`,
+            songmid: `${songId}`,
+        }
+    }).then(({ data: { data: { items } } }) => {
+        const { filename, songmid, subcode, vkey } = items[0];
+        return `${filename}?guid=${guid}&vkey=${vkey}&uin=0&fromtag=66`
+    })
+}
+
+export function qqMusicMvInfoAPI(mvId) {
+    const data = {
+        comm: {
+            ct: 24,
+            cv: 4747474
+        },
+        getMVUrl: {
+            module: "gosrf.Stream.MvUrlProxy",
+            method: "GetMvUrls",
+            param: {
+                vids: [mvId],
+                request_typet: 10001
+            }
+        },
+        mvinfo: {
+            module: "video.VideoDataServer",
+            method: "get_video_info_batch",
+            param: {
+                vidlist: [mvId],
+                required: [
+                    "vid",
+                    "type",
+                    "sid",
+                    "cover_pic",
+                    "duration",
+                    "singers",
+                    "video_switch",
+                    "msg",
+                    "name",
+                    "desc",
+                    "playcnt",
+                    "pubdate",
+                    "isfav",
+                    "gmid"
+                ]
+            }
+        },
+        other: {
+            module: "video.VideoLogicServer",
+            method: "rec_video_byvid",
+            param: {
+                vid: mvId,
+                required: [
+                    "vid",
+                    "type",
+                    "sid",
+                    "cover_pic",
+                    "duration",
+                    "singers",
+                    "video_switch",
+                    "msg",
+                    "name",
+                    "desc",
+                    "playcnt",
+                    "pubdate",
+                    "isfav",
+                    "gmid",
+                    "uploader_headurl",
+                    "uploader_nick",
+                    "uploader_encuin",
+                    "uploader_uin",
+                    "uploader_hasfollow",
+                    "uploader_follower_num"
+                ],
+                support: 1
+            }
+        }
+    };
+    return axios({
+        url: 'https://u.y.qq.com/cgi-bin/musicu.fcg',
+        method: 'get',
+        params: {
+            format: 'json',
+            data: JSON.stringify(data),
+        },
+        // headers: {
+        //     referer: 'https://y.qq.com/portal/player.html',
+        //     host: 'u.y.qq.com',
+        //     'content-type': 'application/x-www-form-urlencoded',
+        // },
+        g_tk: 1124214810,
+        loginUin: 0,
+        hostUin: 0,
+        inCharset: 'utf8',
+        outCharset: 'utf-8',
+        // format: 'json',
+        notice: 0,
+        platform: 'yqq.json',
+        needNewCode: 0,
+    }).then(({ data: { getMVUrl } }) => {
+        const { data: { [mvId]: { mp4 } } } = getMVUrl;
+        return mp4
+    })
+}
+
+export function qqMusicMvListAPI() {
+    return axios({
+        url: 'https://c.y.qq.com/mv/fcgi-bin/getmv_by_tag',
+        method: 'get',
+        params: {
+            format: 'json',
+            outCharset: 'GB2312',
+            cmd: 'shoubo',
+            lan: 'all'
+        },
+        g_tk: 1124214810,
+        loginUin: 0,
+        hostUin: 0,
+        inCharset: 'utf8',
+        outCharset: 'utf-8',
+        notice: 0,
+        platform: 'yqq.json',
+        needNewCode: 0,
+        // headers: {
+        //     referer: 'https://c.y.qq.com/',
+        //     host: 'c.y.qq.com'
+        // }
+    }).then(({ data: { data: { mvlist = [] } } }) => mvlist)
 }
