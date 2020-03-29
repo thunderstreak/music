@@ -5,56 +5,51 @@ import dialogComponent from './DialogLayer.vue';
 const dialog = Vue.extend(dialogComponent);
 
 // 创建组件容器
-let component = new dialog({
+const component = new dialog({
     el : document.createElement('div')
 });
 
-let doc = document.body;
+const doc = document.body;
 
-export default {
-    alert:(params) => {
+const copyParams = (params) => {
+    for(let key in params){
+        if(params.hasOwnProperty(key)) {
+            component[key] = params[key];
+        }
+    }
+    doc.appendChild(component.$el);
+};
 
+class Dialog {
+    alert(params) {
         component.isshow = false;
         component.type = 'alert';
 
-        for(let k in params){
-            component[k] = params[k];
-        }
-        doc.appendChild(component.$el);
-    },
-    msg:(params) => {
-
+        copyParams(params)
+    }
+    msg(params) {
         component.isshow = false;
         component.type = 'msg';
 
-        for(let k in params){
-            component[k] = params[k];
-        }
-        doc.appendChild(component.$el);
-    },
-    toast:(params) => {
-
+        copyParams(params)
+    }
+    toast(params) {
         component.isshow = false;
         component.type = 'toast';
-        for(let k in params){
-            component[k] = params[k];
-        }
 
-        doc.appendChild(component.$el);
+        copyParams(params);
 
         setTimeout(()=>{
             component.isshow = true;
         },2000)
-    },
-    confirm:(params) => {
-
+    }
+    confirm(params) {
         component.isshow = false;
         component.type = 'confirm';
         component.ipt = null;
 
-        for(let k in params){
-            component[k] = params[k];
-        }
-        doc.appendChild(component.$el);
+        copyParams(params);
     }
-};
+}
+
+export default new Dialog()
