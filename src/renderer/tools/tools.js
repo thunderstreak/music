@@ -924,7 +924,7 @@ const libs = {
             let params = {};
             for (let i = 0; i < paramsStr.length; i++) {
                 let variable = paramsStr[i].split('=');
-                // 针对上汽，车生活内嵌app形式的免登陆授权url传递的指定参数进行解码，处理特殊字符
+                // 针对内嵌app形式的免登陆授权url传递的指定参数进行解码，处理特殊字符
                 if(variable[0] === 'appSecret'){
                     variable[1] = decodeURIComponent(decodeURI(variable[1])).replace(/\s/g,'+');
                 }
