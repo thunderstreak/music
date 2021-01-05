@@ -60,7 +60,7 @@
     }
   },
   "dependencies": {
-    "axios": "^0.16.1",
+    "axios": "^0.21.1",
     "cheerio": "^1.0.0-rc.2",
     "electron-updater": "^2.21.10",
     "nedb": "^1.8.0",
