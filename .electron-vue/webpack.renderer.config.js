@@ -6,10 +6,11 @@ const path = require('path')
 const {dependencies} = require('../package.json')
 const webpack = require('webpack')
 
-const BabiliWebpackPlugin = require('babili-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin')
+const { VueLoaderPlugin } = require('vue-loader')
 
 /**
  * List of node_modules to include in webpack bundle
@@ -21,6 +22,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 let whiteListedModules = ['vue']
 
 let rendererConfig = {
+    mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     devtool: '#cheap-module-eval-source-map',
     entry: {
         renderer: path.join(__dirname, '../src/renderer/main.js')
@@ -38,7 +40,10 @@ let rendererConfig = {
             },
             {
                 test: /\.css$/,
-                use: ExtractTextPlugin.extract({fallback: 'style-loader', use: 'css-loader'})
+                use: [
+                    process.env.NODE_ENV === 'production' ? MiniCssExtractPlugin.loader : 'style-loader',
+                    'css-loader'
+                ]
             }, {
                 test: /\.html$/,
                 use: 'vue-html-loader'
@@ -54,7 +59,6 @@ let rendererConfig = {
                 use: {
                     loader: 'vue-loader',
                     options: {
-                        extractCSS: process.env.NODE_ENV === 'production',
                         loaders: {
                             sass: 'vue-style-loader!css-loader!sass-loader?indentedSyntax=1',
                             scss: 'vue-style-loader!css-loader!sass-loader',
@@ -95,7 +99,8 @@ let rendererConfig = {
         __filename: process.env.NODE_ENV !== 'production'
     },
     plugins: [
-        new ExtractTextPlugin('styles.css'),
+        new VueLoaderPlugin(),
+        new MiniCssExtractPlugin({ filename: 'styles.css' }),
         new HtmlWebpackPlugin({
             filename: 'index.html',
             template: path.resolve(__dirname, '../src/index.ejs'),
@@ -108,21 +113,7 @@ let rendererConfig = {
                 ? path.resolve(__dirname, '../node_modules')
                 : false
         }),
-        new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoEmitOnErrorsPlugin(),
-        new webpack.optimize.UglifyJsPlugin({
-            beautify: false,    // 不美化输出
-            compress: {
-                warnings        : false, // 不保留警告
-                drop_debugger   : true, // 不保留调试语句
-                drop_console    : true // 不保留控制台输出信息
-            },
-            mangle: {           // 跳过这些，不改变命名
-                except: ['$super', '$', 'exports', 'require']
-            },
-            space_colon : false,
-            comments    : false     // 不保留注释
-        })
+        new webpack.HotModuleReplacementPlugin()
     ],
     output: {
         filename: '[name].js',
@@ -154,13 +145,17 @@ if (process.env.NODE_ENV !== 'production') {
 if (process.env.NODE_ENV === 'production') {
     rendererConfig.devtool = ''
 
-    rendererConfig.plugins.push(new BabiliWebpackPlugin(), new CopyWebpackPlugin([
+    rendererConfig.plugins.push(new CopyWebpackPlugin([
         {
             from: path.join(__dirname, '../static'),
             to: path.join(__dirname, '../dist/electron/static'),
             ignore: ['.*']
         }
-    ]), new webpack.DefinePlugin({'process.env.NODE_ENV': '"production"'}), new webpack.LoaderOptionsPlugin({minimize: true}))
+    ]))
+
+    rendererConfig.optimization = {
+        minimizer: [new TerserPlugin()]
+    }
 }
 
 module.exports = rendererConfig
