@@ -6,9 +6,10 @@ const path = require('path')
 const { dependencies } = require('../package.json')
 const webpack = require('webpack')
 
-const BabiliWebpackPlugin = require('babili-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin')
 
 let mainConfig = {
+  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   entry: {
     main: path.join(__dirname, '../src/main/index.js')
   },
@@ -38,7 +39,6 @@ let mainConfig = {
     path: path.join(__dirname, '../dist/electron')
   },
   plugins: [
-    new webpack.NoEmitOnErrorsPlugin()
   ],
   resolve: {
     extensions: ['.js', '.json', '.node']
@@ -61,12 +61,9 @@ if (process.env.NODE_ENV !== 'production') {
  * Adjust mainConfig for production settings
  */
 if (process.env.NODE_ENV === 'production') {
-  mainConfig.plugins.push(
-    new BabiliWebpackPlugin(),
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': '"production"'
-    })
-  )
+  mainConfig.optimization = {
+    minimizer: [new TerserPlugin()]
+  }
 }
 
 module.exports = mainConfig
