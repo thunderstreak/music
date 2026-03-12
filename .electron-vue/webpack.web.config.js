@@ -57,7 +57,7 @@ let webConfig = {
                 test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
                 use: {
                     loader: 'url-loader',
-                    query: {
+                    options: {
                         limit: 10000,
                         name: 'imgs/[name].[ext]'
                     }
@@ -66,7 +66,7 @@ let webConfig = {
                 test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
                 use: {
                     loader: 'url-loader',
-                    query: {
+                    options: {
                         limit: 10000,
                         name: 'fonts/[name].[ext]'
                     }
@@ -87,8 +87,7 @@ let webConfig = {
             },
             nodeModules: false
         }),
-        new webpack.DefinePlugin({'process.env.IS_WEB': 'true'}),
-        new webpack.HotModuleReplacementPlugin()
+        new webpack.DefinePlugin({'process.env.IS_WEB': 'true'})
     ],
     output: {
         filename: '[name].js',
@@ -100,6 +99,14 @@ let webConfig = {
             'vue$': 'vue/dist/vue.esm.js'
         },
         extensions: ['.js', '.vue', '.json', '.css']
+    },
+    node: {
+        fs: 'empty',
+        net: 'empty',
+        tls: 'empty',
+        child_process: 'empty',
+        __dirname: false,
+        __filename: false
     },
     target: 'web'
 }
@@ -121,6 +128,8 @@ if (process.env.NODE_ENV === 'production') {
     webConfig.optimization = {
         minimizer: [new TerserPlugin()]
     }
+} else {
+    webConfig.plugins.push(new webpack.HotModuleReplacementPlugin())
 }
 
 module.exports = webConfig

@@ -70,7 +70,7 @@ let rendererConfig = {
                 test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
                 use: {
                     loader: 'url-loader',
-                    query: {
+                    options: {
                         limit: 10000,
                         name: 'imgs/[name]--[folder].[ext]'
                     }
@@ -86,7 +86,7 @@ let rendererConfig = {
                 test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
                 use: {
                     loader: 'url-loader',
-                    query: {
+                    options: {
                         limit: 10000,
                         name: 'fonts/[name]--[folder].[ext]'
                     }
@@ -112,8 +112,7 @@ let rendererConfig = {
             nodeModules: process.env.NODE_ENV !== 'production'
                 ? path.resolve(__dirname, '../node_modules')
                 : false
-        }),
-        new webpack.HotModuleReplacementPlugin()
+        })
     ],
     output: {
         filename: '[name].js',
@@ -134,9 +133,12 @@ let rendererConfig = {
  * Adjust rendererConfig for development settings
  */
 if (process.env.NODE_ENV !== 'production') {
-    rendererConfig.plugins.push(new webpack.DefinePlugin({
-        '__static': `"${path.join(__dirname, '../static').replace(/\\/g, '\\\\')}"`
-    }))
+    rendererConfig.plugins.push(
+        new webpack.HotModuleReplacementPlugin(),
+        new webpack.DefinePlugin({
+            '__static': `"${path.join(__dirname, '../static').replace(/\\/g, '\\\\')}"`
+        })
+    )
 }
 
 /**

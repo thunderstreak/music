@@ -12,7 +12,7 @@ import db from '@/nedb'
 
 import '@/styles/main.less'
 import tool from '@/tools/tools'
-import API from '@/API/'
+import API from '@/api/'
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'));
 
