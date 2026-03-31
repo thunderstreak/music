@@ -10,7 +10,6 @@
 </template>
 
 <script>
-import { ipcRenderer, remote } from 'electron';
 export default {
     name:'VideoPlayer',
     data:() => ({

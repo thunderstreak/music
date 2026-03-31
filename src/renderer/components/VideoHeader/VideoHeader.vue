@@ -26,7 +26,6 @@
 </template>
 
 <script>
-import { ipcRenderer, remote } from 'electron';
 export default {
     name:'VideoHeader',
     data:()=>({
@@ -54,30 +53,13 @@ export default {
             this.$API.qq.qqMusicMvInfoAPI(this.searchVal).then((res)=>{
                 console.log(res)
                 this.isHttp = false;
-                // const { data: { song }, code } = res.data;
-                // if(code === 0){
-                //     this.searchList = song.list;
-                //     console.log(this.searchList);
-                //     this.isHttp     = false;
-                //     if(song.list.length !== 0){
-                //         this.isShowList = true;//显示搜索结果列表
-                //     }
-                // }
             }).catch(() => {
                 this.isHttp = false;
             })
         },
-        searchSong(){
-            // 向主进程发送搜索歌曲请求事件
-            // ipcRenderer.send('ipcRendererSongSearch', this.searchVal);
-        },
         // 搜索音乐
         searchMusics(eventType){
             console.log(eventType);
-            // if(this.searchVal === ''){
-            //     this.isShowList = false;
-            //     return
-            // }
 
             switch (eventType) {
                 case 'blur':
@@ -108,7 +90,13 @@ export default {
 
         // 操作窗口
         operatorWindow(type){
-            ipcRenderer.send(`window-${type}`);
+            if (window.__TAURI_INTERNALS__) {
+                if (type === 'min') {
+                    window.__TAURI_INTERNALS__.invoke('plugin:window|minimize');
+                } else if (type === 'close') {
+                    window.__TAURI_INTERNALS__.invoke('plugin:window|hide');
+                }
+            }
         }
     }
 }

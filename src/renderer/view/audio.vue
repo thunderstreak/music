@@ -101,7 +101,6 @@
 </template>
 
 <script>
-    import { ipcRenderer, remote } from 'electron';
     import placeholderImg from '../assets/person_300.png';
     import * as songInfo from '../tools/songInfo';
     import Spectra from '../class/Spectra';
@@ -263,44 +262,11 @@
             }
         });
 
-        // 接受主进程事件通知，渲染歌词
-        ipcRenderer.on('ipcMainSongLyric',(event,lyric) => {
-            this.parseLyric(lyric);//解析歌词
-        });
+        // 接受主进程事件通知，渲染歌词 - replaced with direct API call in startPlay
+        // ipcRenderer.on('ipcMainSongLyric',(event,lyric) => {
+        //     this.parseLyric(lyric);//解析歌词
+        // });
 
-        // 检查是否有更新
-        ipcRenderer.send("checkForUpdate");
-
-        // 接受更新信息
-        ipcRenderer.on("message", (event, msg) => {
-            console.log(msg);
-
-            if(msg.type === 'updating'){
-                // 检查到最新版本
-                this.$dialog.alert({
-                    title   : '123',
-                    type    : 'msg',
-                    message : msg.msg,
-                    leftbtn : '下次',
-                    rightbtn: '确认',
-                    callback: (flag) => {
-                        flag && ipcRenderer.send("updateNow");
-                    }
-                })
-            }
-        });
-
-        // 下载进度
-        ipcRenderer.on("downloadProgress", (event, progress) => {
-            console.log(progress);
-        });
-
-        // 接受更新下载完成通知
-        ipcRenderer.on("updateDownloaded", (event, downloaded) => {
-            // 通知主进程立即更新
-            // ipcRenderer.send("updateNow");
-            console.log(downloaded);
-        });
     },
     computed:{
 
@@ -394,8 +360,6 @@
                 });
                 this.currentPlaySong = tempSong;//当前播放的歌曲详细信息
                 this.AudioPlayer.src = await this.$API.qq.qqMusicGetPlaySrcAPI(tempSong.songmid);//当前播放歌曲的src
-
-                ipcRenderer.send('ipcRendererSongMedia', this.currentPlaySong.songmid);
             }
 
             // 查询所有歌曲列表是否存在类似的歌曲，如果存在跳过保存
@@ -473,8 +437,12 @@
 
             // this.changeBackgroundColor();//随机改变背景颜色
 
-            // 向主进程发送事件，获取歌词
-            ipcRenderer.send('ipcRendererSongLyric', this.currentPlaySong.songmid);
+            // 获取歌词
+            this.$API.qq.qqMusicLyricAPI(this.currentPlaySong.songmid).then(lyric => {
+                this.parseLyric(lyric);
+            }).catch(() => {
+                this.parseLyric([]);
+            });
         },
 
         // 停止播放
@@ -789,8 +757,6 @@
     destroyed(){
         console.log('destroyed');
         cancelAnimationFrame(this.drawVisual);//清除频谱绘制
-        //组件销毁前移除所有事件监听channel
-        ipcRenderer.removeAllListeners(['ipcMainSongLyric','message','downloadProgress','updateDownloaded']);
         this.endPlay();
         this.AudioPlayer = '';
     }

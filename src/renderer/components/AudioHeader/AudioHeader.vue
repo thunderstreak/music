@@ -26,7 +26,6 @@
 </template>
 
 <script>
-import { ipcRenderer, remote } from 'electron';
 export default {
     name:'AudioHeader',
     data:()=>({
@@ -77,10 +76,6 @@ export default {
                 this.isHttp     = false;
             })
         },
-        searchSong(){
-            // 向主进程发送搜索歌曲请求事件
-            ipcRenderer.send('ipcRendererSongSearch', this.searchVal);
-        },
         // 搜索音乐
         searchMusics(eventType){
             console.log(eventType);
@@ -118,7 +113,13 @@ export default {
 
         // 操作窗口
         operatorWindow(type){
-            ipcRenderer.send(`window-${type}`);
+            if (window.__TAURI_INTERNALS__) {
+                if (type === 'min') {
+                    window.__TAURI_INTERNALS__.invoke('plugin:window|minimize');
+                } else if (type === 'close') {
+                    window.__TAURI_INTERNALS__.invoke('plugin:window|hide');
+                }
+            }
         }
     }
 }

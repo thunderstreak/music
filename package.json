@@ -14,6 +14,8 @@
     "pack": "npm run pack:main && npm run pack:renderer",
     "pack:main": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.main.config.js",
     "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.renderer.config.js",
+    "tauri:dev": "node .electron-vue/dev-runner.js",
+    "tauri:build": "cross-env BUILD_TARGET=web node .electron-vue/build.js && npx tauri build",
     "postinstall": ""
   },
   "build": {
@@ -60,6 +62,9 @@
     }
   },
   "dependencies": {
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/cli": "^2.10.1",
+    "@tauri-apps/plugin-http": "^2.5.7",
     "axios": "^0.16.1",
     "cheerio": "^1.0.0-rc.2",
     "electron-updater": "^2.21.10",
